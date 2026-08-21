@@ -3,7 +3,7 @@ use crate::file::open_files;
 use crate::event::{open, drop};
 use crate::optimize::OptimizeJob;
 use crate::rendar;
-use crate::rendar::SettingTab;
+use crate::rendar::{SettingTab, ListRowToken, ErrorToken, SettingToken};
 use crate::rendar::assets::{fonts, svg};
 use crate::rendar::main::{top, list, bottom, modal};
 use crate::rendar::setting::view as setting_window;
@@ -16,23 +16,14 @@ pub struct Rendar {
     // ファイルダイアログを開くタイミング
     open_dialog: bool,
 
-    // 設定ウィンドウを開くタイミング
-    settings_window_open: bool,
+    // 設定ウィンドウのトークン
+    setting_token: SettingToken,
 
-    // 設定ウィンドウの表示位置
-    settings_window_pos: Option<egui::Pos2>,
-
-    // 設定タブ
-    setting_tab: SettingTab,
+    // エラーモーダルを表示するためのトークン
+    error_token: ErrorToken,
 
     // 最適化ジョブ
     optimize_job: OptimizeJob,
-
-    // エラーモーダルを表示するかどうか
-    error_modal_open: bool,
-
-    // エラー
-    error: Option<Box<dyn std::error::Error>>,
 }
 
 impl Rendar {
@@ -59,12 +50,16 @@ impl Rendar {
             app,
             files,
             open_dialog: false,
-            settings_window_open: false,
-            settings_window_pos: None,
-            setting_tab: SettingTab::Concurrent,
+            setting_token: SettingToken {
+                open: false,
+                pos: None,
+                tab: SettingTab::Concurrent,
+            },
+            error_token: ErrorToken {
+                open: false,
+                value: None,
+            },
             optimize_job: OptimizeJob::new(cc.egui_ctx.clone()),
-            error_modal_open: false,
-            error: None,
         }
     }
 
@@ -111,8 +106,8 @@ impl eframe::App for Rendar {
                 &mut self.files,
             ) {
                 eprintln!("Error opening files: {}", e);
-                self.error = Some(e);
-                self.error_modal_open = true;
+                self.error_token.value = Some(e);
+                self.error_token.open = true;
             }
         }
 
@@ -124,8 +119,8 @@ impl eframe::App for Rendar {
                 &mut self.files,
             ) {
                 eprintln!("Error opening files: {}", e);
-                self.error = Some(e);
-                self.error_modal_open = true;
+                self.error_token.value = Some(e);
+                self.error_token.open = true;
             }
         });
 
@@ -137,12 +132,12 @@ impl eframe::App for Rendar {
 
         // 上部ボタンを表示
         egui::Panel::top("top_taskbar").frame(panel_style).show(ui, |ui| {
-            top::view(ui, &mut self.files, &mut self.open_dialog, &mut self.settings_window_open, &mut self.settings_window_pos);
+            top::view(ui, &mut self.files, &mut self.open_dialog, &mut self.setting_token);
         });
 
         // 状態とかボタンを表示するタスクバーを表示
         egui::Panel::bottom("bottom_taskbar").frame(panel_style).show(ui, |ui| {
-            bottom::view(ui, &mut self.files, &mut self.optimize_job, &mut self.error_modal_open, &mut self.error);
+            bottom::view(ui, &mut self.files, &mut self.optimize_job, &mut self.error_token);
         });
 
         // 中央パネルを表示
@@ -159,8 +154,20 @@ impl eframe::App for Rendar {
                 .max_height(ui.available_height())
                 // コンテナ内の表示
                 .show_rows(ui, row_height, total_rows, |ui, row_range| {
+                    // 表示する行の情報
+                    let list_row_token = ListRowToken {
+                        range: row_range,
+                        height: row_height,
+                    };
+
+                    // エラーモーダルを表示するためのトークン
+                    let mut error_token = ErrorToken {
+                        open: false,
+                        value: None,
+                    };
+
                     // ファイル一覧を表示
-                    list::view(ui, &mut self.files, &mut self.optimize_job, row_range, row_height, &mut self.error_modal_open, &mut self.error)
+                    list::view(ui, &mut self.files, &mut self.optimize_job, list_row_token, &mut error_token)
                 }).inner;
 
             // リスト行以外をクリックしたら選択解除
@@ -170,13 +177,13 @@ impl eframe::App for Rendar {
         });
 
         // 設定ウィンドウを表示
-        if self.settings_window_open {
-            setting_window::view(ui.ctx(), &mut self.app, &mut self.setting_tab, &mut self.settings_window_open, &mut self.settings_window_pos);
+        if self.setting_token.open {
+            setting_window::view(ui.ctx(), &mut self.app, &mut self.setting_token);
         }
 
         // エラーモーダルを表示
-        if self.error_modal_open {
-            modal::error(&mut self.error_modal_open, ui.ctx(), &mut self.error);
+        if self.error_token.open {
+            modal::error(ui.ctx(), &mut self.error_token);
         }
     }
 }

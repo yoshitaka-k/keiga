@@ -1,11 +1,12 @@
 use crate::rendar::assets::{svg, constants};
+use crate::rendar::ErrorToken;
 
 /// エラーモーダルを表示
 /// * `show_modal` - モーダルを表示するかどうか
 /// * `ctx` - コンテキスト
-/// * `error` - エラー
-pub(crate) fn error(show_modal: &mut bool, ctx: &egui::Context, error: &mut Option<Box<dyn std::error::Error>>) {
-    if error.is_none() {
+/// * `error_token` - エラーモーダルを表示するためのトークン
+pub(crate) fn error(ctx: &egui::Context, error_token: &mut ErrorToken) {
+    if error_token.value.is_none() {
         return;
     }
 
@@ -16,14 +17,14 @@ pub(crate) fn error(show_modal: &mut bool, ctx: &egui::Context, error: &mut Opti
             ui.heading("An error occurred");
         });
 
-        if let Some(error) = error {
+        if let Some(error) = &error_token.value {
             ui.label(error.to_string());
         }
     });
 
     // モーダルを閉じたらモーダルを非表示にする
     if modal.should_close() {
-        *show_modal = false;
-        *error = None;
+        error_token.open = false;
+        error_token.value = None;
     }
 }

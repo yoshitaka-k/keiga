@@ -1,6 +1,6 @@
 use crate::app;
 use crate::rendar;
-use crate::rendar::SettingTab;
+use crate::rendar::{SettingTab, SettingToken};
 use crate::rendar::assets;
 use crate::rendar::assets::{constants as assets_const, svg};
 use crate::rendar::setting;
@@ -13,9 +13,7 @@ use crate::rendar::setting::{concurrent, quality, about};
 pub(crate) fn view(
     ctx: &egui::Context,
     app: &mut app::App,
-    setting_tab: &mut SettingTab,
-    settings_window_open: &mut bool,
-    window_pos: &mut Option<egui::Pos2>,
+    setting_token: &mut SettingToken,
 ) {
     // ウィンドウのIDを生成
     let window_id = egui::ViewportId::from_hash_of(setting::SETTING_WINDOW_ID);
@@ -29,12 +27,12 @@ pub(crate) fn view(
 
     // ウィンドウの表示位置を指定
     // take()で、取り出して None にする（ボタン押下時だけ位置更新と前面化）
-    if let Some(pos) = window_pos.take() {
+    if let Some(pos) = setting_token.pos.take() {
         // ウィンドウの位置を指定
         options = options.with_position(pos);
 
         // タブを初期化
-        *setting_tab = SettingTab::Concurrent;
+        setting_token.tab = SettingTab::Concurrent;
 
         // 表示していたら、ウィンドウの位置を更新して前面に出す
         ctx.send_viewport_cmd_to(window_id, egui::ViewportCommand::OuterPosition(pos));
@@ -61,9 +59,9 @@ pub(crate) fn view(
                 ui.style_mut().visuals.selection.bg_fill = setting::tab_selected_color(ui);
 
                 // タブを表示
-                ui.selectable_value(setting_tab, SettingTab::Concurrent, SettingTab::Concurrent.to_string());
-                ui.selectable_value(setting_tab, SettingTab::Quality, SettingTab::Quality.to_string());
-                ui.selectable_value(setting_tab, SettingTab::About, SettingTab::About.to_string());
+                ui.selectable_value(&mut setting_token.tab, SettingTab::Concurrent, SettingTab::Concurrent.to_string());
+                ui.selectable_value(&mut setting_token.tab, SettingTab::Quality, SettingTab::Quality.to_string());
+                ui.selectable_value(&mut setting_token.tab, SettingTab::About, SettingTab::About.to_string());
 
                 // タブの選択時の背景色をリセット
                 ui.style_mut().visuals.selection.bg_fill = selection_bg_fill;
@@ -72,7 +70,7 @@ pub(crate) fn view(
 
         egui::CentralPanel::default().show(ctx, |ui| {
             // タブに応じて表示内容を切り替え
-            match setting_tab {
+            match setting_token.tab {
                 SettingTab::Concurrent => concurrent::view(ui, app),
                 SettingTab::Quality => quality::view(ui, app),
                 SettingTab::About => about::view(ui, app),
@@ -81,7 +79,7 @@ pub(crate) fn view(
 
         // ウィンドウの閉じるボタンが押されたら閉じる
         if ctx.input(|input| input.viewport().close_requested()) {
-            *settings_window_open = false;
+            setting_token.open = false;
         }
     });
 }

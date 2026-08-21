@@ -1,5 +1,6 @@
 use crate::file::open_files;
 use crate::optimize::{OptimizeJob, OptimizeStatus};
+use crate::rendar::SettingToken;
 
 /// ファイルダイアログを開く
 /// * `ui` - UI
@@ -14,14 +15,13 @@ pub(crate) fn files_open(ui: &mut egui::Ui, open_dialog: &mut bool) {
 
 /// 設定ダイアログを開く
 /// * `ui` - UI
-/// * `settings_window_open` - 設定ダイアログを開くフラグ
-/// * `settings_window_pos` - 設定ダイアログの表示位置
-pub(crate) fn setting_open(ui: &mut egui::Ui, settings_window_open: &mut bool, settings_window_pos: &mut Option<egui::Pos2>) {
+/// * `setting_token` - 設定ダイアログを開くためのトークン
+pub(crate) fn setting_open(ui: &mut egui::Ui, setting_token: &mut SettingToken) {
     // 設定ダイアログを開く
-    *settings_window_open = true;
+    setting_token.open = true;
 
     // 設定ダイアログの表示位置を設定
-    *settings_window_pos = ui.ctx().input(|input| {
+    setting_token.pos = ui.ctx().input(|input| {
         input.viewport().outer_rect.map(|rect| rect.min)
     });
 

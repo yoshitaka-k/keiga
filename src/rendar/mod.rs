@@ -26,6 +26,24 @@ impl SettingTab {
     }
 }
 
+/// ファイル一覧を表示するためのトークン
+pub struct ListRowToken {
+    pub range: std::ops::Range<usize>,
+    pub height: f32,
+}
+
+pub struct SettingToken {
+    pub open: bool,
+    pub pos: Option<egui::Pos2>,
+    pub tab: SettingTab,
+}
+
+/// エラーモーダルを表示するためのトークン
+pub struct ErrorToken {
+    pub open: bool,
+    pub value: Option<Box<dyn std::error::Error>>,
+}
+
 /// パネルの背景色
 /// * `ui` - UI
 /// * `return` - パネルの背景色

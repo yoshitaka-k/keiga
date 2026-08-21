@@ -1,5 +1,6 @@
 use crate::file::open_files;
 use crate::event::button;
+use crate::rendar::SettingToken;
 use crate::rendar::assets;
 use crate::rendar::assets::{constants, svg};
 
@@ -11,8 +12,7 @@ pub(crate) fn view(
     ui: &mut egui::Ui,
     _files: &mut open_files::OpenFiles,
     open_dialog: &mut bool,
-    settings_window_open: &mut bool,
-    settings_window_pos: &mut Option<egui::Pos2>,
+    setting_token: &mut SettingToken,
 ) {
     // ボタンの色を設定
     let icon_color = assets::icon_color(ui);
@@ -29,7 +29,7 @@ pub(crate) fn view(
             // 設定ボタン
             let settings_button = egui::Image::new(svg::SETTINGS).max_height(constants::BUTTON_SETTINGS_ICON_SIZE).tint(button_color);
             if ui.button(settings_button).on_hover_text("Settings").clicked() {
-                button::setting_open(ui, settings_window_open, settings_window_pos);
+                button::setting_open(ui, setting_token);
             }
 
             // 開くボタン

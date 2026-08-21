@@ -2,6 +2,7 @@ use crate::duration_format;
 use crate::file::open_files;
 use crate::event::button;
 use crate::optimize::OptimizeJob;
+use crate::rendar::ErrorToken;
 use crate::rendar::assets;
 use crate::rendar::assets::{constants, fonts::text_color, svg};
 use crate::rendar::main;
@@ -32,8 +33,7 @@ pub(crate) fn view(
     ui: &mut egui::Ui,
     files: &mut open_files::OpenFiles,
     optimize_job: &mut OptimizeJob,
-    error_modal_open: &mut bool,
-    error: &mut Option<Box<dyn std::error::Error>>,
+    error_token: &mut ErrorToken,
 ) {
     // 未処理、最適化中、最適化済み、エラーのファイル数
     files.update_file_length();
@@ -151,8 +151,8 @@ pub(crate) fn view(
             if ui.button(clear_button).on_hover_text("Cancel and Clear").clicked() {
                 if let Err(e) = button::cancel_and_clear(files, optimize_job) {
                     eprintln!("Error canceling and clearing: {}", e);
-                    *error_modal_open = true;
-                    *error = Some(e);
+                    error_token.open = true;
+                    error_token.value = Some(e);
                 }
             }
         });

@@ -1,4 +1,4 @@
-use std::{ops::Range, path::PathBuf};
+use std::path::PathBuf;
 use egui::Sense;
 
 use crate::{filesize_format, duration_format};
@@ -6,6 +6,7 @@ use crate::file::open_files;
 use crate::optimize::OptimizeStatus;
 use crate::event::{click, key_up};
 use crate::optimize::OptimizeJob;
+use crate::rendar::{ListRowToken, ErrorToken};
 use crate::rendar::assets;
 use crate::rendar::assets::{constants, fonts::text_color, svg};
 use crate::rendar::main;
@@ -49,16 +50,14 @@ fn add_icon_and_name(ui: &mut egui::Ui, file_name: &str, pad: f32, widget: impl 
 /// * `ui` - UI
 /// * `files` - ドロップされたファイル
 /// * `row_range` - 表示する行の範囲
-/// * `row_height` - show_rows に渡したのと同じ値
+/// * `list_row` - 表示する行の情報
 /// * `return` - いずれかの行がクリックされたかどうか
 pub(crate) fn view(
     ui: &mut egui::Ui,
     files: &mut open_files::OpenFiles,
     optimize_job: &mut OptimizeJob,
-    row_range: Range<usize>,
-    row_height: f32,
-    error_modal_open: &mut bool,
-    error: &mut Option<Box<dyn std::error::Error>>,
+    list_row: ListRowToken,
+    error_token: &mut ErrorToken,
 ) -> bool {
     // UIの幅と行間隔
     let width = ui.available_width();
@@ -94,11 +93,11 @@ pub(crate) fn view(
     // リスト表示の準備
     let total = files.paths().len();
     let selected_id = *files.selected_id();
-    let start = row_range.start;
+    let start = list_row.range.start;
 
     // 表示するファイルを取得
     let visible: Vec<_> = files.paths()
-        .get(row_range)
+        .get(list_row.range)
         .unwrap_or(&[])
         .to_vec();
 
@@ -116,7 +115,7 @@ pub(crate) fn view(
         // 高さがズレると赤くチラつくので予めサイズ確保
         // 行のクリックイベントを受け取るために Sense::click() を指定
         let (row_rect, response) = ui.allocate_exact_size(
-            egui::vec2(width, row_height),
+            egui::vec2(width, list_row.height),
             Sense::click(),
         );
 
@@ -221,13 +220,13 @@ pub(crate) fn view(
                 match key {
                     egui::Key::Backspace => if let Err(e) = key_up::backspace_key(files, optimize_job) {
                         eprintln!("Error canceling file: {}", e);
-                        *error_modal_open = true;
-                        *error = Some(e);
+                        error_token.open = true;
+                        error_token.value = Some(e);
                     }
                     egui::Key::Space => if let Err(e) = key_up::space_key(&path) {
                         eprintln!("Error revealing file: {}", e);
-                        *error_modal_open = true;
-                        *error = Some(e);
+                        error_token.open = true;
+                        error_token.value = Some(e);
                     }
                     _ => (),
                 }
