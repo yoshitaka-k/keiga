@@ -1,4 +1,4 @@
-use crate::file::open_files;
+use crate::file;
 use crate::optimize::{OptimizeJob, OptimizeStatus};
 use crate::rendar::SettingToken;
 
@@ -32,7 +32,7 @@ pub(crate) fn setting_open(ui: &mut egui::Ui, setting_token: &mut SettingToken) 
 /// 最適化を停止（キャンセル）してファイル一覧をクリアする
 /// * `files` - ファイル一覧
 /// * `optimize_job` - 最適化ジョブ
-pub(crate) fn cancel_and_clear(files: &mut open_files::OpenFiles, optimize_job: &mut OptimizeJob) -> Result<(), Box<dyn std::error::Error>> {
+pub(crate) fn cancel_and_clear(files: &mut file::OpenFiles, optimize_job: &mut OptimizeJob) -> Result<(), Box<dyn std::error::Error>> {
     // 最適化を停止（全体キャンセル）
     optimize_job.stop_running();
 

@@ -1,5 +1,5 @@
 use crate::duration_format;
-use crate::file::open_files;
+use crate::file;
 use crate::event::button;
 use crate::optimize::OptimizeJob;
 use crate::rendar::ErrorToken;
@@ -31,7 +31,7 @@ fn add_padded_icon(ui: &mut egui::Ui, pad: f32, widget: impl egui::Widget) -> eg
 /// * `files` - ドロップされたファイル
 pub(crate) fn view(
     ui: &mut egui::Ui,
-    files: &mut open_files::OpenFiles,
+    files: &mut file::OpenFiles,
     optimize_job: &mut OptimizeJob,
     error_token: &mut ErrorToken,
 ) {

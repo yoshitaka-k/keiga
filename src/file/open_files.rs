@@ -2,7 +2,7 @@ use std::fs;
 use std::path::PathBuf;
 use getset::{Getters, Setters};
 
-use crate::file::image_file;
+use crate::file;
 use crate::optimize::OptimizeStatus;
 
 /// ファイル情報を管理する構造体
@@ -40,7 +40,7 @@ impl FileInfo {
 pub struct OpenFiles {
     /// ファイル一覧
     #[getset(get = "pub")]
-    paths: Vec<image_file::ImageFile>,
+    paths: Vec<file::ImageFile>,
 
     /// 許可されたファイル拡張子
     #[getset(set = "pub")]
@@ -69,7 +69,7 @@ impl OpenFiles {
 
     /// 待機中のファイルを1件取得
     /// * `return` - 待機中のファイル1件
-    pub fn get_standby_file(&mut self, allow_png: bool) -> Option<&mut image_file::ImageFile> {
+    pub fn get_standby_file(&mut self, allow_png: bool) -> Option<&mut file::ImageFile> {
         self.paths.iter_mut().find(|f| {
             matches!(f.status(), OptimizeStatus::Standby) && (allow_png || !f.is_png())
         })
@@ -248,7 +248,7 @@ impl OpenFiles {
 
     /// 最適化結果を既存の一覧へ反映
     /// * `results` - 最適化済みのファイル
-    pub fn apply_result(&mut self, result: image_file::ImageFile) {
+    pub fn apply_result(&mut self, result: file::ImageFile) {
         // 既存のファイル一覧から ID が一致するファイルを検索
         if let Some(file) = self.paths.iter_mut().find(|f| f.id() == result.id()) {
             // 元のファイルが最適化済みであればスキップ
@@ -298,7 +298,7 @@ impl OpenFiles {
             if self.is_allowed_extension(&path) {
                 // 同じパスが待機中か最適化中なら、新規行をエラーで追加
                 if self.is_standby_or_optimizing(&path) {
-                    let mut image_file = image_file::ImageFile::new(path)?;
+                    let mut image_file = file::ImageFile::new(path)?;
                     image_file.set_status(OptimizeStatus::Error(
                         "Already in progress".to_string(),
                     ));
@@ -306,7 +306,7 @@ impl OpenFiles {
                     return Ok(());
                 }
 
-                let image_file = image_file::ImageFile::new(path)?;
+                let image_file = file::ImageFile::new(path)?;
                 self.paths.push(image_file);
             }
         } else if metadata.is_dir() {

@@ -1,5 +1,5 @@
 use crate::app;
-use crate::file::open_files;
+use crate::file;
 use crate::event::{open, drop};
 use crate::optimize::OptimizeJob;
 use crate::rendar;
@@ -11,7 +11,7 @@ use crate::rendar::setting::view as setting_window;
 /// レンダーを管理する構造体
 pub struct Rendar {
     app: app::App,
-    files: open_files::OpenFiles,
+    files: file::OpenFiles,
 
     // ファイルダイアログを開くタイミング
     open_dialog: bool,
@@ -42,7 +42,7 @@ impl Rendar {
             .unwrap_or(app);
 
         // 開くファイルのインスタンスを作成
-        let mut files = open_files::OpenFiles::new();
+        let mut files = file::OpenFiles::new();
         // 拡張子を設定
         files.set_extensions(app.extensions_to_string());
 

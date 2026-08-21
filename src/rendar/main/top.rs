@@ -1,4 +1,4 @@
-use crate::file::open_files;
+use crate::file;
 use crate::event::button;
 use crate::rendar::SettingToken;
 use crate::rendar::assets;
@@ -10,7 +10,7 @@ use crate::rendar::assets::{constants, svg};
 /// * `open_dialog` - ファイルダイアログを開くタイミングをずらす
 pub(crate) fn view(
     ui: &mut egui::Ui,
-    _files: &mut open_files::OpenFiles,
+    _files: &mut file::OpenFiles,
     open_dialog: &mut bool,
     setting_token: &mut SettingToken,
 ) {

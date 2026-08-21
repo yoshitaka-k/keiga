@@ -1,4 +1,4 @@
-use crate::file::open_files;
+use crate::file;
 use eframe::egui::DroppedFileHandle;
 
 /// ドロップされたファイルを処理
@@ -6,7 +6,7 @@ use eframe::egui::DroppedFileHandle;
 /// * `files` - 開いているファイル
 pub(crate) fn drop_files(
     dropped_files: &[DroppedFileHandle],
-    files: &mut open_files::OpenFiles,
+    files: &mut file::OpenFiles,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if dropped_files.is_empty() {
         return Ok(());

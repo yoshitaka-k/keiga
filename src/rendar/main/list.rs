@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use egui::Sense;
 
 use crate::{filesize_format, duration_format};
-use crate::file::open_files;
+use crate::file;
 use crate::optimize::OptimizeStatus;
 use crate::event::{click, key_up};
 use crate::optimize::OptimizeJob;
@@ -54,7 +54,7 @@ fn add_icon_and_name(ui: &mut egui::Ui, file_name: &str, pad: f32, widget: impl 
 /// * `return` - いずれかの行がクリックされたかどうか
 pub(crate) fn view(
     ui: &mut egui::Ui,
-    files: &mut open_files::OpenFiles,
+    files: &mut file::OpenFiles,
     optimize_job: &mut OptimizeJob,
     list_row: ListRowToken,
     error_token: &mut ErrorToken,

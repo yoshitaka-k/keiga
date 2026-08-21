@@ -1,11 +1,11 @@
-use crate::file::open_files;
+use crate::file;
 
 /// ファイルオープンダイアログを開いて選択結果を追加する
 /// * `extensions` - 許可する拡張子
 /// * `files` - 開いているファイル
 pub(crate) fn open_files(
     extensions: &Vec<String>,
-    files: &mut open_files::OpenFiles,
+    files: &mut file::OpenFiles,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Macのみファイルとフォルダを同時選択できる
     #[cfg(target_os = "macos")]
