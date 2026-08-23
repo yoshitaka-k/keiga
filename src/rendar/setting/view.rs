@@ -1,8 +1,10 @@
 use crate::app;
+use crate::app::{UpdateJob, UpdatedToken};
 use crate::rendar;
 use crate::rendar::{SettingTab, SettingToken};
 use crate::rendar::assets;
 use crate::rendar::assets::{constants as assets_const, svg};
+use crate::rendar::modal;
 use crate::rendar::setting;
 use crate::rendar::setting::{concurrent, quality, about};
 
@@ -14,6 +16,8 @@ pub(crate) fn view(
     ctx: &egui::Context,
     app: &mut app::App,
     setting_token: &mut SettingToken,
+    mut update_job: &mut UpdateJob,
+    updated_token: &mut UpdatedToken,
 ) {
     // ウィンドウのIDを生成
     let window_id = egui::ViewportId::from_hash_of(setting::SETTING_WINDOW_ID);
@@ -41,6 +45,9 @@ pub(crate) fn view(
 
     // 設定ウィンドウを表示
     ctx.show_viewport_immediate(window_id, options, |ctx, _class| {
+        // 更新結果を取得
+        update_job.result(updated_token);
+
         // パネルのスタイルを設定
         let panel_style = rendar::panel_style(ctx);
 
@@ -73,13 +80,18 @@ pub(crate) fn view(
             match setting_token.tab {
                 SettingTab::Concurrent => concurrent::view(ui, app),
                 SettingTab::Quality => quality::view(ui, app),
-                SettingTab::About => about::view(ui, app),
+                SettingTab::About => about::view(ui, app, &mut update_job),
             }
         });
 
         // ウィンドウの閉じるボタンが押されたら閉じる
         if ctx.input(|input| input.viewport().close_requested()) {
             setting_token.open = false;
+        }
+
+        // 更新モーダルを表示
+        if updated_token.open {
+            modal::updated(ctx, updated_token);
         }
     });
 }

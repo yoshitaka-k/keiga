@@ -1,11 +1,13 @@
 use crate::app;
+use crate::app::{UpdateJob, UpdatedToken};
 use crate::file;
 use crate::event::{open, drop};
 use crate::optimize::OptimizeJob;
 use crate::rendar;
 use crate::rendar::{SettingTab, ListRowToken, ErrorToken, SettingToken};
 use crate::rendar::assets::{fonts, svg};
-use crate::rendar::main::{top, list, bottom, modal};
+use crate::rendar::modal;
+use crate::rendar::main::{top, list, bottom};
 use crate::rendar::setting::view as setting_window;
 
 /// レンダーを管理する構造体
@@ -22,8 +24,14 @@ pub struct Rendar {
     // エラーモーダルを表示するためのトークン
     error_token: ErrorToken,
 
+    // 更新モーダルを表示するためのトークン
+    updated_token: UpdatedToken,
+
     // 最適化ジョブ
     optimize_job: OptimizeJob,
+
+    // 更新ジョブ
+    update_job: UpdateJob,
 }
 
 impl Rendar {
@@ -59,7 +67,12 @@ impl Rendar {
                 open: false,
                 value: None,
             },
+            updated_token: UpdatedToken {
+                open: false,
+                check: None,
+            },
             optimize_job: OptimizeJob::new(cc.egui_ctx.clone()),
+            update_job: UpdateJob::new(cc.egui_ctx.clone()),
         }
     }
 
@@ -178,7 +191,7 @@ impl eframe::App for Rendar {
 
         // 設定ウィンドウを表示
         if self.setting_token.open {
-            setting_window::view(ui.ctx(), &mut self.app, &mut self.setting_token);
+            setting_window::view(ui.ctx(), &mut self.app, &mut self.setting_token, &mut self.update_job, &mut self.updated_token);
         }
 
         // エラーモーダルを表示

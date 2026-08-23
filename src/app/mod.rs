@@ -1,3 +1,7 @@
+mod update;
+
+pub(crate) use update::{UpdateCheck, UpdateJob, UpdatedToken};
+
 use getset::{Getters, MutGetters};
 use serde::{Deserialize, Serialize};
 use oxipng::{Options, StripChunks};
@@ -15,6 +19,12 @@ const DEFAULT_JPEG_QUALITY: u8 = 80;
 
 /// PNG 最適化プリセットのデフォルト値
 const DEFAULT_PNG_PRESET: PngPreset = PngPreset::Default;
+
+/// GitHub リポジトリ URL
+pub(crate) const GITHUB_URL: &str = "https://github.com/{repository}";
+
+/// アップデート確認リクエスト URL
+pub(crate) const REQUEST_URL: &str = "https://api.github.com/repos/{repository}/releases/latest";
 
 /// アプリケーションを管理する構造体
 #[derive(Clone, Getters, MutGetters)]

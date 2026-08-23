@@ -18,6 +18,7 @@ pub(crate) const BUTTON_CLEAR_ICON_SIZE: f32 = 18.0;
 
 // モーダルアイコンのサイズ
 pub(crate) const MODAL_ERROR_ICON_SIZE: f32 = 18.0;
+pub(crate) const MODAL_UPDATE_ICON_SIZE: f32 = 18.0;
 
 // アプリケーションアイコン画像のサイズ
 pub(crate) const APP_ICON_SIZE: f32 = 64.0;

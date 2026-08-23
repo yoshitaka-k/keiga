@@ -42,3 +42,34 @@ macro_rules! duration_format {
         }
     };
 }
+
+/// バージョンを比較するマクロ
+pub fn version_compare(new: &str, old: &str) -> bool {
+    let new = new.replace("v", "");
+    let old = old.replace("v", "");
+
+    // 新しいバージョンをメジャー、マイナー、パッチに分割
+    let [new_major, new_minor, new_patch]: [i32; 3] = new.split(".")
+        .map(|x| x.parse::<i32>().unwrap())
+        .collect::<Vec<_>>()
+        .try_into()
+        .unwrap();
+
+    // 古いバージョンをメジャー、マイナー、パッチに分割
+    let [old_major, old_minor, old_patch]: [_; 3] = old.split(".")
+        .map(|x| x.parse::<i32>()
+        .unwrap())
+        .collect::<Vec<_>>()
+        .try_into()
+        .unwrap();
+
+    if new_major > old_major {
+        true
+    } else if new_minor > old_minor {
+        true
+    } else if new_patch > old_patch {
+        true
+    } else {
+        false
+    }
+}

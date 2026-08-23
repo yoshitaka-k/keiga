@@ -1,6 +1,7 @@
 mod main;
 mod assets;
 mod setting;
+mod modal;
 
 pub use main::view::Rendar;
 
@@ -32,6 +33,7 @@ pub struct ListRowToken {
     pub height: f32,
 }
 
+/// 設定ウィンドウを表示するためのトークン
 pub struct SettingToken {
     pub open: bool,
     pub pos: Option<egui::Pos2>,
