@@ -27,9 +27,16 @@ pub fn space_key(path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
 /// * `return` - エラーが発生したかどうか
 #[cfg(target_os = "macos")]
 fn quicklook_command(path: &PathBuf) -> Result<(), std::io::Error> {
-    std::process::Command::new("qlmanage")
-        .args(["-p", path.to_str().unwrap()]).spawn()?;
-    Ok(())
+    if path.exists() {
+        if let Some(path) = path.to_str() {
+            std::process::Command::new("qlmanage").args(["-p", path]).spawn()?;
+            return Ok(());
+        } else {
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, "Path is not valid"));
+        }
+    } else {
+        return Err(std::io::Error::new(std::io::ErrorKind::Other, "File does not exist"));
+    }
 }
 
 /// Windows では QuickLook を使用しない
