@@ -78,15 +78,23 @@ impl UpdateJob {
                     match update_info {
                         // アップデート情報が取得できた場合
                         Ok(update_info) => {
-                            if version_compare(update_info.tag_name(), env!("CARGO_PKG_VERSION")) {
-                                token.open = true;
-                                token.check = Some(UpdateCheck::Available {
-                                    version: update_info.tag_name().clone(),
-                                    url: update_info.html_url.clone(),
-                                });
-                            } else {
-                                token.open = true;
-                                token.check = Some(UpdateCheck::Latest);
+                            match version_compare(update_info.tag_name(), env!("CARGO_PKG_VERSION")) {
+                                Ok(true) => {
+                                    token.open = true;
+                                    token.check = Some(UpdateCheck::Available {
+                                        version: update_info.tag_name().clone(),
+                                        url: update_info.html_url.clone(),
+                                    });
+                                }
+                                Ok(false) => {
+                                    token.open = true;
+                                    token.check = Some(UpdateCheck::Latest);
+                                }
+                                Err(error) => {
+                                    println!("error: {:?}", error);
+                                    token.open = true;
+                                    token.check = Some(UpdateCheck::Failed);
+                                }
                             }
                         }
                         // アップデート情報が取得できなかった場合

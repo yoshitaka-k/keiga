@@ -44,32 +44,33 @@ macro_rules! duration_format {
 }
 
 /// バージョンを比較するマクロ
-pub fn version_compare(new: &str, old: &str) -> bool {
+pub fn version_compare(new: &str, old: &str) -> Result<bool, Box<dyn std::error::Error>> {
     let new = new.replace("v", "");
     let old = old.replace("v", "");
 
     // 新しいバージョンをメジャー、マイナー、パッチに分割
-    let [new_major, new_minor, new_patch]: [i32; 3] = new.split(".")
-        .map(|x| x.parse::<i32>().unwrap())
-        .collect::<Vec<_>>()
-        .try_into()
-        .unwrap();
+    let parts: Vec<i32> = new.split(".")
+        .map(|x| x.parse::<i32>())
+        .collect::<Result<Vec<_>, _>>()?;
+    let [new_major, new_minor, new_patch]: [i32; 3] = parts.try_into()
+        .map_err(|_| "Invalid latest version")?;
 
     // 古いバージョンをメジャー、マイナー、パッチに分割
-    let [old_major, old_minor, old_patch]: [_; 3] = old.split(".")
-        .map(|x| x.parse::<i32>()
-        .unwrap())
-        .collect::<Vec<_>>()
-        .try_into()
-        .unwrap();
+    let parts: Vec<i32> = old.split(".")
+        .map(|x| x.parse::<i32>())
+        .collect::<Result<Vec<_>, _>>()?;
+    let [old_major, old_minor, old_patch]: [i32; 3] = parts.try_into()
+        .map_err(|_| "Invalid current version")?;
 
-    if new_major > old_major {
-        true
-    } else if new_minor > old_minor {
-        true
-    } else if new_patch > old_patch {
-        true
+    // メジャー、マイナー、パッチを比較
+    if new_major != old_major {
+        // メジャー番号が異なる場合は、メジャー番号の比較
+        Ok(new_major > old_major)
+    } else if new_minor != old_minor {
+        // マイナー番号が異なる場合は、マイナー番号を比較
+        Ok(new_minor > old_minor)
     } else {
-        false
+        // 上記以外の場合は、パッチ番号を比較
+        Ok(new_patch > old_patch)
     }
 }
