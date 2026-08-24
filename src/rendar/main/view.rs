@@ -115,7 +115,7 @@ impl eframe::App for Rendar {
         if self.open_dialog {
             self.open_dialog = false;
             if let Err(e) = open::open_files(
-                &self.app.extensions_to_string(),
+                &self.app,
                 &mut self.files,
             ) {
                 eprintln!("Error opening files: {}", e);
@@ -129,9 +129,10 @@ impl eframe::App for Rendar {
             let files = input.raw.dropped_files.clone();
             if let Err(e) = drop::drop_files(
                 &files,
+                &self.app,
                 &mut self.files,
             ) {
-                eprintln!("Error opening files: {}", e);
+                eprintln!("Error dropping files: {}", e);
                 self.error_token.value = Some(e);
                 self.error_token.open = true;
             }

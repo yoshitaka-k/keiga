@@ -26,6 +26,8 @@ pub enum OptimizeStatus {
     Optimized,
     /// 最適化不要
     Unchanged,
+    /// 最適化スキップ
+    Skipped,
     /// 最適化キャンセル
     Canceled,
     /// 最適化エラー（メッセージ）

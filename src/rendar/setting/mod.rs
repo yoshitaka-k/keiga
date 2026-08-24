@@ -1,4 +1,5 @@
 pub(crate) mod view;
+pub(crate) mod general;
 pub(crate) mod concurrent;
 pub(crate) mod quality;
 pub(crate) mod about;

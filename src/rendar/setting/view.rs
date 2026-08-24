@@ -6,7 +6,7 @@ use crate::rendar::assets;
 use crate::rendar::assets::{constants as assets_const, svg};
 use crate::rendar::modal;
 use crate::rendar::setting;
-use crate::rendar::setting::{concurrent, quality, about};
+use crate::rendar::setting::{general, concurrent, quality, about};
 
 /// 設定ウィンドウを表示
 /// * `ctx` - コンテキスト
@@ -36,7 +36,7 @@ pub(crate) fn view(
         options = options.with_position(pos);
 
         // タブを初期化
-        setting_token.tab = SettingTab::Concurrent;
+        setting_token.tab = SettingTab::General;
 
         // 表示していたら、ウィンドウの位置を更新して前面に出す
         ctx.send_viewport_cmd_to(window_id, egui::ViewportCommand::OuterPosition(pos));
@@ -57,7 +57,7 @@ pub(crate) fn view(
         // タブを表示
         egui::Panel::top("setting_top_taskbar").frame(panel_style).show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.add(egui::Image::new(svg::SETTINGS).max_height(assets_const::SETTINGS_ICON_SIZE).tint(icon_color));
+                ui.add(egui::Image::new(svg::SETTINGS).max_height(assets_const::TOP_MENU_SETTINGS_ICON_SIZE).tint(icon_color));
 
                 // タブの選択時の背景色を保存
                 let selection_bg_fill = ui.style_mut().visuals.selection.bg_fill;
@@ -66,6 +66,7 @@ pub(crate) fn view(
                 ui.style_mut().visuals.selection.bg_fill = setting::tab_selected_color(ui);
 
                 // タブを表示
+                ui.selectable_value(&mut setting_token.tab, SettingTab::General, SettingTab::General.to_string());
                 ui.selectable_value(&mut setting_token.tab, SettingTab::Concurrent, SettingTab::Concurrent.to_string());
                 ui.selectable_value(&mut setting_token.tab, SettingTab::Quality, SettingTab::Quality.to_string());
                 ui.selectable_value(&mut setting_token.tab, SettingTab::About, SettingTab::About.to_string());
@@ -78,6 +79,7 @@ pub(crate) fn view(
         egui::CentralPanel::default().show(ctx, |ui| {
             // タブに応じて表示内容を切り替え
             match setting_token.tab {
+                SettingTab::General => general::view(ui, app),
                 SettingTab::Concurrent => concurrent::view(ui, app),
                 SettingTab::Quality => quality::view(ui, app),
                 SettingTab::About => about::view(ui, app, &mut update_job),

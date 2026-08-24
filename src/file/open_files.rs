@@ -2,7 +2,7 @@ use std::fs;
 use std::path::PathBuf;
 use getset::{Getters, Setters};
 
-use crate::file;
+use crate::{app, file};
 use crate::optimize::OptimizeStatus;
 
 /// ファイル情報を管理する構造体
@@ -12,6 +12,7 @@ struct FileInfo {
     optimizing_len: u32,
     optimized_len: u32,
     unchanged_len: u32,
+    skipped_len: u32,
     canceled_len: u32,
     error_len: u32,
     total_size: u64,
@@ -26,6 +27,7 @@ impl FileInfo {
             optimizing_len: 0,
             optimized_len: 0,
             unchanged_len: 0,
+            skipped_len: 0,
             canceled_len: 0,
             error_len: 0,
             total_size: 0,
@@ -89,8 +91,8 @@ impl OpenFiles {
     /// * `id` - キャンセルされたファイルの ID
     pub fn set_status_canceled(&mut self, id: u64) {
         if let Some(file) = self.paths.iter_mut().find(|f| *f.id() == id) {
-            // 最適化済み・最適化不要はキャンセルできない
-            if !matches!(file.status(), OptimizeStatus::Optimized | OptimizeStatus::Unchanged) {
+            // 最適化済み・最適化不要・スキップはキャンセルできない
+            if !matches!(file.status(), OptimizeStatus::Optimized | OptimizeStatus::Unchanged | OptimizeStatus::Skipped) {
                 file.set_status(OptimizeStatus::Canceled);
             }
         }
@@ -103,6 +105,7 @@ impl OpenFiles {
         let mut optimized_len = 0;
         let mut unchanged_len = 0;
         let mut canceled_len = 0;
+        let mut skipped_len = 0;
         let mut error_len = 0;
 
         for file in &self.paths {
@@ -111,6 +114,7 @@ impl OpenFiles {
                 OptimizeStatus::Optimizing => optimizing_len += 1,
                 OptimizeStatus::Optimized => optimized_len += 1,
                 OptimizeStatus::Unchanged => unchanged_len += 1,
+                OptimizeStatus::Skipped => skipped_len += 1,
                 OptimizeStatus::Canceled => canceled_len += 1,
                 OptimizeStatus::Error(_) => error_len += 1,
             }
@@ -120,6 +124,7 @@ impl OpenFiles {
         self.file_info.optimizing_len = optimizing_len;
         self.file_info.optimized_len = optimized_len;
         self.file_info.unchanged_len = unchanged_len;
+        self.file_info.skipped_len = skipped_len;
         self.file_info.canceled_len = canceled_len;
         self.file_info.error_len = error_len;
     }
@@ -152,6 +157,12 @@ impl OpenFiles {
     /// * `return` - 最適化不要のファイルの数
     pub fn unchanged_len(&self) -> u32 {
         self.file_info.unchanged_len
+    }
+
+    /// スキップされたファイルの数を取得
+    /// * `return` - スキップされたファイルの数
+    pub fn skipped_len(&self) -> u32 {
+        self.file_info.skipped_len
     }
 
     /// キャンセルされたファイルの数を取得
@@ -227,23 +238,24 @@ impl OpenFiles {
     }
 
     /// パスを追加
+    /// * `app` - アプリケーション
     /// * `path` - ドロップされたファイルのパス
     /// * `return` - 結果
-    pub fn add_path(&mut self, path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-        self.find_file(path)?;
+    pub fn add_path(&mut self, app: &app::App, path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+        self.find_file(app, path)?;
         Ok(())
-    }
-
-    /// 最適化中のファイルがあるかどうか
-    /// * `return` - 最適化中のファイルがあるかどうか
-    pub fn has_optimizing(&self) -> bool {
-        self.paths.iter().any(|f| matches!(f.status(), OptimizeStatus::Optimizing))
     }
 
     /// 未処理ファイルがあるかどうか
     /// * `return` - 未処理ファイルがあるかどうか
     pub fn has_standby(&self) -> bool {
         self.paths.iter().any(|f| matches!(f.status(), OptimizeStatus::Standby))
+    }
+
+    /// 最適化中のファイルがあるかどうか
+    /// * `return` - 最適化中のファイルがあるかどうか
+    pub fn has_optimizing(&self) -> bool {
+        self.paths.iter().any(|f| matches!(f.status(), OptimizeStatus::Optimizing))
     }
 
     /// 最適化結果を既存の一覧へ反映
@@ -288,20 +300,33 @@ impl OpenFiles {
         self.paths.iter().any(|f| f.path() == path && matches!(f.status(), OptimizeStatus::Standby | OptimizeStatus::Optimizing))
     }
 
+    /// ファイルが最適化済み・最適化不要・スキップされているかどうかを確認
+    /// * `path` - ファイルのパス
+    /// * `return` - 最適化済みかどうか
+    fn is_optimized(&self, path: &PathBuf) -> bool {
+        self.paths.iter().any(|f| f.path() == path && matches!(f.status(), OptimizeStatus::Optimized | OptimizeStatus::Unchanged | OptimizeStatus::Skipped))
+    }
+
     /// ファイルを検索
     /// * `path` - ドロップされたファイルのパス
     /// * `return` - ファイルのパス
-    fn find_file(&mut self, path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    fn find_file(&mut self, app: &app::App, path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
         let metadata = path.metadata().map_err(|e| format!("{} \n\n{}", path.display(), e))?;
 
         if metadata.is_file() {
             if self.is_allowed_extension(&path) {
+                // 同じパスが最適化済みなら、新規行をスキップで追加
+                if *app.skip_same_path() && self.is_optimized(&path) {
+                    let mut image_file = file::ImageFile::new(path)?;
+                    image_file.set_status(OptimizeStatus::Skipped);
+                    self.paths.push(image_file);
+                    return Ok(());
+                }
+
                 // 同じパスが待機中か最適化中なら、新規行をエラーで追加
                 if self.is_standby_or_optimizing(&path) {
                     let mut image_file = file::ImageFile::new(path)?;
-                    image_file.set_status(OptimizeStatus::Error(
-                        "Already in progress".to_string(),
-                    ));
+                    image_file.set_status(OptimizeStatus::Error("Already in progress".to_string()));
                     self.paths.push(image_file);
                     return Ok(());
                 }
@@ -312,7 +337,7 @@ impl OpenFiles {
         } else if metadata.is_dir() {
             for entry in fs::read_dir(&path).map_err(|e| format!("{} \n\n{}", path.display(), e))? {
                 let entry = entry.map_err(|e| format!("{} \n\n{}", path.display(), e))?;
-                self.find_file(entry.path())?;
+                self.find_file(app, entry.path())?;
             }
         }
 

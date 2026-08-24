@@ -59,14 +59,14 @@ pub(crate) fn unchanged_color(ui: &egui::Ui) -> egui::Color32 {
     }
 }
 
-/// エラーアイコンの色
+/// スキップアイコンの色
 /// * `ui` - UI
-/// * `return` - エラーアイコンの色
-pub(crate) fn error_color(ui: &egui::Ui) -> egui::Color32 {
+/// * `return` - スキップアイコンの色
+pub(crate) fn skipped_color(ui: &egui::Ui) -> egui::Color32 {
     if ui.ctx().global_style().visuals.dark_mode {
-        constants::DARK_MODE_ERROR_COLOR
+        constants::DARK_MODE_SKIPPED_COLOR
     } else {
-        constants::LIGHT_MODE_ERROR_COLOR
+        constants::LIGHT_MODE_SKIPPED_COLOR
     }
 }
 
@@ -78,6 +78,17 @@ pub(crate) fn canceled_color(ui: &egui::Ui) -> egui::Color32 {
         constants::DARK_MODE_CANCELED_COLOR
     } else {
         constants::LIGHT_MODE_CANCELED_COLOR
+    }
+}
+
+/// エラーアイコンの色
+/// * `ui` - UI
+/// * `return` - エラーアイコンの色
+pub(crate) fn error_color(ui: &egui::Ui) -> egui::Color32 {
+    if ui.ctx().global_style().visuals.dark_mode {
+        constants::DARK_MODE_ERROR_COLOR
+    } else {
+        constants::LIGHT_MODE_ERROR_COLOR
     }
 }
 

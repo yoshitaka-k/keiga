@@ -135,7 +135,7 @@ impl ImageFile {
     ) -> Result<OptimizeStatus, Box<dyn std::error::Error>> {
         // 完了済み・最適化不要・キャンセル済み・エラー済みは再実行しない
         if matches!(self.status,
-            OptimizeStatus::Optimized| OptimizeStatus::Unchanged | OptimizeStatus::Canceled | OptimizeStatus::Error(_)
+            OptimizeStatus::Optimized | OptimizeStatus::Unchanged | OptimizeStatus::Skipped | OptimizeStatus::Canceled | OptimizeStatus::Error(_)
         ) {
             return Ok(self.status.clone());
         }
@@ -210,6 +210,11 @@ impl ImageFile {
                         // 最適化中止に設定
                         self.status = OptimizeStatus::Canceled;
                         Ok(OptimizeStatus::Canceled)
+                    }
+                    OptimizeStatus::Skipped => {
+                        // 最適化スキップに設定
+                        self.status = OptimizeStatus::Skipped;
+                        Ok(OptimizeStatus::Skipped)
                     }
                     OptimizeStatus::Error(e) => {
                         // 最適化エラーに設定

@@ -1,12 +1,14 @@
-use crate::file;
+use crate::{app, file};
 
 /// ファイルオープンダイアログを開いて選択結果を追加する
-/// * `extensions` - 許可する拡張子
+/// * `app` - アプリケーション
 /// * `files` - 開いているファイル
 pub(crate) fn open_files(
-    extensions: &Vec<String>,
+    app: &app::App,
     files: &mut file::OpenFiles,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let extensions = &app.extensions_to_string();
+
     // Macのみファイルとフォルダを同時選択できる
     #[cfg(target_os = "macos")]
     let paths = rfd::FileDialog::new()
@@ -22,7 +24,7 @@ pub(crate) fn open_files(
     // ファイルを追加
     if let Some(paths) = paths {
         for path in paths {
-            files.add_path(path)?;
+            files.add_path(app, path)?;
         }
     }
 

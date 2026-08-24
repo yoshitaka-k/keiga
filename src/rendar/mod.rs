@@ -12,6 +12,7 @@ pub(crate) const LIGHT_MODE_PANEL_COLOR: egui::Color32 = egui::Color32::from_rgb
 /// 設定タブ
 #[derive(PartialEq)]
 pub enum SettingTab {
+    General,
     Concurrent,
     Quality,
     About,
@@ -20,6 +21,7 @@ pub enum SettingTab {
 impl SettingTab {
     fn to_string(&self) -> &str {
         match self {
+            SettingTab::General => "General",
             SettingTab::Concurrent => "Concurrent",
             SettingTab::Quality => "Quality",
             SettingTab::About => "About",

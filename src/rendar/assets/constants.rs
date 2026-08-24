@@ -1,11 +1,16 @@
 // SVGアイコンのサイズ
+pub(crate) const CIRCLE_ICON_SIZE: f32 = 12.0;
 pub(crate) const AUTORENEW_ICON_SIZE: f32 = 14.0;
 pub(crate) const CHECK_ICON_SIZE: f32 = 14.0;
-pub(crate) const ERROR_ICON_SIZE: f32 = 14.0;
 pub(crate) const CANCEL_ICON_SIZE: f32 = 14.0;
-pub(crate) const CIRCLE_ICON_SIZE: f32 = 12.0;
-pub(crate) const UPLOAD_FILE_ICON_SIZE: f32 = 16.0;
-pub(crate) const SETTINGS_ICON_SIZE: f32 = 16.0;
+pub(crate) const ERROR_ICON_SIZE: f32 = 14.0;
+
+// Main Icon Size
+pub(crate) const TOP_MENU_UPLOAD_FILE_ICON_SIZE: f32 = 16.0;
+pub(crate) const TOP_MENU_SETTINGS_ICON_SIZE: f32 = 16.0;
+
+// Settings Icon Size
+pub(crate) const SETTINGS_ICON_SIZE: f32 = 14.0;
 pub(crate) const CYCLE_ICON_SIZE: f32 = 14.0;
 pub(crate) const COMPRESS_ICON_SIZE: f32 = 14.0;
 pub(crate) const INFO_ICON_SIZE: f32 = 14.0;
@@ -37,12 +42,15 @@ pub(crate) const LIGHT_MODE_OPTIMIZED_COLOR: egui::Color32 = egui::Color32::from
 // 最適化不要
 pub(crate) const DARK_MODE_UNCHANGED_COLOR: egui::Color32 = egui::Color32::from_rgb(210, 110, 0);
 pub(crate) const LIGHT_MODE_UNCHANGED_COLOR: egui::Color32 = egui::Color32::from_rgb(200, 100, 0);
-// エラー
-pub(crate) const DARK_MODE_ERROR_COLOR: egui::Color32 = egui::Color32::from_rgb(210, 0, 0);
-pub(crate) const LIGHT_MODE_ERROR_COLOR: egui::Color32 = egui::Color32::from_rgb(200, 0, 0);
+// スキップ
+pub(crate) const DARK_MODE_SKIPPED_COLOR: egui::Color32 = egui::Color32::from_rgb(210, 110, 0);
+pub(crate) const LIGHT_MODE_SKIPPED_COLOR: egui::Color32 = egui::Color32::from_rgb(200, 100, 0);
 // キャンセル
 pub(crate) const DARK_MODE_CANCELED_COLOR: egui::Color32 = egui::Color32::from_rgb(210, 110, 0);
 pub(crate) const LIGHT_MODE_CANCELED_COLOR: egui::Color32 = egui::Color32::from_rgb(200, 100, 0);
+// エラー
+pub(crate) const DARK_MODE_ERROR_COLOR: egui::Color32 = egui::Color32::from_rgb(210, 0, 0);
+pub(crate) const LIGHT_MODE_ERROR_COLOR: egui::Color32 = egui::Color32::from_rgb(200, 0, 0);
 // 丸アイコン
 pub(crate) const DARK_MODE_CIRCLE_COLOR: egui::Color32 = egui::Color32::from_rgb(140, 140, 140);
 pub(crate) const LIGHT_MODE_CIRCLE_COLOR: egui::Color32 = egui::Color32::from_rgb(90, 90, 90);

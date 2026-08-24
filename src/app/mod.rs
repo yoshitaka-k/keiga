@@ -52,6 +52,11 @@ pub struct App {
     /// PNG 最適化プリセット
     #[getset(get = "pub", get_mut = "pub")]
     png_preset: PngPreset,
+
+    /// 同じパスはスキップ
+    #[getset(get = "pub", get_mut = "pub")]
+    #[serde(default = "default_skip_same_path")]
+    skip_same_path: bool,
 }
 
 /// 最適化数のデフォルト値
@@ -63,6 +68,11 @@ fn default_optimization_num() -> u8 {
 /// PNG 最適化数のデフォルト値
 fn default_png_optimization_num() -> u8 {
     DEFAULT_PNG_OPTIMIZATION_NUM
+}
+
+/// 同じパスはスキップのデフォルト値
+fn default_skip_same_path() -> bool {
+    true
 }
 
 /// 読み込める拡張子
@@ -84,6 +94,7 @@ impl App {
             png_optimization_num: default_png_optimization_num(),
             jpeg_quality: DEFAULT_JPEG_QUALITY,
             png_preset: DEFAULT_PNG_PRESET,
+            skip_same_path: default_skip_same_path(),
         }
     }
 
