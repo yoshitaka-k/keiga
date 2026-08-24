@@ -18,7 +18,7 @@
 
 Rust の勉強がてら、自分用に Image Optimization ってことで、Keiga（軽画）でも作ってみようと思って作成なぅ。
 
-フォルダや画像をドロップすると、対応形式をその場で最適化します。元ファイルは上書きされます。
+フォルダや画像をドロップすると、対応形式をその場で最適化します。出力先が空なら元ファイルを上書きし、指定していれば相対パスを保ったままそちらへ書き出します。
 
 <p align="center">
   <img src="assets/readme/keiga-preview.png" alt="Keiga screenshot" width="640">
@@ -35,30 +35,75 @@ Rust の勉強がてら、自分用に Image Optimization ってことで、Keig
 
 ダイアログには他の画像拡張子も表示されますが、最適化対象外は `Unsupported extension` になります。
 
+最適化後のサイズが元より小さくならない場合は上書きせず、`Unchanged`（No savings）になります。出力先が別パスなら、元ファイルをそのままコピーします。
+
 ## Usage
 
 - フォルダまたはファイルを **ドラッグ＆ドロップ**
-- 右上のフォルダボタンから開く（macOS はファイルとフォルダを同時選択可）
+- 右上のフォルダボタンから開く（macOS はファイルとフォルダを同時選択可。それ以外はフォルダのみ）
 
-追加されたファイルは待機（standby）から順に自動で最適化されます。
+追加されたファイルは待機（standby）から順に自動で最適化されます。フォルダ経由で追加した行はフォルダアイコン、単体ファイルは画像アイコンです。
+
+同じパスがすでに待機中・最適化中なら `Already in progress` になります。完了済みの同じ入出力は、設定の Skip same path に従ってスキップできます。
+
+## Status
+
+一覧と下部バーで使う状態です。
+
+| Status | Meaning |
+| --- | --- |
+| Standby | 待機中 |
+| Optimizing | 最適化中 |
+| Optimized | 最適化完了（サイズと節約率、所要時間を表示） |
+| Unchanged | 縮小できなかった |
+| Skipped | 同じ入出力が完了済みのためスキップ |
+| Canceled | キャンセル済み |
+| Error | 失敗（メッセージを表示） |
+
+下部バーは standby / optimizing / completed / error の件数と平均節約率です。completed にホバーすると optimized / no savings / skipped の内訳、左のアイコンにホバーすると合計所要時間が出ます。
 
 ## Mouse & keyboard
 
-一覧の行を対象にした操作です。
+一覧の行を対象にした操作です。ダブルクリックと Space は、出力先があればそちらを開きます。
 
 | Input | Behavior |
 | --- | --- |
 | Click | 行を選択 |
 | Click on empty area | 選択を解除 |
 | Double-click | Finder / Explorer でファイルの場所を表示 |
-| <kbd>Backspace</kbd> | 選択中の最適化をキャンセル（最適化済みは対象外） |
+| <kbd>Backspace</kbd> | 選択中の最適化をキャンセル（Optimized / Unchanged / Skipped は対象外） |
 | <kbd>Space</kbd> | [Quick Look](https://support.apple.com/guide/mac-help/mchlp1119/mac) でプレビュー（**macOS のみ**） |
 
 右下のクリアボタンは、実行中の最適化を止めて一覧を空にします。
 
 ## Settings
 
-歯車アイコンから、並行処理数・JPEG Quality・PNG Preset を変更できます。
+歯車アイコンから設定ウィンドウを開きます。値は次回起動時に復元されます。
+
+### General
+
+| Setting | Behavior |
+| --- | --- |
+| Skip same path | 完了済みの同じ入出力はスキップ。キャンセルとエラーは再実行できる |
+| Output path | 書き出し先。空なら元ファイルを上書き |
+
+### Concurrent
+
+| Setting | Range | Notes |
+| --- | --- | --- |
+| Concurrent All files | 3–8 | 全体の同時実行数（既定 4） |
+| Concurrent PNG files | 1–3 | PNG の同時実行数。All に含まれる（既定 2） |
+
+### Quality
+
+| Setting | Range | Notes |
+| --- | --- | --- |
+| JPEG Quality | 50–99 | 非可逆（既定 80） |
+| PNG Preset | Min / Fast / Default / Best / Max | 可逆。oxipng のプリセット |
+
+### About
+
+バージョン・ライセンス・リポジトリと、GitHub Releases へのアップデート確認があります。
 
 ## License
 
