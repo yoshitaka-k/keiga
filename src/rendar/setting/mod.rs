@@ -14,9 +14,15 @@ pub(crate) const WINDOW_TITLE: &str = "Keiga Settings";
 pub(crate) const WINDOW_WIDTH: f32 = 480.0;
 pub(crate) const WINDOW_HEIGHT: f32 = 240.0;
 
+// 追加のスペースの幅
+pub(crate) const SETTING_ADD_SPACING: f32 = 4.0;
+
 // タブの選択時の背景色
 pub(crate) const DARK_TAB_SELECTED_COLOR: egui::Color32 = egui::Color32::from_rgb(20, 120, 130);
 pub(crate) const LIGHT_TAB_SELECTED_COLOR: egui::Color32 = egui::Color32::from_rgb(130, 220, 210);
+
+// 出力パスのテキストエディタの幅
+pub(crate) const OUTPUT_PATH_TEXT_EDIT_WIDTH: f32 = 380.0;
 
 /// スライダーの幅
 pub(crate) const CONCURRENT_SLIDER_WIDTH: f32 = 284.0;

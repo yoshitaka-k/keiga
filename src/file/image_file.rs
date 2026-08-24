@@ -23,6 +23,18 @@ pub struct ImageFile {
     #[getset(get= "pub")]
     path: PathBuf,
 
+    /// ドロップ基準からの相対パス
+    #[getset(get = "pub")]
+    relative_path: String,
+
+    /// 出力したファイルのパス
+    #[getset(get = "pub")]
+    output_path: Option<PathBuf>,
+
+    /// 相対パスかどうか
+    #[getset(get = "pub")]
+    is_relative_path: bool,
+
     /// ファイルの名前
     #[getset(get = "pub")]
     file_name: String,
@@ -55,8 +67,9 @@ pub struct ImageFile {
 impl ImageFile {
     /// 新しい ImageFile を作成
     /// * `path` - ファイルのパス
+    /// * `relative_path` - ドロップ基準からの相対パス
     /// * `return` - ImageFile のインスタンス
-    pub fn new(path: PathBuf) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new(path: PathBuf, relative_path: String) -> Result<Self, Box<dyn std::error::Error>> {
         // ファイルの一意な ID を発行
         let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
 
@@ -79,9 +92,15 @@ impl ImageFile {
             .map_err(|e| format!("{} \n\n{}", path.display(), e))?
             .len();
 
+        // 相対パスかどうかを判断
+        let is_relative_path = relative_path != file_name;
+
         Ok(Self {
             id,
             path,
+            relative_path,
+            output_path: None,
+            is_relative_path,
             file_name,
             extension,
             status: OptimizeStatus::Standby,
@@ -98,10 +117,31 @@ impl ImageFile {
         matches!(self.extension, extension::Extension::Png)
     }
 
+    /// 出力ファイルのパスを作成
+    /// * `app` - アプリケーションの設定
+    /// * `return` - 出力ファイルのパス
+    pub fn make_output_path(&self, app: &App) -> PathBuf {
+        if app.output_path().is_empty() {
+            self.path.clone()
+        } else {
+            PathBuf::from(app.output_path()).join(self.relative_path.clone())
+        }
+    }
+
+    /// 出力ファイルのパスを取得
+    /// * `return` - 出力ファイルのパス
+    pub fn reveal_path(&self) -> &PathBuf {
+        match self.output_path {
+            Some(ref path) if path.exists() => path,
+            _ => &self.path,
+        }
+    }
+
     /// ファイルサイズの更新
-    fn update_file_size(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    /// * `output_path` - 出力ファイルのパス
+    fn update_file_size(&mut self, output_path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
         // 最適化後のファイル情報
-        let metadata = self.path.metadata().map_err(|e| format!("{} \n\n{}", self.path.display(), e))?;
+        let metadata = output_path.metadata().map_err(|e| format!("{} \n\n{}", output_path.display(), e))?;
         self.new_size = metadata.len();
 
         if self.size > 0 {
@@ -159,18 +199,22 @@ impl ImageFile {
         // 最適化中にする
         self.status = OptimizeStatus::Optimizing;
 
+        // 出力ファイルのパスを作成
+        let output_path = self.make_output_path(app);
+        self.output_path = Some(output_path.clone());
+
         // 最適化を実行
         let result = match self.extension {
             // jpeg ファイルの最適化
             extension::Extension::Jpeg => {
                 let quality = *app.jpeg_quality();
-                Jpeg::optimize(&self.path, quality, token)
+                Jpeg::optimize(&self.path, &output_path, quality, token)
             }
 
             // png ファイルの最適化
             extension::Extension::Png => {
                 let options = app.png_options();
-                Png::optimize(&self.path, options, token)
+                Png::optimize(&self.path, &output_path, options, token)
             }
 
             // サポートしていないファイル形式
@@ -195,7 +239,7 @@ impl ImageFile {
                         self.duration = duration as u64;
 
                         // ファイルサイズを更新
-                        self.update_file_size()?;
+                        self.update_file_size(&output_path)?;
 
                         // 最適化済みに設定
                         self.status = OptimizeStatus::Optimized;

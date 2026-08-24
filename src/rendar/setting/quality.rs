@@ -23,6 +23,8 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.separator();
 
+    ui.add_space(setting::SETTING_ADD_SPACING);
+
     // JPEG のスライダーを表示
     ui.horizontal(|ui| {
         ui.label("JPEG Quality:");
@@ -42,7 +44,11 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
         ));
     });
 
+    ui.add_space(setting::SETTING_ADD_SPACING);
+
     ui.separator();
+
+    ui.add_space(setting::SETTING_ADD_SPACING);
 
     // PNG のプリセットを表示
     ui.horizontal(|ui| {

@@ -57,6 +57,11 @@ pub struct App {
     #[getset(get = "pub", get_mut = "pub")]
     #[serde(default = "default_skip_same_path")]
     skip_same_path: bool,
+
+    /// 出力パス
+    #[getset(get = "pub", get_mut = "pub")]
+    #[serde(default = "default_output_path")]
+    output_path: String,
 }
 
 /// 最適化数のデフォルト値
@@ -73,6 +78,11 @@ fn default_png_optimization_num() -> u8 {
 /// 同じパスはスキップのデフォルト値
 fn default_skip_same_path() -> bool {
     true
+}
+
+/// 出力パスのデフォルト値
+fn default_output_path() -> String {
+    "".to_string()
 }
 
 /// 読み込める拡張子
@@ -95,6 +105,7 @@ impl App {
             jpeg_quality: DEFAULT_JPEG_QUALITY,
             png_preset: DEFAULT_PNG_PRESET,
             skip_same_path: default_skip_same_path(),
+            output_path: default_output_path(),
         }
     }
 

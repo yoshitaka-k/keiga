@@ -5,7 +5,7 @@ use crate::file;
 /// バックスペースキーが押されたらファイルをキャンセルする
 /// * `files` - ファイル一覧
 /// * `optimize_job` - 最適化ジョブ
-pub fn backspace_key(files: &mut file::OpenFiles, optimize_job: &mut OptimizeJob) -> Result<(), Box<dyn std::error::Error>> {
+pub fn backspace(files: &mut file::OpenFiles, optimize_job: &mut OptimizeJob) -> Result<(), Box<dyn std::error::Error>> {
     if let Some(id) = files.selected_id() {
         optimize_job.add_canceled_id(*id)?;
         files.set_status_canceled(*id);
@@ -15,7 +15,7 @@ pub fn backspace_key(files: &mut file::OpenFiles, optimize_job: &mut OptimizeJob
 
 /// スペースキーが押されたらファイルを選択表示する
 /// * `path` - ファイルのパス
-pub fn space_key(path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+pub fn space(path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     if let Err(err) = quicklook_command(path) {
         return Err(format!("Error revealing file by QuickLook: {}", err).into());
     }

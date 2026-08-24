@@ -22,6 +22,8 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.separator();
 
+    ui.add_space(setting::SETTING_ADD_SPACING);
+
     // 全ファイルの最適化数
     ui.horizontal(|ui| {
         ui.label("Concurrent All files:");
@@ -31,6 +33,8 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
             ui.add(egui::Slider::new(app.optimization_num_mut(), setting::OPTIMIZATION_NUM_MIN..=setting::OPTIMIZATION_NUM_MAX));
         });
     });
+
+    ui.add_space(setting::SETTING_ADD_SPACING);
 
     // PNG の最適化数
     ui.horizontal(|ui| {

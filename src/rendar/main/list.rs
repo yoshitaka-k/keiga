@@ -1,14 +1,13 @@
 use std::path::PathBuf;
 use egui::Sense;
 
-use crate::{filesize_format, duration_format};
-use crate::file;
+use crate::{file, filesize_format, duration_format};
 use crate::optimize::OptimizeStatus;
 use crate::event::{click, key_up};
 use crate::optimize::OptimizeJob;
 use crate::rendar::{ListRowToken, ErrorToken};
 use crate::rendar::assets;
-use crate::rendar::assets::{constants, fonts::text_color, svg};
+use crate::rendar::assets::{constants, fonts::text_color, svg, icon_color};
 use crate::rendar::main;
 
 /// ファイル一覧のアクション
@@ -16,7 +15,8 @@ enum FileListAction {
     Hover { id: u64 },
     Click { id: u64 },
     DoubleClick { path: PathBuf },
-    KeyUp { key: egui::Key, path: PathBuf },
+    Backspace { id: u64 },
+    Space { path: PathBuf },
 }
 
 /// show_rows 用の高さ
@@ -26,29 +26,53 @@ pub(crate) fn row_height(ui: &egui::Ui) -> f32 {
     ui.text_style_height(&egui::TextStyle::Body).max(constants::CHECK_ICON_SIZE) + main::SEPARATOR_HEIGHT
 }
 
-/// アイコンとファイル名を表示
+/// アイコンウィジェットを作成
+/// * `icon` - アイコン
+/// * `size` - アイコンのサイズ
+/// * `color` - アイコンの色
+/// * `return` - アイコンウィジェット
+fn icon_widget(icon: egui::ImageSource<'static>, size: f32, color: egui::Color32) -> impl egui::Widget {
+    egui::Image::new(icon).max_height(size).tint(color)
+}
+
+
+/// アイコンセルを表示
 /// * `ui` - UI
-/// * `file_name` - ファイル名
 /// * `pad` - パディング
 /// * `widget` - アイコン
-fn add_icon_and_name(ui: &mut egui::Ui, file_name: &str, pad: f32, widget: impl egui::Widget) {
-    // アイコンの間隔
-    let icon_spacing = 4.0;
-    let spacing = ui.spacing().item_spacing.x;
+/// * `return` - アイコンセルのレスポンス
+fn add_icon_cell(ui: &mut egui::Ui, pad: f32, widget: impl egui::Widget) -> egui::Response {
+    ui.scope(|ui| {
+        // アイコンの間隔
+        let icon_spacing = 4.0;
+        let spacing = ui.spacing().item_spacing.x;
 
-    ui.add_space(pad);
-    ui.spacing_mut().item_spacing.x = icon_spacing;
-    ui.add(widget);
-    ui.spacing_mut().item_spacing.x = spacing;
-    ui.add_space(pad);
+        ui.add_space(pad);
+        ui.spacing_mut().item_spacing.x = icon_spacing;
+        ui.add(widget);
+        ui.spacing_mut().item_spacing.x = spacing;
+        ui.add_space(pad);
 
-    ui.separator();
-    ui.label(file_name);
+        ui.separator();
+    }).response
+}
+
+/// ディレクトリか、ファイルかを表示
+/// * `ui` - UI
+/// * `pad` - パディング
+/// * `path` - パス
+/// * `return` - OpenTypeアイコンのレスポンス
+fn add_opentype_icon(ui: &mut egui::Ui, path: &file::ImageFile, color: egui::Color32) -> egui::Response {
+    if *path.is_relative_path() {
+        ui.add(icon_widget(svg::FOLDER, constants::FOLDER_ICON_SIZE, color)).on_hover_text(path.relative_path().to_string())
+    } else {
+        ui.add(icon_widget(svg::PHOTO, constants::PHOTO_ICON_SIZE, color))
+    }
 }
 
 /// ファイル一覧を表示
 /// * `ui` - UI
-/// * `files` - ドロップされたファイル
+/// * `files` - ドロップされたファイル群
 /// * `row_range` - 表示する行の範囲
 /// * `list_row` - 表示する行の情報
 /// * `return` - いずれかの行がクリックされたかどうか
@@ -69,6 +93,7 @@ pub(crate) fn view(
     let mut row_clicked = false;
 
     // アイコンの色
+    let icon_color = icon_color(ui);
     let circle_color = assets::circle_color(ui);
     let optimizing_color = assets::optimizing_color(ui);
     let optimized_color = assets::optimized_color(ui);
@@ -79,15 +104,19 @@ pub(crate) fn view(
 
     // 削除キーが押されたら処理予約
     if ui.input(|input| input.key_released(egui::Key::Backspace)) {
-        if let Some(path) = files.selected_path() {
-            pending_action.push(FileListAction::KeyUp { key: egui::Key::Backspace, path });
+        if let Some(image_file) = files.selected_image_file() {
+            pending_action.push(FileListAction::Backspace {
+                id: *image_file.id(),
+            });
         }
     }
 
     // スペースキーが押されたら処理予約
     if ui.input(|input| input.key_released(egui::Key::Space)) {
-        if let Some(path) = files.selected_path() {
-            pending_action.push(FileListAction::KeyUp { key: egui::Key::Space, path });
+        if let Some(image_file) = files.selected_image_file() {
+            pending_action.push(FileListAction::Space {
+                path: image_file.reveal_path().clone(),
+            });
         }
     }
 
@@ -141,15 +170,27 @@ pub(crate) fn view(
             // 最適化ステータスに応じて表示
             match path.status() {
                 OptimizeStatus::Standby => {
-                    add_icon_and_name(ui, path.file_name(), 1.0, egui::Image::new(svg::CIRCLE).max_height(constants::CIRCLE_ICON_SIZE).tint(circle_color));
+                    add_icon_cell(ui, 1.0,
+                        icon_widget(svg::CIRCLE, constants::CIRCLE_ICON_SIZE, circle_color)
+                    ).on_hover_text(path.status().to_string());
+                    add_opentype_icon(ui, path, icon_color);
+                    ui.label(path.file_name());
                     ui.label(format!("({})", size));
                 }
                 OptimizeStatus::Optimizing => {
-                    add_icon_and_name(ui, path.file_name(), 0.0, egui::Image::new(svg::AUTORENEW).max_height(constants::AUTORENEW_ICON_SIZE).tint(optimizing_color));
+                    add_icon_cell(ui, 0.0,
+                        icon_widget(svg::AUTORENEW, constants::AUTORENEW_ICON_SIZE, optimizing_color)
+                    ).on_hover_text(path.status().to_string());
+                    add_opentype_icon(ui, path, icon_color);
+                    ui.label(path.file_name());
                     ui.label(format!("({})", size));
                 }
                 OptimizeStatus::Optimized => {
-                    add_icon_and_name(ui, path.file_name(), 0.0, egui::Image::new(svg::CHECK).max_height(constants::CHECK_ICON_SIZE).tint(optimized_color));
+                    add_icon_cell(ui, 0.0,
+                        icon_widget(svg::CHECK, constants::CHECK_ICON_SIZE, optimized_color)
+                    ).on_hover_text(path.status().to_string());
+                    add_opentype_icon(ui, path, icon_color);
+                    ui.label(path.file_name());
                     ui.label(format!("({} -> {})", size, new_size));
                     ui.separator();
                     ui.label(format!("{:+.2}%", path.percent()));
@@ -157,25 +198,41 @@ pub(crate) fn view(
                     ui.label(format!("{}", duration));
                 }
                 OptimizeStatus::Unchanged => {
-                    add_icon_and_name(ui, path.file_name(), 0.0, egui::Image::new(svg::CHECK).max_height(constants::CHECK_ICON_SIZE).tint(unchanged_color));
+                    add_icon_cell(ui, 0.0,
+                        icon_widget(svg::CHECK, constants::CHECK_ICON_SIZE, unchanged_color)
+                    ).on_hover_text(path.status().to_string());
+                    add_opentype_icon(ui, path, icon_color);
+                    ui.label(path.file_name());
                     ui.label(format!("({})", size));
                     ui.separator();
                     ui.label(text_color("No savings", unchanged_color, Some(11.0)));
                 }
                 OptimizeStatus::Skipped => {
-                    add_icon_and_name(ui, path.file_name(), 0.0, egui::Image::new(svg::CHECK).max_height(constants::CIRCLE_ICON_SIZE).tint(skipped_color));
+                    add_icon_cell(ui, 0.0,
+                        icon_widget(svg::CHECK, constants::CHECK_ICON_SIZE, skipped_color)
+                    ).on_hover_text(path.status().to_string());
+                    add_opentype_icon(ui, path, icon_color);
+                    ui.label(path.file_name());
                     ui.label(format!("({})", size));
                     ui.separator();
                     ui.label(text_color("Skipped", skipped_color, Some(11.0)));
                 }
                 OptimizeStatus::Canceled => {
-                    add_icon_and_name(ui, path.file_name(), 0.0, egui::Image::new(svg::CANCEL).max_height(constants::CANCEL_ICON_SIZE).tint(canceled_color));
+                    add_icon_cell(ui, 0.0,
+                        icon_widget(svg::CANCEL, constants::CANCEL_ICON_SIZE, canceled_color)
+                    ).on_hover_text(path.status().to_string());
+                    add_opentype_icon(ui, path, icon_color);
+                    ui.label(path.file_name());
                     ui.label(format!("({})", size));
                     ui.separator();
                     ui.label(text_color("Canceled", canceled_color, Some(11.0)));
                 }
                 OptimizeStatus::Error(e) => {
-                    add_icon_and_name(ui, path.file_name(), 0.0, egui::Image::new(svg::ERROR).max_height(constants::ERROR_ICON_SIZE).tint(error_color));
+                    add_icon_cell(ui, 0.0,
+                        icon_widget(svg::ERROR, constants::ERROR_ICON_SIZE, error_color)
+                    ).on_hover_text(path.status().to_string());
+                    add_opentype_icon(ui, path, icon_color);
+                    ui.label(path.file_name());
                     ui.label(format!("({})", size));
                     ui.separator();
                     ui.label(text_color(e, error_color, Some(11.0)));
@@ -206,7 +263,7 @@ pub(crate) fn view(
         // ダブルクリックアクションを処理予約
         if response.double_clicked() {
             pending_action.push(FileListAction::DoubleClick {
-                path: path.path().clone(),
+                path: path.reveal_path().clone(),
             });
         }
     }
@@ -223,21 +280,20 @@ pub(crate) fn view(
             FileListAction::DoubleClick { path } => {
                 click::double_click(&path);
             }
-            FileListAction::KeyUp { key, path } => {
-                match key {
-                    egui::Key::Backspace => if let Err(e) = key_up::backspace_key(files, optimize_job) {
-                        eprintln!("Error canceling file: {}", e);
-                        error_token.open = true;
-                        error_token.value = Some(e);
-                    }
-                    egui::Key::Space => if let Err(e) = key_up::space_key(&path) {
-                        eprintln!("Error revealing file: {}", e);
-                        error_token.open = true;
-                        error_token.value = Some(e);
-                    }
-                    _ => (),
+            FileListAction::Backspace { id: _id } => {
+                if let Err(e) = key_up::backspace(files, optimize_job) {
+                    eprintln!("Error canceling file: {}", e);
+                    error_token.open = true;
+                    error_token.value = Some(e);
                 }
-            },
+            }
+            FileListAction::Space { path } => {
+                if let Err(e) = key_up::space(&path) {
+                    eprintln!("Error revealing file: {}", e);
+                    error_token.open = true;
+                    error_token.value = Some(e);
+                }
+            }
         }
     }
 

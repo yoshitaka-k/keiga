@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use getset::{Getters, Setters};
 
 use crate::{app, file};
@@ -79,9 +79,9 @@ impl OpenFiles {
 
     /// 選択されたファイルのパスを取得
     /// * `return` - 選択されたファイルのパス
-    pub fn selected_path(&self) -> Option<PathBuf> {
+    pub fn selected_image_file(&self) -> Option<file::ImageFile> {
         if let Some(id) = self.selected_id() {
-            self.paths.iter().find(|p| *p.id() == *id).map(|p| p.path().clone())
+            self.paths.iter().find(|p| *p.id() == *id).map(|p| p.clone())
         } else {
             None
         }
@@ -237,15 +237,6 @@ impl OpenFiles {
         self.selected_id = None;
     }
 
-    /// パスを追加
-    /// * `app` - アプリケーション
-    /// * `path` - ドロップされたファイルのパス
-    /// * `return` - 結果
-    pub fn add_path(&mut self, app: &app::App, path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-        self.find_file(app, path)?;
-        Ok(())
-    }
-
     /// 未処理ファイルがあるかどうか
     /// * `return` - 未処理ファイルがあるかどうか
     pub fn has_standby(&self) -> bool {
@@ -300,44 +291,76 @@ impl OpenFiles {
         self.paths.iter().any(|f| f.path() == path && matches!(f.status(), OptimizeStatus::Standby | OptimizeStatus::Optimizing))
     }
 
-    /// ファイルが最適化済み・最適化不要・スキップされているかどうかを確認
+    /// 入力・出力ファイルが一致しているかどうかを確認
     /// * `path` - ファイルのパス
-    /// * `return` - 最適化済みかどうか
-    fn is_optimized(&self, path: &PathBuf) -> bool {
-        self.paths.iter().any(|f| f.path() == path && matches!(f.status(), OptimizeStatus::Optimized | OptimizeStatus::Unchanged | OptimizeStatus::Skipped))
+    /// * `output_path` - 出力ファイルのパス
+    /// * `return` - 入力・出力ファイルが一致しているかどうか
+    fn is_input_output_path(&self, path: &PathBuf, output_path: &PathBuf) -> bool {
+        self.paths.iter().any(|f| {
+            f.path() == path
+                && f.output_path().as_ref() == Some(output_path)
+                && matches!(f.status(), OptimizeStatus::Optimized | OptimizeStatus::Unchanged)
+        })
+    }
+
+    /// パスを追加
+    /// * `app` - アプリケーション
+    /// * `path` - ドロップされたファイルのパス
+    /// * `return` - 結果
+    pub fn add_path(&mut self, app: &app::App, path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+        // parent() は path を借りるので、先に PathBuf にして借用を終わらせる
+        let base_dir = path.parent().unwrap_or(&path).to_path_buf();
+
+        self.find_file(app, path, &base_dir)?;
+
+        Ok(())
     }
 
     /// ファイルを検索
     /// * `path` - ドロップされたファイルのパス
+    /// * `base_dir` - ドロップされたパスの親（相対パスの基準）
     /// * `return` - ファイルのパス
-    fn find_file(&mut self, app: &app::App, path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    fn find_file(&mut self,
+        app: &app::App,
+        path: PathBuf,
+        base_dir: &Path
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let metadata = path.metadata().map_err(|e| format!("{} \n\n{}", path.display(), e))?;
 
         if metadata.is_file() {
             if self.is_allowed_extension(&path) {
-                // 同じパスが最適化済みなら、新規行をスキップで追加
-                if *app.skip_same_path() && self.is_optimized(&path) {
-                    let mut image_file = file::ImageFile::new(path)?;
-                    image_file.set_status(OptimizeStatus::Skipped);
-                    self.paths.push(image_file);
-                    return Ok(());
-                }
+                // strip_prefix は path を借りるので、
+                // 先に String にして into_owned()で所有権を移す
+                let relative_path = path.strip_prefix(base_dir)
+                    .unwrap_or(&path)
+                    .to_string_lossy()
+                    .into_owned();
+
+                // ファイルを作成
+                let mut image_file = file::ImageFile::new(path, relative_path)?;
 
                 // 同じパスが待機中か最適化中なら、新規行をエラーで追加
-                if self.is_standby_or_optimizing(&path) {
-                    let mut image_file = file::ImageFile::new(path)?;
+                if self.is_standby_or_optimizing(&image_file.path()) {
                     image_file.set_status(OptimizeStatus::Error("Already in progress".to_string()));
                     self.paths.push(image_file);
                     return Ok(());
                 }
 
-                let image_file = file::ImageFile::new(path)?;
+                // 同じ入力を同じ出力先へ書き済みなら、新規行をスキップで追加
+                if *app.skip_same_path()
+                    && self.is_input_output_path(image_file.path(), &image_file.make_output_path(app))
+                {
+                    image_file.set_status(OptimizeStatus::Skipped);
+                    self.paths.push(image_file);
+                    return Ok(());
+                }
+
                 self.paths.push(image_file);
             }
         } else if metadata.is_dir() {
             for entry in fs::read_dir(&path).map_err(|e| format!("{} \n\n{}", path.display(), e))? {
                 let entry = entry.map_err(|e| format!("{} \n\n{}", path.display(), e))?;
-                self.find_file(app, entry.path())?;
+                self.find_file(app, entry.path(), base_dir)?;
             }
         }
 

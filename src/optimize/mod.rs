@@ -34,6 +34,22 @@ pub enum OptimizeStatus {
     Error(String),
 }
 
+impl OptimizeStatus {
+    /// 最適化ステータスを文字列に変換
+    /// * `return` - 最適化ステータスを文字列に変換
+    pub fn to_string(&self) -> String {
+        match self {
+            OptimizeStatus::Standby => "Standby".to_string(),
+            OptimizeStatus::Optimizing => "Optimizing".to_string(),
+            OptimizeStatus::Optimized => "Optimized".to_string(),
+            OptimizeStatus::Unchanged => "Unchanged".to_string(),
+            OptimizeStatus::Skipped => "Skipped".to_string(),
+            OptimizeStatus::Canceled => "Canceled".to_string(),
+            OptimizeStatus::Error(message) => format!("Error: {}", message),
+        }
+    }
+}
+
 /// 最適化トークン
 #[derive(Clone)]
 pub struct OptimToken {
@@ -48,6 +64,26 @@ impl OptimToken {
     pub fn is_canceled(&self) -> Result<bool, Box<dyn std::error::Error>> {
         Ok(!self.running.load(Ordering::Relaxed) || self.canceled.lock().map_err(|e| format!("{}", e))?.contains(&self.id))
     }
+}
+
+/// 出力ファイルのパスを作成
+/// * `output_path` - 出力パス
+/// * `return` - 出力ファイルのパスが作成できたかどうか
+pub(crate) fn create_output_path(output_path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    if let Some(parent) = output_path.parent() {
+        if !parent.exists() {
+            match std::fs::create_dir_all(parent) {
+                Ok(_) => (),
+                Err(e) => {
+                    return Err(e.to_string().into());
+                }
+            }
+        }
+    } else {
+        return Err("Output path parent not found".to_string().into());
+    }
+
+    Ok(())
 }
 
 /// 一時ファイルを元のファイルに上書き
