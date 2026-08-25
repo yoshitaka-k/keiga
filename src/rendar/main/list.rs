@@ -256,7 +256,11 @@ pub(crate) fn view(
                 files.set_selected_id(Some(id));
             }
             FileListAction::DoubleClick { path } => {
-                click::double_click(&path);
+                if let Err(e) = click::double_click(&path) {
+                    eprintln!("Error revealing file: {}", e);
+                    error_token.open = true;
+                    error_token.value = Some(e);
+                }
             }
             FileListAction::Backspace { id: _id } => {
                 if let Err(e) = key_up::backspace(files, optimize_job) {

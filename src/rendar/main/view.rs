@@ -197,14 +197,8 @@ impl eframe::App for Rendar {
                         height: row_height,
                     };
 
-                    // エラーモーダルを表示するためのトークン
-                    let mut error_token = ErrorToken {
-                        open: false,
-                        value: None,
-                    };
-
                     // ファイル一覧を表示
-                    list::view(ui, &mut self.files, &mut self.optimize_job, list_row_token, &mut error_token)
+                    list::view(ui, &mut self.files, &mut self.optimize_job, list_row_token, &mut self.error_token)
                 }).inner;
 
             // リスト行以外をクリックしたら選択解除

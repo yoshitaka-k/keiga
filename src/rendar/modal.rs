@@ -16,14 +16,26 @@ pub(crate) fn error(ctx: &egui::Context, error_token: &mut ErrorToken) {
 
     // モーダルを表示
     let modal = egui::Modal::new(egui::Id::new("modal_error")).show(ctx, |ui| {
+        ui.set_width(rendar::MODAL_WINDOW_WIDTH);
+
+        // 見出し部分
         ui.horizontal(|ui| {
             ui.add(heading_icon(svg::ERROR, constants::MODAL_ERROR_ICON_SIZE, egui::Color32::RED));
             ui.heading("An error occurred");
         });
 
+        ui.separator();
+
+        ui.add_space(rendar::MODAL_WINDOW_SPACING);
+
+        // エラー内容を表示
         if let Some(error) = &error_token.value {
-            ui.label(error.to_string());
+            egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
+                ui.label(error.to_string());
+            });
         }
+
+        ui.add_space(rendar::MODAL_WINDOW_SPACING);
     });
 
     // モーダルを閉じたらモーダルを非表示にする
