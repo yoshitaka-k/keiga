@@ -165,15 +165,16 @@ impl eframe::App for Rendar {
         self.optimize_run();
 
         // パネルのスタイルを設定
-        let panel_style = rendar::panel_style(ui);
+        let top_panel_style = rendar::panel_style(ui, rendar::TOP_PANEL_INNER_MARGIN);
+        let bottom_panel_style = rendar::panel_style(ui, rendar::BOTTOM_PANEL_INNER_MARGIN);
 
         // 上部ボタンを表示
-        egui::Panel::top("top_taskbar").frame(panel_style).show(ui, |ui| {
+        egui::Panel::top("top_taskbar").frame(top_panel_style).show(ui, |ui| {
             top::view(ui, &mut self.files, &mut self.open_dialog, &mut self.setting_token);
         });
 
         // 状態とかボタンを表示するタスクバーを表示
-        egui::Panel::bottom("bottom_taskbar").frame(panel_style).show(ui, |ui| {
+        egui::Panel::bottom("bottom_taskbar").frame(bottom_panel_style).show(ui, |ui| {
             bottom::view(ui, &mut self.files, &mut self.optimize_job, &mut self.error_token);
         });
 

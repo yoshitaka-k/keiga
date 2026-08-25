@@ -9,6 +9,21 @@ pub use main::view::Rendar;
 pub(crate) const DARK_MODE_PANEL_COLOR: egui::Color32 = egui::Color32::from_rgb(35, 35, 35);
 pub(crate) const LIGHT_MODE_PANEL_COLOR: egui::Color32 = egui::Color32::from_rgb(225, 225, 225);
 
+// パネルの内側のマージン
+pub(crate) const TOP_PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
+    left: 10,
+    right: 10,
+    top: 4,
+    bottom: 4,
+};
+
+pub(crate) const BOTTOM_PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
+    left: 10,
+    right: 10,
+    top: 4,
+    bottom: 6,
+};
+
 /// 設定タブ
 #[derive(PartialEq)]
 pub enum SettingTab {
@@ -61,15 +76,11 @@ pub(crate) fn panel_fill_color(ui: &egui::Ui) -> egui::Color32 {
 
 /// パネルのスタイルを設定
 /// * `ui` - UI
+/// * `inner_margin` - パネルの内側のマージン
 /// * `return` - パネルのスタイル
-pub(crate) fn panel_style(ui: &mut egui::Ui) -> egui::Frame {
+pub(crate) fn panel_style(ui: &mut egui::Ui, inner_margin: egui::Margin) -> egui::Frame {
     let panel_fill_color = panel_fill_color(ui);
     egui::Frame::default()
         .fill(panel_fill_color)
-        .inner_margin(egui::Margin {
-            left: 10,
-            right: 10,
-            top: 2,
-            bottom: 3,
-        })
+        .inner_margin(inner_margin)
 }

@@ -49,7 +49,7 @@ pub(crate) fn view(
         update_job.result(updated_token);
 
         // パネルのスタイルを設定
-        let panel_style = rendar::panel_style(ctx);
+        let panel_style = rendar::panel_style(ctx, rendar::TOP_PANEL_INNER_MARGIN);
 
         // アイコンの色を取得
         let icon_color = assets::icon_color(ctx);
