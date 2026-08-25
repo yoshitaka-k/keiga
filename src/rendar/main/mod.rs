@@ -118,8 +118,8 @@ pub(crate) fn list_row_content(
     icon_color: egui::Color32
 ) {
     // 表示するファイルサイズを計算
-    let size = filesize_format!(*image_file.size());
-    let new_size = filesize_format!(*image_file.new_size());
+    let size = filesize_format(*image_file.size());
+    let new_size = filesize_format(*image_file.new_size());
 
     // アイコンセルを表示
     add_icon_cell(ui,

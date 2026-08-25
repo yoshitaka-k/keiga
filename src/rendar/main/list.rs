@@ -84,7 +84,7 @@ pub(crate) fn view(
         let index = start + offset;
 
         // 最適化時間をフォーマット
-        let duration = duration_format!(*image_file.duration());
+        let duration = duration_format(*image_file.duration());
 
         // 高さがズレると赤くチラつくので予めサイズ確保
         // 行のクリックイベントを受け取るために Sense::click() を指定

@@ -57,7 +57,7 @@ pub(crate) fn view(
         // ホバーテキストを設定
         let hover_text = format!(
             "Total optimization duration: {}",
-            duration_format!(files.total_duration()),
+            duration_format(files.total_duration()),
         );
 
         // 優先度: 最適化中 > エラー > 最適化済み・最適化不要 > 待機
