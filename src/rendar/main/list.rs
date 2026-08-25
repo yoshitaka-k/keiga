@@ -11,7 +11,6 @@ use crate::rendar::main;
 
 /// ファイル一覧のアクション
 enum FileListAction {
-    Hover { id: u64 },
     Click { id: u64 },
     DoubleClick { path: PathBuf },
     Backspace { id: u64 },
@@ -83,13 +82,13 @@ pub(crate) fn view(
 
     // アイコンの色
     let icon_color = icon_color(ui);
-    let circle_color = assets::circle_color(ui);
-    let optimizing_color = assets::optimizing_color(ui);
-    let optimized_color = assets::optimized_color(ui);
-    let unchanged_color = assets::unchanged_color(ui);
-    let skipped_color = assets::skipped_color(ui);
-    let canceled_color = assets::canceled_color(ui);
-    let error_color = assets::error_color(ui);
+    let circle_color = assets::status_icon_color(ui, OptimizeStatus::Standby);
+    let optimizing_color = assets::status_icon_color(ui, OptimizeStatus::Optimizing);
+    let optimized_color = assets::status_icon_color(ui, OptimizeStatus::Optimized);
+    let unchanged_color = assets::status_icon_color(ui, OptimizeStatus::Unchanged);
+    let skipped_color = assets::status_icon_color(ui, OptimizeStatus::Skipped);
+    let canceled_color = assets::status_icon_color(ui, OptimizeStatus::Canceled);
+    let error_color = assets::status_icon_color(ui, OptimizeStatus::Error(String::new()));
 
     // 削除キーが押されたら処理予約
     if ui.input(|input| input.key_released(egui::Key::Backspace)) {
@@ -236,11 +235,6 @@ pub(crate) fn view(
             );
         }
 
-        // ホバーアクションを処理予約
-        if response.hovered() {
-            pending_action.push(FileListAction::Hover { id: *path.id() });
-        }
-
         // クリックアクションを処理予約
         if response.clicked() {
             pending_action.push(FileListAction::Click { id: *path.id() });
@@ -258,9 +252,6 @@ pub(crate) fn view(
     // クリックアクションを処理
     for action in pending_action {
         match action {
-            FileListAction::Hover { id: _id } => {
-                // ホバー
-            }
             FileListAction::Click { id } => {
                 files.set_selected_id(Some(id));
             }

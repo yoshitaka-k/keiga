@@ -1,7 +1,7 @@
 use crate::duration_format;
 use crate::file;
 use crate::event::button;
-use crate::optimize::OptimizeJob;
+use crate::optimize::{OptimizeJob, OptimizeStatus};
 use crate::rendar::{self, ErrorToken};
 use crate::rendar::assets::{self, constants, fonts::text_color, svg};
 use crate::rendar::main;
@@ -37,16 +37,13 @@ pub(crate) fn view(ui: &mut egui::Ui, files: &mut file::OpenFiles, optimize_job:
     // デフォルトのスペースの幅を避けておく
     let spacing = ui.spacing().item_spacing.x;
 
-    // 最適化中アイコンの色
-    let optimizing_color = assets::optimizing_color(ui);
-    // 最適化済みアイコンの色
-    let optimized_color = assets::optimized_color(ui);
-    // エラーアイコンの色
-    let error_color = assets::error_color(ui);
-    // 最適化不要アイコンの色
-    let unchanged_color = assets::unchanged_color(ui);
-    // スキップアイコンの色
-    let skipped_color = assets::skipped_color(ui);
+    // アイコンの色
+    let circle_color = assets::status_icon_color(ui, OptimizeStatus::Standby);
+    let optimizing_color = assets::status_icon_color(ui, OptimizeStatus::Optimizing);
+    let optimized_color = assets::status_icon_color(ui, OptimizeStatus::Optimized);
+    let unchanged_color = assets::status_icon_color(ui, OptimizeStatus::Unchanged);
+    let skipped_color = assets::status_icon_color(ui, OptimizeStatus::Skipped);
+    let error_color = assets::status_icon_color(ui, OptimizeStatus::Error(String::new()));
 
     // 完了アイコンの色
     // 最適化済みがあれば最適化済みの色
@@ -61,9 +58,6 @@ pub(crate) fn view(ui: &mut egui::Ui, files: &mut file::OpenFiles, optimize_job:
     } else {
         optimized_color
     };
-
-    // 丸アイコンの色
-    let circle_color = assets::circle_color(ui);
 
     ui.horizontal(|ui| {
         // 処理中アイコンを配置

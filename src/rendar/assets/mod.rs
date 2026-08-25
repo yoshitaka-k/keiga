@@ -5,6 +5,8 @@ pub(crate) mod sounds;
 
 pub(crate) use sounds::SoundPlayer;
 
+use crate::optimize::OptimizeStatus;
+
 /// アプリアイコン
 pub(crate) const APP_ICON: egui::ImageSource<'static> = svg::bytes_source(
     "bytes://assets/icon.png",
@@ -18,6 +20,17 @@ pub(crate) fn icon_color(ui: &egui::Ui) -> egui::Color32 {
     ui.visuals().text_color()
 }
 
+/// 警告アイコンの色
+/// * `ui` - UI
+/// * `return` - 警告アイコンの色
+pub(crate) fn warning_color(ui: &egui::Ui) -> egui::Color32 {
+    if ui.ctx().global_style().visuals.dark_mode {
+        constants::DARK_MODE_WARNING_COLOR
+    } else {
+        constants::LIGHT_MODE_WARNING_COLOR
+    }
+}
+
 /// ボタンアイコンの色
 /// * `ui` - UI
 /// * `return` - ボタンアイコンの色
@@ -29,90 +42,29 @@ pub(crate) fn button_icon_color(ui: &egui::Ui) -> egui::Color32 {
     }
 }
 
-/// 最適化中アイコンの色
+/// アイコンの色
 /// * `ui` - UI
-/// * `return` - 最適化中アイコンの色
-pub(crate) fn optimizing_color(ui: &egui::Ui) -> egui::Color32 {
+/// * `return` - アイコンの色
+pub(crate) fn status_icon_color(ui: &egui::Ui, status: OptimizeStatus) -> egui::Color32 {
     if ui.ctx().global_style().visuals.dark_mode {
-        constants::DARK_MODE_OPTIMIZING_COLOR
+        match status {
+            OptimizeStatus::Standby => constants::DARK_MODE_CIRCLE_COLOR,
+            OptimizeStatus::Optimizing => constants::DARK_MODE_OPTIMIZING_COLOR,
+            OptimizeStatus::Optimized => constants::DARK_MODE_OPTIMIZED_COLOR,
+            OptimizeStatus::Unchanged => constants::DARK_MODE_UNCHANGED_COLOR,
+            OptimizeStatus::Skipped => constants::DARK_MODE_SKIPPED_COLOR,
+            OptimizeStatus::Canceled => constants::DARK_MODE_CANCELED_COLOR,
+            OptimizeStatus::Error(_) => constants::DARK_MODE_ERROR_COLOR,
+        }
     } else {
-        constants::LIGHT_MODE_OPTIMIZING_COLOR
-    }
-}
-
-/// 最適化済みアイコンの色
-/// * `ui` - UI
-/// * `return` - 最適化済みアイコンの色
-pub(crate) fn optimized_color(ui: &egui::Ui) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
-        constants::DARK_MODE_OPTIMIZED_COLOR
-    } else {
-        constants::LIGHT_MODE_OPTIMIZED_COLOR
-    }
-}
-
-/// 最適化不要アイコンの色
-/// * `ui` - UI
-/// * `return` - 最適化不要アイコンの色
-pub(crate) fn unchanged_color(ui: &egui::Ui) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
-        constants::DARK_MODE_UNCHANGED_COLOR
-    } else {
-        constants::LIGHT_MODE_UNCHANGED_COLOR
-    }
-}
-
-/// スキップアイコンの色
-/// * `ui` - UI
-/// * `return` - スキップアイコンの色
-pub(crate) fn skipped_color(ui: &egui::Ui) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
-        constants::DARK_MODE_SKIPPED_COLOR
-    } else {
-        constants::LIGHT_MODE_SKIPPED_COLOR
-    }
-}
-
-/// キャンセルアイコンの色
-/// * `ui` - UI
-/// * `return` - キャンセルアイコンの色
-pub(crate) fn canceled_color(ui: &egui::Ui) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
-        constants::DARK_MODE_CANCELED_COLOR
-    } else {
-        constants::LIGHT_MODE_CANCELED_COLOR
-    }
-}
-
-/// エラーアイコンの色
-/// * `ui` - UI
-/// * `return` - エラーアイコンの色
-pub(crate) fn error_color(ui: &egui::Ui) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
-        constants::DARK_MODE_ERROR_COLOR
-    } else {
-        constants::LIGHT_MODE_ERROR_COLOR
-    }
-}
-
-/// 丸アイコンの色
-/// * `ui` - UI
-/// * `return` - 丸アイコンの色
-pub(crate) fn circle_color(ui: &egui::Ui) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
-        constants::DARK_MODE_CIRCLE_COLOR
-    } else {
-        constants::LIGHT_MODE_CIRCLE_COLOR
-    }
-}
-
-/// 警告アイコンの色
-/// * `ui` - UI
-/// * `return` - 警告アイコンの色
-pub(crate) fn warning_color(ui: &egui::Ui) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
-        constants::DARK_MODE_WARNING_COLOR
-    } else {
-        constants::LIGHT_MODE_WARNING_COLOR
+        match status {
+            OptimizeStatus::Standby => constants::LIGHT_MODE_CIRCLE_COLOR,
+            OptimizeStatus::Optimizing => constants::LIGHT_MODE_OPTIMIZING_COLOR,
+            OptimizeStatus::Optimized => constants::LIGHT_MODE_OPTIMIZED_COLOR,
+            OptimizeStatus::Unchanged => constants::LIGHT_MODE_UNCHANGED_COLOR,
+            OptimizeStatus::Skipped => constants::LIGHT_MODE_SKIPPED_COLOR,
+            OptimizeStatus::Canceled => constants::LIGHT_MODE_CANCELED_COLOR,
+            OptimizeStatus::Error(_) => constants::LIGHT_MODE_ERROR_COLOR,
+        }
     }
 }
