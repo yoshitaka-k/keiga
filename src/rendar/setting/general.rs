@@ -1,6 +1,6 @@
 use crate::app;
-use crate::rendar::assets;
-use crate::rendar::assets::{constants as assets_const, svg};
+use crate::rendar;
+use crate::rendar::assets::{self, constants, svg};
 use crate::rendar::setting;
 
 /// 並行処理数を表示
@@ -14,21 +14,21 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
     let icon_color = assets::icon_color(ui);
 
     ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = 4.0;
-        ui.add(egui::Image::new(svg::SETTINGS).max_height(assets_const::SETTINGS_ICON_SIZE).tint(icon_color));
+        ui.spacing_mut().item_spacing.x = setting::HEADER_ICON_SPACING;
+        ui.add(egui::Image::new(svg::SETTINGS).max_height(constants::SETTINGS_ICON_SIZE).tint(icon_color));
         ui.spacing_mut().item_spacing.x = spacing;
         ui.label("General");
     });
 
-    ui.add_space(2.0);
+    ui.add_space(setting::HEADER_BOTTOM_SPACING);
 
     ui.separator();
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
-    egui::Frame::default().inner_margin(setting::PANEL_INNER_MARGIN).show(ui, |ui| {
+    egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
         ui.horizontal(|ui| {
-            setting::add_label(ui, "Output path:", setting::GENERAL_LABEL_WIDTH);
+            rendar::add_label(ui, "Output path:", setting::GENERAL_LABEL_WIDTH);
             ui.add(
                 egui::TextEdit::singleline(app.output_path_mut())
                     .desired_width(ui.available_width())
@@ -49,8 +49,8 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
         // 出力パスの注意書きを表示
         ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = 3.0;
-            ui.add(egui::Image::new(svg::WARNING).max_height(assets_const::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
+            ui.spacing_mut().item_spacing.x = setting::WARNING_ICON_SPACING;
+            ui.add(egui::Image::new(svg::WARNING).max_height(constants::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
             ui.spacing_mut().item_spacing.x = spacing;
             ui.add(egui::Label::new(
                 egui::RichText::new("Leave empty to overwrite the original files.").weak(),
@@ -64,18 +64,18 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
-    egui::Frame::default().inner_margin(setting::PANEL_INNER_MARGIN).show(ui, |ui| {
+    egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
         // 同じパスはスキップ
         ui.horizontal(|ui| {
-            setting::add_label(ui, "Skip same path:", setting::GENERAL_LABEL_WIDTH);
+            rendar::add_label(ui, "Skip same path:", setting::GENERAL_LABEL_WIDTH);
             ui.radio_value(app.skip_same_path_mut(), true, "Skip same path");
             ui.radio_value(app.skip_same_path_mut(), false, "Don't skip same path");
         });
 
         // 同じパスはスキップの注意書きを表示
         ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = 3.0;
-            ui.add(egui::Image::new(svg::WARNING).max_height(assets_const::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
+            ui.spacing_mut().item_spacing.x = setting::WARNING_ICON_SPACING;
+            ui.add(egui::Image::new(svg::WARNING).max_height(constants::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
             ui.spacing_mut().item_spacing.x = spacing;
             ui.add(egui::Label::new(
                 egui::RichText::new("Skip if already completed. Retry canceled and errors.").weak(),
@@ -89,10 +89,10 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
-    egui::Frame::default().inner_margin(setting::PANEL_INNER_MARGIN).show(ui, |ui| {
+    egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
         // 効果音鳴らす？
         ui.horizontal(|ui| {
-            setting::add_label(ui, "Sound effects:", setting::GENERAL_LABEL_WIDTH);
+            rendar::add_label(ui, "Sound effects:", setting::GENERAL_LABEL_WIDTH);
             ui.radio_value(app.play_sound_mut(), true, "Play sound");
             ui.radio_value(app.play_sound_mut(), false, "Don't play sound");
         });
@@ -100,7 +100,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
         ui.add_space(setting::SETTING_ADD_SPACING);
 
         ui.horizontal(|ui| {
-            setting::add_label(ui, "Volume:", setting::GENERAL_LABEL_WIDTH);
+            rendar::add_label(ui, "Volume:", setting::GENERAL_LABEL_WIDTH);
             ui.scope(|ui| {
                 ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
                 ui.add(egui::Slider::new(app.sound_volume_mut(), setting::SOUND_VOLUME_MIN..=setting::SOUND_VOLUME_MAX));

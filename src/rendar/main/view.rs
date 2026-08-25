@@ -3,12 +3,11 @@ use crate::app::{UpdateJob, UpdatedToken};
 use crate::file;
 use crate::event::{open, drop};
 use crate::optimize::OptimizeJob;
-use crate::rendar;
-use crate::rendar::{SettingTab, ListRowToken, ErrorToken, SettingToken};
+use crate::rendar::{self, SettingTab, ListRowToken, ErrorToken, SettingToken};
 use crate::rendar::assets::{fonts, svg, SoundPlayer};
-use crate::rendar::modal;
 use crate::rendar::main::{top, list, bottom};
 use crate::rendar::setting::view as setting_window;
+use crate::rendar::modal;
 
 /// レンダーを管理する構造体
 pub struct Rendar {

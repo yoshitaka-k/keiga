@@ -14,13 +14,10 @@ pub(crate) const WINDOW_TITLE: &str = "Keiga Settings";
 pub(crate) const WINDOW_WIDTH: f32 = 480.0;
 pub(crate) const WINDOW_HEIGHT: f32 = 270.0;
 
-// パネルの内側のマージン
-pub(crate) const PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
-    left: 8,
-    right: 8,
-    top: 0,
-    bottom: 0,
-};
+// ヘッダーのスペースの幅
+pub(crate) const HEADER_ICON_SPACING: f32 = 4.0;
+pub(crate) const HEADER_BOTTOM_SPACING: f32 = 2.0;
+pub(crate) const WARNING_ICON_SPACING: f32 = 3.0;
 
 // ラベルの幅
 pub(crate) const GENERAL_LABEL_WIDTH: f32 = 90.0;
@@ -58,22 +55,6 @@ pub(crate) fn tab_selected_color(ui: &egui::Ui) -> egui::Color32 {
     } else {
         LIGHT_TAB_SELECTED_COLOR
     }
-}
-
-/// ラベルの幅を取得
-/// * `ui` - UI
-/// * `label` - ラベルのテキスト
-/// * `width` - ラベルの幅
-/// * `return` - ラベルのレスポンス
-pub(crate) fn add_label(ui: &mut egui::Ui, label: &str, width: f32) -> egui::Response {
-    ui.allocate_ui_with_layout(
-        egui::vec2(width, ui.spacing().interact_size.y),
-        egui::Layout::right_to_left(egui::Align::Center),
-        |ui| {
-            ui.set_min_width(width);
-            ui.label(label)
-        }
-    ).inner
 }
 
 /// ラベル後の残り幅に合わせてスライダーのレール幅を決める

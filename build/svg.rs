@@ -5,7 +5,10 @@ use crate::build::{collect_asset_stems, include_assets_path, to_const_name};
 /// Material Icons の長いファイル名からアイコン名だけ取り出す
 /// 例: `check_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24` → `check`
 fn icon_stem(file_stem: &str) -> &str {
-    file_stem.split("_24dp").next().unwrap_or(file_stem)
+    ["_24dp", "_32dp"].into_iter().filter_map(|d| {
+        file_stem.split_once(d).map(|(head, _)| head)
+    }).min_by_key(|d| d.len())
+    .unwrap_or(file_stem)
 }
 
 /// assets/svg 内の SVG を短い定数名の ImageSource として生成する

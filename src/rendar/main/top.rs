@@ -1,8 +1,7 @@
 use crate::file;
 use crate::event::button;
 use crate::rendar::SettingToken;
-use crate::rendar::assets;
-use crate::rendar::assets::{constants, svg};
+use crate::rendar::assets::{self, constants, svg};
 
 /// 上部ボタンを表示
 /// * `ui` - UI

@@ -1,8 +1,8 @@
 use crate::app;
 use crate::app::UpdateJob;
 use crate::event::button;
-use crate::rendar::assets;
-use crate::rendar::assets::{constants as assets_const, svg};
+use crate::rendar;
+use crate::rendar::assets::{self, constants, svg};
 use crate::rendar::setting;
 
 /// バージョンを表示
@@ -20,8 +20,8 @@ pub(crate) fn view(
     let icon_color = assets::icon_color(ui);
 
     ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = 4.0;
-        ui.add(egui::Image::new(svg::INFO).max_height(assets_const::INFO_ICON_SIZE).tint(icon_color));
+        ui.spacing_mut().item_spacing.x = setting::HEADER_ICON_SPACING;
+        ui.add(egui::Image::new(svg::INFO).max_height(constants::INFO_ICON_SIZE).tint(icon_color));
         ui.spacing_mut().item_spacing.x = spacing;
         ui.label("About");
 
@@ -33,13 +33,13 @@ pub(crate) fn view(
         });
     });
 
-    ui.add_space(2.0);
+    ui.add_space(setting::HEADER_BOTTOM_SPACING);
 
     ui.separator();
 
-    egui::Frame::default().inner_margin(setting::PANEL_INNER_MARGIN).show(ui, |ui| {
+    egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
         // アプリのアイコンを表示
-        ui.add(egui::Image::new(assets::APP_ICON).max_height(assets_const::APP_ICON_SIZE));
+        ui.add(egui::Image::new(assets::APP_ICON).max_height(constants::APP_ICON_SIZE));
 
         // バージョンを表示
         ui.label(format!("Keiga v{}", env!("CARGO_PKG_VERSION")));

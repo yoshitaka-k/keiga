@@ -1,7 +1,7 @@
 use crate::app;
 use crate::optimize::options::PngPreset;
-use crate::rendar::assets;
-use crate::rendar::assets::{constants as assets_const, svg};
+use crate::rendar;
+use crate::rendar::assets::{self, constants, svg};
 use crate::rendar::setting;
 
 /// 品質を表示
@@ -15,22 +15,22 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
     let icon_color = assets::icon_color(ui);
 
     ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = 4.0;
-        ui.add(egui::Image::new(svg::COMPRESS).max_height(assets_const::COMPRESS_ICON_SIZE).tint(icon_color));
+        ui.spacing_mut().item_spacing.x = setting::HEADER_ICON_SPACING;
+        ui.add(egui::Image::new(svg::COMPRESS).max_height(constants::COMPRESS_ICON_SIZE).tint(icon_color));
         ui.spacing_mut().item_spacing.x = spacing;
         ui.label("Quality");
     });
 
-    ui.add_space(2.0);
+    ui.add_space(setting::HEADER_BOTTOM_SPACING);
 
     ui.separator();
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
-    egui::Frame::default().inner_margin(setting::PANEL_INNER_MARGIN).show(ui, |ui| {
+    egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
         // JPEG のスライダーを表示
         ui.horizontal(|ui| {
-            setting::add_label(ui, "JPEG Quality:", setting::QUALITY_LABEL_WIDTH);
+            rendar::add_label(ui, "JPEG Quality:", setting::QUALITY_LABEL_WIDTH);
             ui.scope(|ui| {
                 ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
                 ui.add(egui::Slider::new(app.jpeg_quality_mut(), setting::JPEG_QUALITY_MIN..=setting::JPEG_QUALITY_MAX));
@@ -39,8 +39,8 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
         // JPEG の品質の注意書きを表示
         ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = 3.0;
-            ui.add(egui::Image::new(svg::WARNING).max_height(assets_const::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
+            ui.spacing_mut().item_spacing.x = setting::WARNING_ICON_SPACING;
+            ui.add(egui::Image::new(svg::WARNING).max_height(constants::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
             ui.spacing_mut().item_spacing.x = spacing;
             ui.add(egui::Label::new(
                 egui::RichText::new(format!("JPEG is lossy compression.")).weak(),
@@ -54,10 +54,10 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
-    egui::Frame::default().inner_margin(setting::PANEL_INNER_MARGIN).show(ui, |ui| {
+    egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
         // PNG のプリセットを表示
         ui.horizontal(|ui| {
-            setting::add_label(ui, "PNG Preset:", setting::QUALITY_LABEL_WIDTH);
+            rendar::add_label(ui, "PNG Preset:", setting::QUALITY_LABEL_WIDTH);
             ui.radio_value(app.png_preset_mut(), PngPreset::Min, PngPreset::Min.to_string());
             ui.radio_value(app.png_preset_mut(), PngPreset::Fast, PngPreset::Fast.to_string());
             ui.radio_value(app.png_preset_mut(), PngPreset::Default, PngPreset::Default.to_string());
@@ -67,8 +67,8 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
         // JPEG の品質の注意書きを表示
         ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = 3.0;
-            ui.add(egui::Image::new(svg::WARNING).max_height(assets_const::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
+            ui.spacing_mut().item_spacing.x = setting::WARNING_ICON_SPACING;
+            ui.add(egui::Image::new(svg::WARNING).max_height(constants::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
             ui.spacing_mut().item_spacing.x = spacing;
             ui.add(egui::Label::new(
                 egui::RichText::new(format!("PNG is lossless compression.")).weak(),

@@ -2,9 +2,8 @@ use crate::duration_format;
 use crate::file;
 use crate::event::button;
 use crate::optimize::OptimizeJob;
-use crate::rendar::ErrorToken;
-use crate::rendar::assets;
-use crate::rendar::assets::{constants, fonts::text_color, svg};
+use crate::rendar::{self, ErrorToken};
+use crate::rendar::assets::{self, constants, fonts::text_color, svg};
 use crate::rendar::main;
 
 /// 左右に余白を付けてステータスアイコンを配置
@@ -12,29 +11,19 @@ use crate::rendar::main;
 /// * `pad` - 余白
 /// * `widget` - ステータスアイコン
 /// * `return` - ステータスアイコンのレスポンス
-fn add_padded_icon(ui: &mut egui::Ui, pad: f32, widget: impl egui::Widget) -> egui::Response {
+fn add_padded_icon(ui: &mut egui::Ui, widget: impl egui::Widget, pad: f32) -> egui::Response {
     let spacing = ui.spacing().item_spacing.x;
 
-    ui.spacing_mut().item_spacing.x = 2.0;
-    let response = ui.scope(|ui| {
-        ui.add_space(pad);
+    ui.scope(|ui| {
+        ui.add_space(main::BOTTOM_ICON_CELL_LEFT_PADDING + pad);
+        ui.spacing_mut().item_spacing.x = 0.0;
         ui.add(widget);
+        ui.spacing_mut().item_spacing.x = spacing;
         ui.add_space(pad);
-    }).response;
-    ui.spacing_mut().item_spacing.x = spacing;
-
-    response
+    }).response
 }
 
-/// 下部ボタンを表示
-/// * `ui` - UI
-/// * `files` - ドロップされたファイル
-pub(crate) fn view(
-    ui: &mut egui::Ui,
-    files: &mut file::OpenFiles,
-    optimize_job: &mut OptimizeJob,
-    error_token: &mut ErrorToken,
-) {
+pub(crate) fn view(ui: &mut egui::Ui, files: &mut file::OpenFiles, optimize_job: &mut OptimizeJob, error_token: &mut ErrorToken) {
     // 未処理、最適化中、最適化済み、エラーのファイル数
     files.update_file_length();
 
@@ -86,13 +75,21 @@ pub(crate) fn view(
 
         // 優先度: 最適化中 > エラー > 最適化済み・最適化不要 > 待機
         let response = if optimizing_len > 0 {
-            add_padded_icon(ui, 3.0, egui::Spinner::new().size(main::SPINNER_SIZE).color(optimizing_color))
+            add_padded_icon(ui,
+                rendar::spinner_widget(main::SPINNER_SIZE, optimizing_color),
+            3.0)
         } else if error_len > 0 {
-            add_padded_icon(ui, 1.0, egui::Image::new(svg::ERROR).max_height(constants::ERROR_ICON_SIZE).tint(error_color))
+            add_padded_icon(ui,
+                rendar::icon_widget(svg::ERROR, constants::ERROR_ICON_SIZE, error_color),
+            1.0)
         } else if (optimized_len + unchanged_len + skipped_len) > 0 {
-            add_padded_icon(ui, 0.0, egui::Image::new(svg::CHECK).max_height(constants::CHECK_ICON_SIZE).tint(completed_color))
+            add_padded_icon(ui,
+                rendar::icon_widget(svg::CHECK, constants::CHECK_ICON_SIZE, completed_color),
+            0.0)
         } else {
-            add_padded_icon(ui, 1.0, egui::Image::new(svg::CIRCLE).max_height(constants::CIRCLE_ICON_SIZE).tint(circle_color))
+            add_padded_icon(ui,
+                rendar::icon_widget(svg::CIRCLE, constants::CIRCLE_ICON_SIZE, circle_color),
+            1.0)
         };
 
         response.on_hover_text(hover_text);
