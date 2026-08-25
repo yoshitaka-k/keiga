@@ -21,13 +21,15 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
         ui.label("Quality");
     });
 
+    ui.add_space(2.0);
+
     ui.separator();
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
     // JPEG のスライダーを表示
     ui.horizontal(|ui| {
-        ui.label("JPEG Quality:");
+        setting::add_label(ui, "JPEG Quality:", setting::QUALITY_LABEL_WIDTH);
         ui.scope(|ui| {
             ui.spacing_mut().slider_width = setting::QUALITY_SLIDER_WIDTH;
             ui.add(egui::Slider::new(app.jpeg_quality_mut(), setting::JPEG_QUALITY_MIN..=setting::JPEG_QUALITY_MAX));
@@ -52,8 +54,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     // PNG のプリセットを表示
     ui.horizontal(|ui| {
-        ui.label("PNG Preset:");
-        ui.add_space(8.0);
+        setting::add_label(ui, "PNG Preset:", setting::QUALITY_LABEL_WIDTH);
         ui.radio_value(app.png_preset_mut(), PngPreset::Min, PngPreset::Min.to_string());
         ui.radio_value(app.png_preset_mut(), PngPreset::Fast, PngPreset::Fast.to_string());
         ui.radio_value(app.png_preset_mut(), PngPreset::Default, PngPreset::Default.to_string());

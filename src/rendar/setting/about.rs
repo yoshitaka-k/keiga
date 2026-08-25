@@ -32,6 +32,8 @@ pub(crate) fn view(
         });
     });
 
+    ui.add_space(2.0);
+
     ui.separator();
 
     ui.add(egui::Image::new(assets::APP_ICON).max_height(assets_const::APP_ICON_SIZE));

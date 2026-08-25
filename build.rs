@@ -19,6 +19,11 @@ fn main() {
     println!("cargo:rerun-if-changed={}", svg_dir.display());
     build::svg::generate_svg_generated(&svg_dir, &out_dir);
 
+    // 効果音のディレクトリを取得
+    let sounds_dir = manifest_path.join("assets/sounds");
+    println!("cargo:rerun-if-changed={}", sounds_dir.display());
+    build::sounds::generate_sounds_generated(&sounds_dir, &out_dir);
+
     // バンドル用アイコンと Windows の実行ファイルアイコンを生成する
     build::appicon::generate_icons(manifest_path, &out_dir);
 }

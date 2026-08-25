@@ -5,7 +5,7 @@ use crate::event::{open, drop};
 use crate::optimize::OptimizeJob;
 use crate::rendar;
 use crate::rendar::{SettingTab, ListRowToken, ErrorToken, SettingToken};
-use crate::rendar::assets::{fonts, svg};
+use crate::rendar::assets::{fonts, svg, SoundPlayer};
 use crate::rendar::modal;
 use crate::rendar::main::{top, list, bottom};
 use crate::rendar::setting::view as setting_window;
@@ -32,6 +32,9 @@ pub struct Rendar {
 
     // 更新ジョブ
     update_job: UpdateJob,
+
+    // 効果音プレイヤー
+    sound: SoundPlayer,
 }
 
 impl Rendar {
@@ -73,6 +76,7 @@ impl Rendar {
             },
             optimize_job: OptimizeJob::new(cc.egui_ctx.clone()),
             update_job: UpdateJob::new(cc.egui_ctx.clone()),
+            sound: SoundPlayer::new(),
         }
     }
 
@@ -83,7 +87,26 @@ impl Rendar {
 
     /// 最適化結果を反映する
     fn optimize_result(&mut self) {
+        // 最適化前か最適化中かどうかをチェック
+        let was_busy = self.files.has_standby() || self.files.has_optimizing();
+
+        // 最適化結果を反映
         self.optimize_job.result(&mut self.files);
+
+        // 最適化後か最適化中が終わっているかどうかをチェック
+        let now_idle = !self.files.has_standby() && !self.files.has_optimizing();
+
+        // 効果音を再生
+        if *self.app.play_sound() && was_busy && now_idle {
+            // 効果音の音量を設定
+            self.sound.set_volume(*self.app.sound_volume());
+
+            if self.files.has_error() {
+                self.sound.play_alert();
+            } else {
+                self.sound.play_completed();
+            }
+        }
     }
 }
 

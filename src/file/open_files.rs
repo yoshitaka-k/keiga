@@ -249,6 +249,12 @@ impl OpenFiles {
         self.paths.iter().any(|f| matches!(f.status(), OptimizeStatus::Optimizing))
     }
 
+    /// エラーのファイルがあるかどうか
+    /// * `return` - エラーのファイルがあるかどうか
+    pub fn has_error(&self) -> bool {
+        self.paths.iter().any(|f| matches!(f.status(), OptimizeStatus::Error(_)))
+    }
+
     /// 最適化結果を既存の一覧へ反映
     /// * `results` - 最適化済みのファイル
     pub fn apply_result(&mut self, result: file::ImageFile) {

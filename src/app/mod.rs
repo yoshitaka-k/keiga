@@ -62,6 +62,16 @@ pub struct App {
     #[getset(get = "pub", get_mut = "pub")]
     #[serde(default = "default_output_path")]
     output_path: String,
+
+    /// 効果音鳴らすかどうか
+    #[getset(get = "pub", get_mut = "pub")]
+    #[serde(default = "default_play_sound")]
+    play_sound: bool,
+
+    /// 効果音の音量
+    #[getset(get = "pub", get_mut = "pub")]
+    #[serde(default = "default_sound_volume")]
+    sound_volume: u8,
 }
 
 /// 最適化数のデフォルト値
@@ -85,6 +95,16 @@ fn default_output_path() -> String {
     "".to_string()
 }
 
+/// 効果音鳴らす？のデフォルト値
+fn default_play_sound() -> bool {
+    true
+}
+
+/// 効果音の音量のデフォルト値
+fn default_sound_volume() -> u8 {
+    5
+}
+
 /// 読み込める拡張子
 /// image crate でサポートされている拡張子
 /// これらの拡張子は読み込めるが、全て最適化可能ではない
@@ -106,6 +126,8 @@ impl App {
             png_preset: DEFAULT_PNG_PRESET,
             skip_same_path: default_skip_same_path(),
             output_path: default_output_path(),
+            play_sound: default_play_sound(),
+            sound_volume: default_sound_volume(),
         }
     }
 

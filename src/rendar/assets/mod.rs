@@ -1,6 +1,9 @@
 pub(crate) mod constants;
 pub(crate) mod fonts;
 pub(crate) mod svg;
+pub(crate) mod sounds;
+
+pub(crate) use sounds::SoundPlayer;
 
 /// アプリアイコン
 pub(crate) const APP_ICON: egui::ImageSource<'static> = svg::bytes_source(
