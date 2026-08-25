@@ -3,6 +3,7 @@ use crate::app::UpdateJob;
 use crate::event::button;
 use crate::rendar::assets;
 use crate::rendar::assets::{constants as assets_const, svg};
+use crate::rendar::setting;
 
 /// バージョンを表示
 /// * `ui` - UI
@@ -36,17 +37,25 @@ pub(crate) fn view(
 
     ui.separator();
 
-    ui.add(egui::Image::new(assets::APP_ICON).max_height(assets_const::APP_ICON_SIZE));
+    egui::Frame::default().inner_margin(setting::PANEL_INNER_MARGIN).show(ui, |ui| {
+        // アプリのアイコンを表示
+        ui.add(egui::Image::new(assets::APP_ICON).max_height(assets_const::APP_ICON_SIZE));
 
-    ui.label(format!("Keiga v{}", env!("CARGO_PKG_VERSION")));
-    ui.label(env!("CARGO_PKG_DESCRIPTION"));
+        // バージョンを表示
+        ui.label(format!("Keiga v{}", env!("CARGO_PKG_VERSION")));
 
-    ui.label("");
+        // 説明を表示
+        ui.label(env!("CARGO_PKG_DESCRIPTION"));
 
-    ui.label(format!("License: {}", env!("CARGO_PKG_LICENSE")));
+        ui.label("");
 
-    ui.horizontal(|ui| {
-        ui.label("Repository:");
-        ui.hyperlink_to(env!("CARGO_PKG_REPOSITORY"), app::GITHUB_URL.replace("{repository}", env!("CARGO_PKG_REPOSITORY")));
+        // ライセンスを表示
+        ui.label(format!("License: {}", env!("CARGO_PKG_LICENSE")));
+
+        // リポジトリを表示
+        ui.horizontal(|ui| {
+            ui.label("Repository:");
+            ui.hyperlink_to(env!("CARGO_PKG_REPOSITORY"), app::GITHUB_URL.replace("{repository}", env!("CARGO_PKG_REPOSITORY")));
+        });
     });
 }

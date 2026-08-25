@@ -27,23 +27,25 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
-    // JPEG のスライダーを表示
-    ui.horizontal(|ui| {
-        setting::add_label(ui, "JPEG Quality:", setting::QUALITY_LABEL_WIDTH);
-        ui.scope(|ui| {
-            ui.spacing_mut().slider_width = setting::QUALITY_SLIDER_WIDTH;
-            ui.add(egui::Slider::new(app.jpeg_quality_mut(), setting::JPEG_QUALITY_MIN..=setting::JPEG_QUALITY_MAX));
+    egui::Frame::default().inner_margin(setting::PANEL_INNER_MARGIN).show(ui, |ui| {
+        // JPEG のスライダーを表示
+        ui.horizontal(|ui| {
+            setting::add_label(ui, "JPEG Quality:", setting::QUALITY_LABEL_WIDTH);
+            ui.scope(|ui| {
+                ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
+                ui.add(egui::Slider::new(app.jpeg_quality_mut(), setting::JPEG_QUALITY_MIN..=setting::JPEG_QUALITY_MAX));
+            });
         });
-    });
 
-    // JPEG の品質の注意書きを表示
-    ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = 3.0;
-        ui.add(egui::Image::new(svg::WARNING).max_height(assets_const::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
-        ui.spacing_mut().item_spacing.x = spacing;
-        ui.add(egui::Label::new(
-            egui::RichText::new(format!("JPEG is lossy compression.")).weak(),
-        ));
+        // JPEG の品質の注意書きを表示
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 3.0;
+            ui.add(egui::Image::new(svg::WARNING).max_height(assets_const::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
+            ui.spacing_mut().item_spacing.x = spacing;
+            ui.add(egui::Label::new(
+                egui::RichText::new(format!("JPEG is lossy compression.")).weak(),
+            ));
+        });
     });
 
     ui.add_space(setting::SETTING_ADD_SPACING);
@@ -52,23 +54,25 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
-    // PNG のプリセットを表示
-    ui.horizontal(|ui| {
-        setting::add_label(ui, "PNG Preset:", setting::QUALITY_LABEL_WIDTH);
-        ui.radio_value(app.png_preset_mut(), PngPreset::Min, PngPreset::Min.to_string());
-        ui.radio_value(app.png_preset_mut(), PngPreset::Fast, PngPreset::Fast.to_string());
-        ui.radio_value(app.png_preset_mut(), PngPreset::Default, PngPreset::Default.to_string());
-        ui.radio_value(app.png_preset_mut(), PngPreset::Best, PngPreset::Best.to_string());
-        ui.radio_value(app.png_preset_mut(), PngPreset::Max, PngPreset::Max.to_string());
-    });
+    egui::Frame::default().inner_margin(setting::PANEL_INNER_MARGIN).show(ui, |ui| {
+        // PNG のプリセットを表示
+        ui.horizontal(|ui| {
+            setting::add_label(ui, "PNG Preset:", setting::QUALITY_LABEL_WIDTH);
+            ui.radio_value(app.png_preset_mut(), PngPreset::Min, PngPreset::Min.to_string());
+            ui.radio_value(app.png_preset_mut(), PngPreset::Fast, PngPreset::Fast.to_string());
+            ui.radio_value(app.png_preset_mut(), PngPreset::Default, PngPreset::Default.to_string());
+            ui.radio_value(app.png_preset_mut(), PngPreset::Best, PngPreset::Best.to_string());
+            ui.radio_value(app.png_preset_mut(), PngPreset::Max, PngPreset::Max.to_string());
+        });
 
-    // JPEG の品質の注意書きを表示
-    ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = 3.0;
-        ui.add(egui::Image::new(svg::WARNING).max_height(assets_const::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
-        ui.spacing_mut().item_spacing.x = spacing;
-        ui.add(egui::Label::new(
-            egui::RichText::new(format!("PNG is lossless compression.")).weak(),
-        ));
+        // JPEG の品質の注意書きを表示
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 3.0;
+            ui.add(egui::Image::new(svg::WARNING).max_height(assets_const::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
+            ui.spacing_mut().item_spacing.x = spacing;
+            ui.add(egui::Label::new(
+                egui::RichText::new(format!("PNG is lossless compression.")).weak(),
+            ));
+        });
     });
 }

@@ -26,33 +26,61 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
-    ui.horizontal(|ui| {
-        setting::add_label(ui, "Output path:", setting::GENERAL_LABEL_WIDTH);
-        ui.scope(|ui| {
-            ui.spacing_mut().text_edit_width = setting::OUTPUT_PATH_TEXT_EDIT_WIDTH;
-            ui.add(egui::TextEdit::singleline(app.output_path_mut()).interactive(false));
+    egui::Frame::default().inner_margin(setting::PANEL_INNER_MARGIN).show(ui, |ui| {
+        ui.horizontal(|ui| {
+            setting::add_label(ui, "Output path:", setting::GENERAL_LABEL_WIDTH);
+            ui.add(
+                egui::TextEdit::singleline(app.output_path_mut())
+                    .desired_width(ui.available_width())
+                    .interactive(false),
+            );
+        });
+        ui.horizontal(|ui| {
+            ui.add_space(setting::GENERAL_LABEL_WIDTH + ui.spacing().item_spacing.x);
+            if ui.button("Browse").clicked() {
+                if let Some(path) = rfd::FileDialog::new().pick_folder() {
+                    *app.output_path_mut() = path.to_string_lossy().into_owned();
+                }
+            }
+            if ui.button("Clear").clicked() {
+                app.output_path_mut().clear();
+            }
+        });
+
+        // 出力パスの注意書きを表示
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 3.0;
+            ui.add(egui::Image::new(svg::WARNING).max_height(assets_const::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
+            ui.spacing_mut().item_spacing.x = spacing;
+            ui.add(egui::Label::new(
+                egui::RichText::new("Leave empty to overwrite the original files.").weak(),
+            ));
         });
     });
-    ui.horizontal(|ui| {
-        ui.add_space(setting::GENERAL_LABEL_WIDTH + ui.spacing().item_spacing.x);
-        if ui.button("Browse").clicked() {
-            if let Some(path) = rfd::FileDialog::new().pick_folder() {
-                *app.output_path_mut() = path.to_string_lossy().into_owned();
-            }
-        }
-        if ui.button("Clear").clicked() {
-            app.output_path_mut().clear();
-        }
-    });
 
-    // 出力パスの注意書きを表示
-    ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = 3.0;
-        ui.add(egui::Image::new(svg::WARNING).max_height(assets_const::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
-        ui.spacing_mut().item_spacing.x = spacing;
-        ui.add(egui::Label::new(
-            egui::RichText::new("Leave empty to overwrite the original files.").weak(),
-        ));
+    ui.add_space(setting::SETTING_ADD_SPACING);
+
+    ui.separator();
+
+    ui.add_space(setting::SETTING_ADD_SPACING);
+
+    egui::Frame::default().inner_margin(setting::PANEL_INNER_MARGIN).show(ui, |ui| {
+        // 同じパスはスキップ
+        ui.horizontal(|ui| {
+            setting::add_label(ui, "Skip same path:", setting::GENERAL_LABEL_WIDTH);
+            ui.radio_value(app.skip_same_path_mut(), true, "Skip same path");
+            ui.radio_value(app.skip_same_path_mut(), false, "Don't skip same path");
+        });
+
+        // 同じパスはスキップの注意書きを表示
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 3.0;
+            ui.add(egui::Image::new(svg::WARNING).max_height(assets_const::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
+            ui.spacing_mut().item_spacing.x = spacing;
+            ui.add(egui::Label::new(
+                egui::RichText::new("Skip if already completed. Retry canceled and errors.").weak(),
+            ));
+        });
     });
 
     ui.add_space(setting::SETTING_ADD_SPACING);
@@ -61,43 +89,22 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
-    // 同じパスはスキップ
-    ui.horizontal(|ui| {
-        setting::add_label(ui, "Skip same path:", setting::GENERAL_LABEL_WIDTH);
-        ui.radio_value(app.skip_same_path_mut(), true, "Skip same path");
-        ui.radio_value(app.skip_same_path_mut(), false, "Don't skip same path");
-    });
+    egui::Frame::default().inner_margin(setting::PANEL_INNER_MARGIN).show(ui, |ui| {
+        // 効果音鳴らす？
+        ui.horizontal(|ui| {
+            setting::add_label(ui, "Sound effects:", setting::GENERAL_LABEL_WIDTH);
+            ui.radio_value(app.play_sound_mut(), true, "Play sound");
+            ui.radio_value(app.play_sound_mut(), false, "Don't play sound");
+        });
 
-    // 同じパスはスキップの注意書きを表示
-    ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = 3.0;
-        ui.add(egui::Image::new(svg::WARNING).max_height(assets_const::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
-        ui.spacing_mut().item_spacing.x = spacing;
-        ui.add(egui::Label::new(
-            egui::RichText::new("Skip if already completed. Retry canceled and errors.").weak(),
-        ));
-    });
+        ui.add_space(setting::SETTING_ADD_SPACING);
 
-    ui.add_space(setting::SETTING_ADD_SPACING);
-
-    ui.separator();
-
-    ui.add_space(setting::SETTING_ADD_SPACING);
-
-    // 効果音鳴らす？
-    ui.horizontal(|ui| {
-        setting::add_label(ui, "Sound effects:", setting::GENERAL_LABEL_WIDTH);
-        ui.radio_value(app.play_sound_mut(), true, "Play sound");
-        ui.radio_value(app.play_sound_mut(), false, "Don't play sound");
-    });
-
-    ui.add_space(setting::SETTING_ADD_SPACING);
-
-    ui.horizontal(|ui| {
-        setting::add_label(ui, "Volume:", setting::GENERAL_LABEL_WIDTH);
-        ui.scope(|ui| {
-            ui.spacing_mut().slider_width = setting::SOUND_VOLUME_SLIDER_WIDTH;
-            ui.add(egui::Slider::new(app.sound_volume_mut(), setting::SOUND_VOLUME_MIN..=setting::SOUND_VOLUME_MAX));
+        ui.horizontal(|ui| {
+            setting::add_label(ui, "Volume:", setting::GENERAL_LABEL_WIDTH);
+            ui.scope(|ui| {
+                ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
+                ui.add(egui::Slider::new(app.sound_volume_mut(), setting::SOUND_VOLUME_MIN..=setting::SOUND_VOLUME_MAX));
+            });
         });
     });
 }
