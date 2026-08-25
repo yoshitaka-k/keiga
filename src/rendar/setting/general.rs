@@ -48,14 +48,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
         });
 
         // 出力パスの注意書きを表示
-        ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = setting::WARNING_ICON_SPACING;
-            ui.add(egui::Image::new(svg::WARNING).max_height(constants::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
-            ui.spacing_mut().item_spacing.x = spacing;
-            ui.add(egui::Label::new(
-                egui::RichText::new("Leave empty to overwrite the original files.").weak(),
-            ));
-        });
+        setting::warning_note(ui, "Leave empty to overwrite the original files.");
     });
 
     ui.add_space(setting::SETTING_ADD_SPACING);
@@ -73,14 +66,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
         });
 
         // 同じパスはスキップの注意書きを表示
-        ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = setting::WARNING_ICON_SPACING;
-            ui.add(egui::Image::new(svg::WARNING).max_height(constants::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
-            ui.spacing_mut().item_spacing.x = spacing;
-            ui.add(egui::Label::new(
-                egui::RichText::new("Skip if already completed. Retry canceled and errors.").weak(),
-            ));
-        });
+        setting::warning_note(ui, "Skip if already completed. Retry canceled and errors.");
     });
 
     ui.add_space(setting::SETTING_ADD_SPACING);

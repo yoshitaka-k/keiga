@@ -46,6 +46,9 @@ pub(crate) const PNG_OPTIMIZATION_NUM_MAX: u8 = 3;
 pub(crate) const JPEG_QUALITY_MIN: u8 = 50;
 pub(crate) const JPEG_QUALITY_MAX: u8 = 99;
 
+use crate::rendar::assets::{self, constants, svg};
+use crate::rendar::setting;
+
 /// タブの選択時の背景色を取得
 /// * `ui` - UI
 /// * `return` - タブの選択時の背景色
@@ -63,4 +66,23 @@ pub(crate) fn tab_selected_color(ui: &egui::Ui) -> egui::Color32 {
 pub(crate) fn remaining_slider_width(ui: &egui::Ui) -> f32 {
     let spacing = ui.spacing();
     (ui.available_width() - spacing.item_spacing.x - spacing.interact_size.x).max(0.0)
+}
+
+/// 警告ノートを表示
+/// * `ui` - UI
+/// * `text` - 警告ノートのテキスト
+/// * `return` - 警告ノートのリッチテキスト
+pub(crate) fn warning_note(ui: &mut egui::Ui, text: &str) {
+    // デフォルトのスペースの幅を避けておく
+    let spacing = ui.spacing().item_spacing.x;
+
+    // 出力パスの注意書きを表示
+    ui.horizontal(|ui| {
+        ui.spacing_mut().item_spacing.x = setting::WARNING_ICON_SPACING;
+        ui.add(egui::Image::new(svg::WARNING).max_height(constants::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
+        ui.spacing_mut().item_spacing.x = spacing;
+        ui.add(egui::Label::new(
+            egui::RichText::new(text).weak(),
+        ));
+    });
 }

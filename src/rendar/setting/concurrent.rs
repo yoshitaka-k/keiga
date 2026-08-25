@@ -48,13 +48,6 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
         });
 
         // PNG の最適化数の注意書きを表示
-        ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = setting::WARNING_ICON_SPACING;
-            ui.add(egui::Image::new(svg::WARNING).max_height(constants::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
-            ui.spacing_mut().item_spacing.x = spacing;
-            ui.add(egui::Label::new(
-                egui::RichText::new(format!("PNG is included in All. ({} / {})", app.png_optimization_num(), app.optimization_num())).weak(),
-            ));
-        });
+        setting::warning_note(ui, &format!("PNG is included in All. ({} / {})", app.png_optimization_num(), app.optimization_num()));
     });
 }
