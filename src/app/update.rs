@@ -2,8 +2,7 @@ use std::sync::mpsc;
 use serde::Deserialize;
 use getset::Getters;
 
-use crate::version_compare;
-use crate::app;
+use crate::{app, version_compare};
 
 /// アップデート確認の結果
 #[derive(Clone)]

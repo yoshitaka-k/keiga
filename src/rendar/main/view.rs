@@ -1,5 +1,4 @@
-use crate::app;
-use crate::app::{UpdateJob, UpdatedToken};
+use crate::app::{self, UpdateJob, UpdatedToken};
 use crate::file;
 use crate::event::{open, drop};
 use crate::optimize::OptimizeJob;

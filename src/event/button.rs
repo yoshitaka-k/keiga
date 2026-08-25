@@ -1,5 +1,4 @@
-use crate::app::UpdateJob;
-use crate::file;
+use crate::{app, file};
 use crate::optimize::{OptimizeJob, OptimizeStatus};
 use crate::rendar::{SettingToken};
 
@@ -70,6 +69,6 @@ pub(crate) fn cancel_and_clear(files: &mut file::OpenFiles, optimize_job: &mut O
 /// アップデートを確認する
 /// * `update_job` - 更新ジョブ
 /// * `updated_token` - 更新モーダルを表示するためのトークン
-pub(crate) fn check_for_update(update_job: &mut UpdateJob) {
+pub(crate) fn check_for_update(update_job: &mut app::UpdateJob) {
     update_job.run();
 }

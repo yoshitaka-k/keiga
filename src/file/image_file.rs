@@ -1,7 +1,6 @@
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicU64, Ordering, AtomicBool};
-use std::sync::Mutex;
 use std::collections::HashSet;
 use getset::{Getters, Setters};
 

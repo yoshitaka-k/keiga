@@ -1,6 +1,6 @@
 use std::path::PathBuf;
-use crate::optimize::OptimizeJob;
 use crate::file;
+use crate::optimize::OptimizeJob;
 
 /// バックスペースキーが押されたらファイルをキャンセルする
 /// * `files` - ファイル一覧

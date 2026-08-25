@@ -1,5 +1,4 @@
-use crate::app;
-use crate::app::UpdateJob;
+use crate::app::{self, UpdateJob};
 use crate::event::button;
 use crate::rendar;
 use crate::rendar::assets::{self, constants, svg};

@@ -1,5 +1,4 @@
-use crate::duration_format;
-use crate::file;
+use crate::{file, duration_format};
 use crate::event::button;
 use crate::optimize::OptimizeJob;
 use crate::rendar::{ErrorToken, StatusColor};

@@ -1,12 +1,8 @@
-use crate::app;
-use crate::app::{UpdateJob, UpdatedToken};
-use crate::rendar;
-use crate::rendar::{SettingTab, SettingToken};
-use crate::rendar::assets;
-use crate::rendar::assets::{constants as assets_const, svg};
+use crate::app::{self, UpdateJob, UpdatedToken};
+use crate::rendar::{self, SettingTab, SettingToken};
+use crate::rendar::assets::{self, constants, svg};
 use crate::rendar::modal;
-use crate::rendar::setting;
-use crate::rendar::setting::{general, concurrent, quality, about};
+use crate::rendar::setting::{self, general, concurrent, quality, about};
 
 /// 設定ウィンドウを表示
 /// * `ctx` - コンテキスト
@@ -57,7 +53,7 @@ pub(crate) fn view(
         // タブを表示
         egui::Panel::top("setting_top_taskbar").frame(panel_style).show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.add(egui::Image::new(svg::SETTINGS).max_height(assets_const::TOP_MENU_SETTINGS_ICON_SIZE).tint(icon_color));
+                ui.add(egui::Image::new(svg::SETTINGS).max_height(constants::TOP_MENU_SETTINGS_ICON_SIZE).tint(icon_color));
 
                 // タブの選択時の背景色を保存
                 let selection_bg_fill = ui.style_mut().visuals.selection.bg_fill;
