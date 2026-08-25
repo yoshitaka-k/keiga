@@ -1,15 +1,13 @@
-use crate::file;
 use crate::event::button;
 use crate::rendar::SettingToken;
 use crate::rendar::assets::{self, constants, svg};
 
 /// 上部ボタンを表示
 /// * `ui` - UI
-/// * `files` - ドロップされたファイル
 /// * `open_dialog` - ファイルダイアログを開くタイミングをずらす
+/// * `setting_token` - 設定モーダルを表示するためのトークン
 pub(crate) fn view(
     ui: &mut egui::Ui,
-    _files: &mut file::OpenFiles,
     open_dialog: &mut bool,
     setting_token: &mut SettingToken,
 ) {

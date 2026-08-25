@@ -36,6 +36,45 @@ pub(crate) const BOTTOM_PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
     bottom: 6,
 };
 
+use getset::Getters;
+use crate::optimize::OptimizeStatus;
+
+/// ステータスアイコンの色
+#[derive(Getters)]
+pub(crate) struct StatusColor {
+    #[getset(get = "pub")]
+    standby: egui::Color32,
+    #[getset(get = "pub")]
+    optimizing: egui::Color32,
+    #[getset(get = "pub")]
+    optimized: egui::Color32,
+    #[getset(get = "pub")]
+    unchanged: egui::Color32,
+    #[getset(get = "pub")]
+    skipped: egui::Color32,
+    #[getset(get = "pub")]
+    canceled: egui::Color32,
+    #[getset(get = "pub")]
+    error: egui::Color32,
+}
+
+impl StatusColor {
+    /// 新しいステータスアイコンの色を作成
+    /// * `ctx` - コンテキスト
+    /// * `return` - ステータスアイコンの色
+    pub fn new(ctx: &egui::Context) -> Self {
+        Self {
+            standby: assets::status_icon_color(&ctx, OptimizeStatus::Standby),
+            optimizing: assets::status_icon_color(&ctx, OptimizeStatus::Optimizing),
+            optimized: assets::status_icon_color(&ctx, OptimizeStatus::Optimized),
+            unchanged: assets::status_icon_color(&ctx, OptimizeStatus::Unchanged),
+            skipped: assets::status_icon_color(&ctx, OptimizeStatus::Skipped),
+            canceled: assets::status_icon_color(&ctx, OptimizeStatus::Canceled),
+            error: assets::status_icon_color(&ctx, OptimizeStatus::Error(String::new())),
+        }
+    }
+}
+
 /// 設定タブ
 #[derive(PartialEq)]
 pub enum SettingTab {
@@ -111,21 +150,4 @@ pub(crate) fn add_label(ui: &mut egui::Ui, label: &str, width: f32) -> egui::Res
             ui.label(label)
         }
     ).inner
-}
-
-/// アイコンウィジェットを作成
-/// * `icon` - アイコン
-/// * `size` - アイコンのサイズ
-/// * `color` - アイコンの色
-/// * `return` - アイコンウィジェット
-pub(crate) fn icon_widget(icon: egui::ImageSource<'static>, size: f32, color: egui::Color32) -> impl egui::Widget {
-    egui::Image::new(icon).max_height(size).tint(color)
-}
-
-/// スピナーウィジェットを作成
-/// * `size` - スピナーのサイズ
-/// * `color` - スピナーの色
-/// * `return` - スピナーウィジェット
-pub(crate) fn spinner_widget(size: f32, color: egui::Color32) -> impl egui::Widget {
-    egui::Spinner::new().size(size).color(color)
 }

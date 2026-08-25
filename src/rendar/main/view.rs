@@ -3,9 +3,9 @@ use crate::app::{UpdateJob, UpdatedToken};
 use crate::file;
 use crate::event::{open, drop};
 use crate::optimize::OptimizeJob;
-use crate::rendar::{self, SettingTab, ListRowToken, ErrorToken, SettingToken};
-use crate::rendar::assets::{fonts, svg, SoundPlayer};
-use crate::rendar::main::{top, list, bottom};
+use crate::rendar::{self, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken};
+use crate::rendar::assets::{constants, fonts, svg, SoundPlayer};
+use crate::rendar::main::{self, top, list, bottom};
 use crate::rendar::setting::view as setting_window;
 use crate::rendar::modal;
 
@@ -13,6 +13,7 @@ use crate::rendar::modal;
 pub struct Rendar {
     app: app::App,
     files: file::OpenFiles,
+    status_color: StatusColor,
 
     // ファイルダイアログを開くタイミング
     open_dialog: bool,
@@ -59,6 +60,7 @@ impl Rendar {
         Self {
             app,
             files,
+            status_color: StatusColor::new(&cc.egui_ctx),
             open_dialog: false,
             setting_token: SettingToken {
                 open: false,
@@ -107,6 +109,13 @@ impl Rendar {
             }
         }
     }
+
+    /// リスト行の高さを取得
+    /// * `ui` - UI
+    /// * `return` - 行高
+    fn row_height(&self, ui: &egui::Ui) -> f32 {
+        ui.text_style_height(&egui::TextStyle::Body).max(constants::CHECK_ICON_SIZE) + main::SEPARATOR_HEIGHT
+    }
 }
 
 impl eframe::App for Rendar {
@@ -130,7 +139,6 @@ impl eframe::App for Rendar {
         ui.ctx().global_style_mut(|style| {
             // ラベルを選択できないようにする
             style.interaction.selectable_labels = false;
-
         });
 
         // 開くボタンが押されてたらファイルダイアログを開く
@@ -169,17 +177,17 @@ impl eframe::App for Rendar {
 
         // 上部ボタンを表示
         egui::Panel::top("top_taskbar").frame(top_panel_style).show(ui, |ui| {
-            top::view(ui, &mut self.files, &mut self.open_dialog, &mut self.setting_token);
+            top::view(ui, &mut self.open_dialog, &mut self.setting_token);
         });
 
         // 状態とかボタンを表示するタスクバーを表示
         egui::Panel::bottom("bottom_taskbar").frame(bottom_panel_style).show(ui, |ui| {
-            bottom::view(ui, &mut self.files, &mut self.optimize_job, &mut self.error_token);
+            bottom::view(ui, &self.status_color, &mut self.files, &mut self.optimize_job, &mut self.error_token);
         });
 
         // 中央パネルを表示
         egui::CentralPanel::default().show(ui, |ui| {
-            let row_height = list::row_height(ui);
+            let row_height = self.row_height(ui);
             let total_rows = self.files.paths().len();
 
             // ファイル一覧を表示
@@ -198,7 +206,7 @@ impl eframe::App for Rendar {
                     };
 
                     // ファイル一覧を表示
-                    list::view(ui, &mut self.files, &mut self.optimize_job, list_row_token, &mut self.error_token)
+                    list::view(ui, &self.status_color, &mut self.files, &mut self.optimize_job, list_row_token, &mut self.error_token)
                 }).inner;
 
             // リスト行以外をクリックしたら選択解除

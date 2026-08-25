@@ -1,12 +1,11 @@
 use std::path::PathBuf;
 use egui::Sense;
 
-use crate::{file, filesize_format, duration_format};
-use crate::optimize::OptimizeStatus;
+use crate::{file, duration_format};
 use crate::event::{click, key_up};
-use crate::optimize::OptimizeJob;
-use crate::rendar::{self, ListRowToken, ErrorToken};
-use crate::rendar::assets::{self, constants, fonts::text_color, svg, icon_color};
+use crate::optimize::{OptimizeJob, OptimizeStatus};
+use crate::rendar::{ListRowToken, ErrorToken, StatusColor};
+use crate::rendar::assets::{constants, fonts::text_color, svg};
 use crate::rendar::main;
 
 /// ファイル一覧のアクション
@@ -17,55 +16,17 @@ enum FileListAction {
     Space { path: PathBuf },
 }
 
-/// show_rows 用の高さ
-/// * `ui` - UI
-/// * `return` - 行高
-pub(crate) fn row_height(ui: &egui::Ui) -> f32 {
-    ui.text_style_height(&egui::TextStyle::Body).max(constants::CHECK_ICON_SIZE) + main::SEPARATOR_HEIGHT
-}
-
-/// アイコンセルを表示
-/// * `ui` - UI
-/// * `pad` - パディング
-/// * `widget` - アイコン
-/// * `return` - アイコンセルのレスポンス
-fn add_icon_cell(ui: &mut egui::Ui, widget: impl egui::Widget, is_standby: bool) -> egui::Response {
-    // 間隔を保存
-    let spacing = ui.spacing().item_spacing.x;
-    let pad = if is_standby { main::LIST_ICON_STANDBY_LEFT_PADDING } else { 0.0 };
-
-    ui.scope(|ui| {
-        ui.add_space(main::LIST_ICON_CELL_LEFT_PADDING + pad);
-        ui.spacing_mut().item_spacing.x = 0.0;
-        ui.add(widget);
-        ui.spacing_mut().item_spacing.x = spacing;
-        ui.add_space(pad);
-
-        ui.separator();
-    }).response
-}
-
-/// ディレクトリか、ファイルかを表示
-/// * `ui` - UI
-/// * `pad` - パディング
-/// * `path` - パス
-/// * `return` - OpenTypeアイコンのレスポンス
-fn add_opentype_icon(ui: &mut egui::Ui, path: &file::ImageFile, color: egui::Color32) -> egui::Response {
-    if *path.is_relative_path() {
-        ui.add(rendar::icon_widget(svg::FOLDER, constants::FOLDER_ICON_SIZE, color)).on_hover_text(path.relative_path().to_string())
-    } else {
-        ui.add(rendar::icon_widget(svg::PHOTO, constants::PHOTO_ICON_SIZE, color))
-    }
-}
-
 /// ファイル一覧を表示
 /// * `ui` - UI
 /// * `files` - ドロップされたファイル群
+/// * `status_color` - ステータスアイコンの色
 /// * `row_range` - 表示する行の範囲
 /// * `list_row` - 表示する行の情報
+/// * `error_token` - エラーモーダルを表示するためのトークン
 /// * `return` - いずれかの行がクリックされたかどうか
 pub(crate) fn view(
     ui: &mut egui::Ui,
+    status_color: &StatusColor,
     files: &mut file::OpenFiles,
     optimize_job: &mut OptimizeJob,
     list_row: ListRowToken,
@@ -81,14 +42,13 @@ pub(crate) fn view(
     let mut row_clicked = false;
 
     // アイコンの色
-    let icon_color = icon_color(ui);
-    let circle_color = assets::status_icon_color(ui, OptimizeStatus::Standby);
-    let optimizing_color = assets::status_icon_color(ui, OptimizeStatus::Optimizing);
-    let optimized_color = assets::status_icon_color(ui, OptimizeStatus::Optimized);
-    let unchanged_color = assets::status_icon_color(ui, OptimizeStatus::Unchanged);
-    let skipped_color = assets::status_icon_color(ui, OptimizeStatus::Skipped);
-    let canceled_color = assets::status_icon_color(ui, OptimizeStatus::Canceled);
-    let error_color = assets::status_icon_color(ui, OptimizeStatus::Error(String::new()));
+    let circle_color = *status_color.standby();
+    let optimizing_color = *status_color.optimizing();
+    let optimized_color = *status_color.optimized();
+    let unchanged_color = *status_color.unchanged();
+    let skipped_color = *status_color.skipped();
+    let canceled_color = *status_color.canceled();
+    let error_color = *status_color.error();
 
     // 削除キーが押されたら処理予約
     if ui.input(|input| input.key_released(egui::Key::Backspace)) {
@@ -120,15 +80,11 @@ pub(crate) fn view(
         .to_vec();
 
     // リストを表示
-    for (offset, path) in visible.iter().enumerate() {
+    for (offset, image_file) in visible.iter().enumerate() {
         let index = start + offset;
 
-        // 表示するファイルサイズを計算
-        let size = filesize_format!(*path.size());
-        let new_size = filesize_format!(*path.new_size());
-
         // 最適化時間をフォーマット
-        let duration = duration_format!(*path.duration());
+        let duration = duration_format!(*image_file.duration());
 
         // 高さがズレると赤くチラつくので予めサイズ確保
         // 行のクリックイベントを受け取るために Sense::click() を指定
@@ -143,7 +99,7 @@ pub(crate) fn view(
         }
 
         // 選択されている場合は背景を表示
-        if selected_id == Some(*path.id()) {
+        if selected_id == Some(*image_file.id()) {
             ui.painter().rect_filled(row_rect, main::LIST_CORNER_RADIUS, main::selected_background_color(ui));
         }
 
@@ -154,72 +110,42 @@ pub(crate) fn view(
                 .layout(egui::Layout::left_to_right(egui::Align::Center)),
         |ui| {
             // 最適化ステータスに応じて表示
-            match path.status() {
+            match image_file.status() {
                 OptimizeStatus::Standby => {
-                    add_icon_cell(ui,
-                        rendar::icon_widget(svg::CIRCLE, constants::CIRCLE_ICON_SIZE, circle_color)
-                    , true).on_hover_text(path.status().to_string());
-                    add_opentype_icon(ui, path, icon_color);
-                    ui.label(path.file_name());
-                    ui.label(format!("({})", size));
+                    main::list_row_content(ui, image_file, svg::CIRCLE, constants::CIRCLE_ICON_SIZE, circle_color);
                 }
                 OptimizeStatus::Optimizing => {
-                    add_icon_cell(ui,
-                        rendar::icon_widget(svg::AUTORENEW, constants::AUTORENEW_ICON_SIZE, optimizing_color)
-                    , false).on_hover_text(path.status().to_string());
-                    add_opentype_icon(ui, path, icon_color);
-                    ui.label(path.file_name());
-                    ui.label(format!("({})", size));
+                    main::list_row_content(ui, image_file, svg::AUTORENEW, constants::AUTORENEW_ICON_SIZE, optimizing_color);
                 }
                 OptimizeStatus::Optimized => {
-                    add_icon_cell(ui,
-                        rendar::icon_widget(svg::CHECK, constants::CHECK_ICON_SIZE, optimized_color)
-                    , false).on_hover_text(path.status().to_string());
-                    add_opentype_icon(ui, path, icon_color);
-                    ui.label(path.file_name());
-                    ui.label(format!("({} -> {})", size, new_size));
+                    main::list_row_content(ui, image_file, svg::CHECK, constants::CHECK_ICON_SIZE, optimized_color);
+
                     ui.separator();
-                    ui.label(format!("{:+.2}%", path.percent()));
+                    ui.label(format!("{:+.2}%", image_file.percent()));
                     ui.separator();
                     ui.label(format!("{}", duration));
                 }
                 OptimizeStatus::Unchanged => {
-                    add_icon_cell(ui,
-                        rendar::icon_widget(svg::CHECK, constants::CHECK_ICON_SIZE, unchanged_color)
-                    , false).on_hover_text(path.status().to_string());
-                    add_opentype_icon(ui, path, icon_color);
-                    ui.label(path.file_name());
-                    ui.label(format!("({})", size));
+                    main::list_row_content(ui, image_file, svg::CHECK, constants::CHECK_ICON_SIZE, unchanged_color);
+
                     ui.separator();
                     ui.label(text_color("No savings", unchanged_color, Some(main::LIST_NOTE_SIZE)));
                 }
                 OptimizeStatus::Skipped => {
-                    add_icon_cell(ui,
-                        rendar::icon_widget(svg::CHECK, constants::CHECK_ICON_SIZE, skipped_color)
-                    , false).on_hover_text(path.status().to_string());
-                    add_opentype_icon(ui, path, icon_color);
-                    ui.label(path.file_name());
-                    ui.label(format!("({})", size));
+                    main::list_row_content(ui, image_file, svg::CHECK, constants::CHECK_ICON_SIZE, skipped_color);
+
                     ui.separator();
                     ui.label(text_color("Skipped", skipped_color, Some(main::LIST_NOTE_SIZE)));
                 }
                 OptimizeStatus::Canceled => {
-                    add_icon_cell(ui,
-                        rendar::icon_widget(svg::CANCEL, constants::CANCEL_ICON_SIZE, canceled_color)
-                    , false).on_hover_text(path.status().to_string());
-                    add_opentype_icon(ui, path, icon_color);
-                    ui.label(path.file_name());
-                    ui.label(format!("({})", size));
+                    main::list_row_content(ui, image_file, svg::CANCEL, constants::CANCEL_ICON_SIZE, canceled_color);
+
                     ui.separator();
                     ui.label(text_color("Canceled", canceled_color, Some(main::LIST_NOTE_SIZE)));
                 }
                 OptimizeStatus::Error(e) => {
-                    add_icon_cell(ui,
-                        rendar::icon_widget(svg::ERROR, constants::ERROR_ICON_SIZE, error_color)
-                    , false).on_hover_text(path.status().to_string());
-                    add_opentype_icon(ui, path, icon_color);
-                    ui.label(path.file_name());
-                    ui.label(format!("({})", size));
+                    main::list_row_content(ui, image_file, svg::ERROR, constants::ERROR_ICON_SIZE, error_color);
+
                     ui.separator();
                     ui.label(text_color(e, error_color, Some(main::LIST_NOTE_SIZE)));
                 }
@@ -237,14 +163,14 @@ pub(crate) fn view(
 
         // クリックアクションを処理予約
         if response.clicked() {
-            pending_action.push(FileListAction::Click { id: *path.id() });
+            pending_action.push(FileListAction::Click { id: *image_file.id() });
             row_clicked = true;
         }
 
         // ダブルクリックアクションを処理予約
         if response.double_clicked() {
             pending_action.push(FileListAction::DoubleClick {
-                path: path.reveal_path().clone(),
+                path: image_file.reveal_path().clone(),
             });
         }
     }

@@ -43,10 +43,11 @@ pub(crate) fn button_icon_color(ui: &egui::Ui) -> egui::Color32 {
 }
 
 /// アイコンの色
-/// * `ui` - UI
+/// * `ctx` - コンテキスト
+/// * `status` - ステータス
 /// * `return` - アイコンの色
-pub(crate) fn status_icon_color(ui: &egui::Ui, status: OptimizeStatus) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
+pub(crate) fn status_icon_color(ctx: &egui::Context, status: OptimizeStatus) -> egui::Color32 {
+    if ctx.global_style().visuals.dark_mode {
         match status {
             OptimizeStatus::Standby => constants::DARK_MODE_CIRCLE_COLOR,
             OptimizeStatus::Optimizing => constants::DARK_MODE_OPTIMIZING_COLOR,
