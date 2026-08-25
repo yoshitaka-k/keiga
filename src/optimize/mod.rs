@@ -5,6 +5,11 @@ mod png;
 pub use jpeg::Jpeg;
 pub use png::Png;
 pub(crate) use job::OptimizeJob;
+pub(crate) use options::{
+    OptimizeStatus,
+    JpegOptions,
+    PngOptions,
+};
 
 /// 一時ファイルの拡張子
 pub const TEMP_EXTENSION: &str = "keiga.temp";
@@ -14,41 +19,6 @@ use std::collections::HashSet;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 use std::path::PathBuf;
-
-/// 最適化ステータス
-#[derive(Clone, PartialEq)]
-pub enum OptimizeStatus {
-    /// 最適化未実行
-    Standby,
-    /// 最適化中
-    Optimizing,
-    /// 最適化完了
-    Optimized,
-    /// 最適化不要
-    Unchanged,
-    /// 最適化スキップ
-    Skipped,
-    /// 最適化キャンセル
-    Canceled,
-    /// 最適化エラー（メッセージ）
-    Error(String),
-}
-
-impl OptimizeStatus {
-    /// 最適化ステータスを文字列に変換
-    /// * `return` - 最適化ステータスを文字列に変換
-    pub fn to_string(&self) -> String {
-        match self {
-            OptimizeStatus::Standby => "Standby".to_string(),
-            OptimizeStatus::Optimizing => "Optimizing".to_string(),
-            OptimizeStatus::Optimized => "Optimized".to_string(),
-            OptimizeStatus::Unchanged => "Unchanged".to_string(),
-            OptimizeStatus::Skipped => "Skipped".to_string(),
-            OptimizeStatus::Canceled => "Canceled".to_string(),
-            OptimizeStatus::Error(message) => format!("Error: {}", message),
-        }
-    }
-}
 
 /// 最適化トークン
 #[derive(Clone)]
@@ -63,6 +33,79 @@ impl OptimToken {
     /// * `return` - 最適化が中止されたかどうか
     pub fn is_canceled(&self) -> Result<bool, Box<dyn std::error::Error>> {
         Ok(!self.running.load(Ordering::Relaxed) || self.canceled.lock().map_err(|e| format!("{}", e))?.contains(&self.id))
+    }
+}
+
+/// 最適化を行うトレイト
+pub trait Optimizer {
+    type Options;
+
+    /// ファイルをエンコードする
+    /// * `path` - エンコードするファイルのパス
+    /// * `options` - エンコードオプション
+    /// * `return` - エンコードされたファイルのサイズとデータ
+    fn encode(
+        path: &PathBuf,
+        options: Self::Options,
+    ) -> Result<(usize, Vec<u8>), Box<dyn std::error::Error>>;
+
+    /// 最適化を行う
+    /// * `path` - 最適化するファイルのパス
+    /// * `output_path` - 出力ファイルのパス
+    /// * `options` - 最適化オプション
+    /// * `token` - 最適化トークン
+    /// * `return` - 最適化の結果
+    fn optimize(
+        path: &PathBuf,
+        output_path: &PathBuf,
+        options: Self::Options,
+        token: OptimToken
+    ) -> Result<OptimizeStatus, Box<dyn std::error::Error>> {
+        // 最適化中止された場合は処理を中断
+        if token.is_canceled()? {
+            return Ok(OptimizeStatus::Canceled);
+        }
+
+        // ファイルをエンコードする
+        let (original_size, byte_data) = Self::encode(path, options)?;
+
+
+        // 最適化中止された場合は処理を中断
+        if token.is_canceled()? {
+            return Ok(OptimizeStatus::Canceled);
+        }
+
+        // 最適化後のサイズが元のサイズより大きい場合は最適化しない
+        let new_size = byte_data.len() as usize;
+        if original_size <= new_size {
+            // 出力ファイルが存在しない場合は作成
+            if path != output_path && !output_path.exists() {
+                create_output_path(&output_path)?;
+                std::fs::copy(&path, &output_path)?;
+            }
+            return Ok(OptimizeStatus::Unchanged);
+        }
+
+        // 出力ファイルのパスを作成
+        if let Err(e) = create_output_path(&output_path) {
+            return Err(e);
+        }
+
+        // 一時ファイルを作成して最適化後のデータを保存
+        let temp_path = output_path.with_added_extension(TEMP_EXTENSION);
+        std::fs::write(&temp_path, &byte_data)?;
+
+        // 最適化中止された場合は処理を中断
+        if token.is_canceled()? {
+            std::fs::remove_file(&temp_path)?;
+            return Ok(OptimizeStatus::Canceled);
+        }
+
+        // 一時ファイルを元のファイルに上書き
+        replace_file(&temp_path, &output_path)?;
+
+        Ok(OptimizeStatus::Optimized)
+
     }
 }
 

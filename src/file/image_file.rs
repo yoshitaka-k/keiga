@@ -6,7 +6,7 @@ use std::collections::HashSet;
 use getset::{Getters, Setters};
 
 use crate::app::App;
-use crate::optimize::{Jpeg, Png, OptimToken, OptimizeStatus};
+use crate::optimize::{self, OptimToken, OptimizeStatus, Optimizer};
 use crate::file::extension;
 
 /// ImageFile の一意な ID を発行するカウンタ
@@ -208,13 +208,13 @@ impl ImageFile {
             // jpeg ファイルの最適化
             extension::Extension::Jpeg => {
                 let quality = *app.jpeg_quality();
-                Jpeg::optimize(&self.path, &output_path, quality, token)
+                optimize::Jpeg::optimize(&self.path, &output_path, optimize::JpegOptions { quality }, token)
             }
 
             // png ファイルの最適化
             extension::Extension::Png => {
                 let options = app.png_options();
-                Png::optimize(&self.path, &output_path, options, token)
+                optimize::Png::optimize(&self.path, &output_path, optimize::PngOptions { options }, token)
             }
 
             // サポートしていないファイル形式
