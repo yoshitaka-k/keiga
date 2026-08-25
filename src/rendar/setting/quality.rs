@@ -1,25 +1,15 @@
 use crate::app;
 use crate::optimize::options::PngPreset;
 use crate::rendar;
-use crate::rendar::assets::{self, constants, svg};
+use crate::rendar::assets::svg;
 use crate::rendar::setting;
 
 /// 品質を表示
 /// * `ui` - UI
 /// * `app` - アプリ
 pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
-    // デフォルトのスペースの幅を避けておく
-    let spacing = ui.spacing().item_spacing.x;
-
-    // ボタンの色を設定
-    let icon_color = assets::icon_color(ui);
-
-    ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = setting::HEADER_ICON_SPACING;
-        ui.add(egui::Image::new(svg::COMPRESS).max_height(constants::COMPRESS_ICON_SIZE).tint(icon_color));
-        ui.spacing_mut().item_spacing.x = spacing;
-        ui.label("Quality");
-    });
+    // ヘッダーパネルを表示
+    setting::header_panel(ui, svg::COMPRESS, "Quality", None);
 
     ui.add_space(setting::HEADER_BOTTOM_SPACING);
 

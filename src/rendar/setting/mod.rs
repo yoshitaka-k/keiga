@@ -46,6 +46,9 @@ pub(crate) const PNG_OPTIMIZATION_NUM_MAX: u8 = 3;
 pub(crate) const JPEG_QUALITY_MIN: u8 = 50;
 pub(crate) const JPEG_QUALITY_MAX: u8 = 99;
 
+// インポート
+use crate::app::UpdateJob;
+use crate::event::button;
 use crate::rendar::assets::{self, constants, svg};
 use crate::rendar::setting;
 
@@ -66,6 +69,37 @@ pub(crate) fn tab_selected_color(ui: &egui::Ui) -> egui::Color32 {
 pub(crate) fn remaining_slider_width(ui: &egui::Ui) -> f32 {
     let spacing = ui.spacing();
     (ui.available_width() - spacing.item_spacing.x - spacing.interact_size.x).max(0.0)
+}
+
+/// ヘッダーパネルを表示
+/// * `ui` - UI
+/// * `icon` - アイコン
+pub(crate) fn header_panel(
+    ui: &mut egui::Ui,
+    icon: egui::ImageSource<'static>,
+    label: &str,
+    update_job: Option<&mut UpdateJob>,
+) {
+    let spacing = ui.spacing().item_spacing.x;
+
+    // ボタンの色を設定
+    let icon_color = assets::icon_color(ui);
+
+    ui.horizontal(|ui| {
+        ui.spacing_mut().item_spacing.x = setting::HEADER_ICON_SPACING;
+        ui.add(egui::Image::new(icon).max_height(constants::SETTINGS_ICON_SIZE).tint(icon_color));
+        ui.spacing_mut().item_spacing.x = spacing;
+        ui.label(label);
+
+        // アップデート確認ボタン
+        if let Some(update_job) = update_job {
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                if ui.button("Check for updates.").clicked() {
+                    button::check_for_update(update_job);
+                }
+            });
+        }
+    });
 }
 
 /// 警告ノートを表示

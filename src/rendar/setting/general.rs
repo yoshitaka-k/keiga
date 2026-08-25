@@ -1,24 +1,14 @@
 use crate::app;
 use crate::rendar;
-use crate::rendar::assets::{self, constants, svg};
+use crate::rendar::assets::svg;
 use crate::rendar::setting;
 
 /// 並行処理数を表示
 /// * `ui` - UI
 /// * `app` - アプリ
 pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
-    // デフォルトのスペースの幅を避けておく
-    let spacing = ui.spacing().item_spacing.x;
-
-    // ボタンの色を設定
-    let icon_color = assets::icon_color(ui);
-
-    ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = setting::HEADER_ICON_SPACING;
-        ui.add(egui::Image::new(svg::SETTINGS).max_height(constants::SETTINGS_ICON_SIZE).tint(icon_color));
-        ui.spacing_mut().item_spacing.x = spacing;
-        ui.label("General");
-    });
+    // ヘッダーパネルを表示
+    setting::header_panel(ui, svg::SETTINGS, "General", None);
 
     ui.add_space(setting::HEADER_BOTTOM_SPACING);
 
@@ -26,6 +16,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
+    // フレームを表示
     egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
         ui.horizontal(|ui| {
             rendar::add_label(ui, "Output path:", setting::GENERAL_LABEL_WIDTH);
