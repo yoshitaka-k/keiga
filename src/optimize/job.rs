@@ -89,24 +89,9 @@ impl OptimizeJob {
 
             // 最適化を実行するスレッドを作成
             std::thread::spawn(move || {
-                // クリアボタンを押されて最適化をキャンセルされていないか確認
-                // 1件キャンセルされていないか確認
-                match Self::is_canceled(&running, &canceled, &file) {
-                    Ok(true) => {
-                        // キャンセルされている場合は最適化を実行しない
-                        // 最適化済みでなければキャンセル状態にする
-                        if !matches!(file.status(), OptimizeStatus::Optimized) {
-                            // キャンセル状態にする
-                            file.set_status(OptimizeStatus::Canceled);
-                        }
-                    }
-                    Ok(false) => {
-                        // キャンセルされていない場合は最適化を実行
-                        let _ = file.optimize(&app, Arc::clone(&running), Arc::clone(&canceled));
-                    }
-                    Err(_) => {
-                        file.set_status(OptimizeStatus::Error("Canceled lock failed".into()));
-                    }
+                // 最適化を実行
+                if let Err(e) = file.optimize(&app, Arc::clone(&running), Arc::clone(&canceled)) {
+                    file.set_status(OptimizeStatus::Error(e.to_string()));
                 }
 
                 // 最適化結果を送信
@@ -171,23 +156,6 @@ impl OptimizeJob {
     pub fn add_canceled_id(&self, id: u64) -> Result<(), Box<dyn std::error::Error>> {
         self.canceled.lock().map_err(|e| format!("{}", e))?.insert(id);
         Ok(())
-    }
-
-    /// 全体停止、または指定ファイルが1件キャンセル済みか最適化済みかどうか
-    /// * `running` - 最適化実行フラグ
-    /// * `canceled` - 1件キャンセルされた ID の集合
-    /// * `file` - 確認するファイル
-    /// * `return` - キャンセルされているかどうか
-    fn is_canceled(running: &AtomicBool, canceled: &Mutex<HashSet<u64>>, file: &image_file::ImageFile) -> Result<bool, Box<dyn std::error::Error>> {
-        // 全体停止
-        if !running.load(Ordering::Relaxed) {
-            return Ok(true);
-        }
-        // キャンセル済み
-        if canceled.lock().map_err(|e| format!("{}", e))?.contains(file.id()) {
-            return Ok(true);
-        }
-        Ok(false)
     }
 
     /// キャンセルに登録されているファイル ID を全てクリア
