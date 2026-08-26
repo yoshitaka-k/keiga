@@ -114,7 +114,7 @@ impl OpenFiles {
         let mut total_new_size = 0;
         let mut total_duration = 0;
 
-        //　集計を行う
+        // 各ファイルの情報を集計
         for file in &self.paths {
             match file.status() {
                 OptimizeStatus::Standby => standby_len += 1,
