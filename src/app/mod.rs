@@ -20,6 +20,9 @@ const DEFAULT_JPEG_QUALITY: u8 = 80;
 /// PNG 最適化プリセットのデフォルト値
 const DEFAULT_PNG_PRESET: PngPreset = PngPreset::Default;
 
+/// 効果音の音量のデフォルト値
+const DEFAULT_SOUND_VOLUME: u8 = 5;
+
 /// GitHub リポジトリ URL
 pub(crate) const GITHUB_URL: &str = "https://github.com/{repository}";
 
@@ -29,20 +32,19 @@ pub(crate) const REQUEST_URL: &str = "https://api.github.com/repos/{repository}/
 /// アプリケーションを管理する構造体
 #[derive(Clone, Getters, MutGetters)]
 #[derive(Serialize, Deserialize)]
+#[serde(default)]
 pub struct App {
     /// 読み込める拡張子
     #[getset(get = "pub")]
-    #[serde(skip, default = "default_extensions")]
+    #[serde(skip)]
     extensions: Vec<&'static str>,
 
     /// 実行する最適化数
     #[getset(get = "pub", get_mut = "pub")]
-    #[serde(default = "default_optimization_num")]
     optimization_num: u8,
 
     /// PNG 最適化数
     #[getset(get = "pub", get_mut = "pub")]
-    #[serde(default = "default_png_optimization_num")]
     png_optimization_num: u8,
 
     /// JPEG 品質
@@ -55,54 +57,36 @@ pub struct App {
 
     /// 同じパスはスキップ
     #[getset(get = "pub", get_mut = "pub")]
-    #[serde(default = "default_skip_same_path")]
     skip_same_path: bool,
 
     /// 出力パス
     #[getset(get = "pub", get_mut = "pub")]
-    #[serde(default = "default_output_path")]
     output_path: String,
 
     /// 効果音鳴らすかどうか
     #[getset(get = "pub", get_mut = "pub")]
-    #[serde(default = "default_play_sound")]
     play_sound: bool,
 
     /// 効果音の音量
     #[getset(get = "pub", get_mut = "pub")]
-    #[serde(default = "default_sound_volume")]
     sound_volume: u8,
 }
 
-/// 最適化数のデフォルト値
-/// * `return` - 最適化数のデフォルト値
-fn default_optimization_num() -> u8 {
-    DEFAULT_OPTIMIZATION_NUM
-}
-
-/// PNG 最適化数のデフォルト値
-fn default_png_optimization_num() -> u8 {
-    DEFAULT_PNG_OPTIMIZATION_NUM
-}
-
-/// 同じパスはスキップのデフォルト値
-fn default_skip_same_path() -> bool {
-    true
-}
-
-/// 出力パスのデフォルト値
-fn default_output_path() -> String {
-    "".to_string()
-}
-
-/// 効果音鳴らす？のデフォルト値
-fn default_play_sound() -> bool {
-    true
-}
-
-/// 効果音の音量のデフォルト値
-fn default_sound_volume() -> u8 {
-    5
+/// App のデフォルト値
+impl Default for App {
+    fn default() -> Self {
+        Self {
+            extensions: default_extensions(),
+            optimization_num: DEFAULT_OPTIMIZATION_NUM,
+            png_optimization_num: DEFAULT_PNG_OPTIMIZATION_NUM,
+            jpeg_quality: DEFAULT_JPEG_QUALITY,
+            png_preset: DEFAULT_PNG_PRESET,
+            skip_same_path: true,
+            output_path: "".to_string(),
+            play_sound: true,
+            sound_volume: DEFAULT_SOUND_VOLUME,
+        }
+    }
 }
 
 /// 読み込める拡張子
@@ -118,17 +102,7 @@ impl App {
     /// 新しい App を作成
     /// * `return` - App のインスタンス
     pub fn new() -> Self {
-        Self {
-            extensions: default_extensions(),
-            optimization_num: default_optimization_num(),
-            png_optimization_num: default_png_optimization_num(),
-            jpeg_quality: DEFAULT_JPEG_QUALITY,
-            png_preset: DEFAULT_PNG_PRESET,
-            skip_same_path: default_skip_same_path(),
-            output_path: default_output_path(),
-            play_sound: default_play_sound(),
-            sound_volume: default_sound_volume(),
-        }
+        Self::default()
     }
 
     /// 拡張子を文字列に変換
