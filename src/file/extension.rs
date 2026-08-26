@@ -1,6 +1,6 @@
 use std::ffi::OsStr;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone)]
 pub enum Extension {
     Jpeg,
     Png,

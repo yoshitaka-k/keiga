@@ -4,15 +4,15 @@ use std::sync::atomic::{AtomicU64, Ordering, AtomicBool};
 use std::collections::HashSet;
 use getset::{Getters, Setters};
 
-use crate::app::App;
-use crate::optimize::{self, OptimToken, OptimizeStatus, Optimizer};
+use crate::{app, file};
 use crate::file::extension;
+use crate::optimize::{self, OptimToken, OptimizeStatus, Optimizer};
 
 /// ImageFile の一意な ID を発行するカウンタ
 static NEXT_ID: AtomicU64 = AtomicU64::new(1);
 
 /// 画像ファイルを管理する構造体
-#[derive(Clone, PartialEq, Getters, Setters)]
+#[derive(Clone, Getters, Setters)]
 pub struct ImageFile {
     /// ファイルの一意な ID
     #[getset(get = "pub")]
@@ -56,7 +56,7 @@ pub struct ImageFile {
 
     /// ファイルの最適化での節約率
     #[getset(get = "pub")]
-    percent: f32,
+    saved_rate: f32,
 
     /// 最適化時間（ミリ秒）
     #[getset(get = "pub", set = "pub")]
@@ -105,7 +105,7 @@ impl ImageFile {
             status: OptimizeStatus::Standby,
             size,
             new_size: 0,
-            percent: 0.00f32,
+            saved_rate: 0.00f32,
             duration: 0,
         })
     }
@@ -119,7 +119,7 @@ impl ImageFile {
     /// 出力ファイルのパスを作成
     /// * `app` - アプリケーションの設定
     /// * `return` - 出力ファイルのパス
-    pub fn make_output_path(&self, app: &App) -> PathBuf {
+    pub fn make_output_path(&self, app: &app::App) -> PathBuf {
         if app.output_path().is_empty() {
             self.path.clone()
         } else {
@@ -136,46 +136,17 @@ impl ImageFile {
         }
     }
 
-    /// ファイルサイズの更新
-    /// * `output_path` - 出力ファイルのパス
-    fn update_file_size(&mut self, output_path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-        // 最適化後のファイル情報
-        let metadata = output_path.metadata().map_err(|e| format!("{} \n\n{}", output_path.display(), e))?;
-        self.new_size = metadata.len();
-
-        if self.size > 0 {
-            // 最適化後のファイズによってパーセントを計算
-            if self.size >= self.new_size {
-                let percent = (self.size - self.new_size) as f32 / self.size as f32 * 100.0;
-                self.percent = percent as f32 * -1.0;
-            } else {
-                let percent = (self.new_size - self.size) as f32 / self.size as f32 * 100.0;
-                self.percent = percent as f32 * 1.0;
-            }
-
-            // 小数点第2位までの精度にする
-            let res = (self.percent * 100.0).ceil() / 100.0;
-            self.percent = res as f32;
-        } else {
-            self.percent = 0.00f32;
-        }
-
-        Ok(())
-    }
-
     /// 画像を最適化
     /// * `app` - アプリケーションの設定
     /// * `return` - 最適化の結果
     pub fn optimize(
         &mut self,
-        app: &App,
+        app: &app::App,
         running: Arc<AtomicBool>,
         canceled: Arc<Mutex<HashSet<u64>>>
     ) -> Result<OptimizeStatus, Box<dyn std::error::Error>> {
-        // 完了済み・最適化不要・キャンセル済み・エラー済みは再実行しない
-        if matches!(self.status,
-            OptimizeStatus::Optimized | OptimizeStatus::Unchanged | OptimizeStatus::Skipped | OptimizeStatus::Canceled | OptimizeStatus::Error(_)
-        ) {
+        // 待機中・最適化中は再実行しない
+        if !matches!(self.status, OptimizeStatus::Standby | OptimizeStatus::Optimizing) {
             return Ok(self.status.clone());
         }
 
@@ -224,12 +195,6 @@ impl ImageFile {
         match result {
             Ok(status) => {
                 match status {
-                    OptimizeStatus::Standby => {
-                        Ok(self.status.clone())
-                    }
-                    OptimizeStatus::Optimizing => {
-                        Ok(self.status.clone())
-                    }
                     OptimizeStatus::Optimized => {
                         // 最適化終了時間を取得
                         let end_time = std::time::Instant::now();
@@ -237,8 +202,10 @@ impl ImageFile {
                         let duration = end_time.duration_since(start_time).as_millis();
                         self.duration = duration as u64;
 
-                        // ファイルサイズを更新
-                        self.update_file_size(&output_path)?;
+                        // 最適化後のファイルサイズと節約率を更新
+                        let metadata = output_path.metadata().map_err(|e| format!("{} \n\n{}", output_path.display(), e))?;
+                        self.new_size = metadata.len();
+                        self.saved_rate = file::calc_saved_rate(self.size, self.new_size);
 
                         // 最適化済みに設定
                         self.status = OptimizeStatus::Optimized;
@@ -264,6 +231,7 @@ impl ImageFile {
                         self.status = OptimizeStatus::Error(e.clone());
                         Err(e.to_string().clone().into())
                     }
+                    _ => Ok(self.status.clone())
                 }
             }
             Err(e) => {

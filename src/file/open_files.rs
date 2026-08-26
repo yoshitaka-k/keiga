@@ -6,7 +6,7 @@ use crate::{app, file};
 use crate::optimize::OptimizeStatus;
 
 /// ファイル情報を管理する構造体
-#[derive(Clone, PartialEq)]
+#[derive(Clone)]
 struct FileInfo {
     standby_len: u32,
     optimizing_len: u32,
@@ -18,6 +18,7 @@ struct FileInfo {
     total_size: u64,
     total_new_size: u64,
     total_duration: u64,
+    total_saved_rate: f32,
 }
 
 impl FileInfo {
@@ -33,12 +34,13 @@ impl FileInfo {
             total_size: 0,
             total_new_size: 0,
             total_duration: 0,
+            total_saved_rate: 0.00,
         }
     }
 }
 
 /// ドロップされたファイルを管理する構造体
-#[derive(Clone, PartialEq, Getters, Setters)]
+#[derive(Clone, Getters, Setters)]
 pub struct OpenFiles {
     /// ファイル一覧
     #[getset(get = "pub")]
@@ -99,7 +101,7 @@ impl OpenFiles {
     }
 
     /// ファイル情報を更新
-    pub fn update_file_length(&mut self) {
+    pub fn update_file_info(&mut self) {
         let mut standby_len = 0;
         let mut optimizing_len = 0;
         let mut optimized_len = 0;
@@ -108,11 +110,22 @@ impl OpenFiles {
         let mut skipped_len = 0;
         let mut error_len = 0;
 
+        let mut total_size = 0;
+        let mut total_new_size = 0;
+        let mut total_duration = 0;
+
+        //　集計を行う
         for file in &self.paths {
             match file.status() {
                 OptimizeStatus::Standby => standby_len += 1,
                 OptimizeStatus::Optimizing => optimizing_len += 1,
-                OptimizeStatus::Optimized => optimized_len += 1,
+                OptimizeStatus::Optimized => {
+                    optimized_len += 1;
+
+                    total_size += file.size();
+                    total_new_size += file.new_size();
+                    total_duration += file.duration();
+                }
                 OptimizeStatus::Unchanged => unchanged_len += 1,
                 OptimizeStatus::Skipped => skipped_len += 1,
                 OptimizeStatus::Canceled => canceled_len += 1,
@@ -120,6 +133,10 @@ impl OpenFiles {
             }
         }
 
+        // 節約率を計算
+        let total_saved_rate = file::calc_saved_rate(total_size, total_new_size);
+
+        // ファイル情報を更新
         self.file_info.standby_len = standby_len;
         self.file_info.optimizing_len = optimizing_len;
         self.file_info.optimized_len = optimized_len;
@@ -127,6 +144,11 @@ impl OpenFiles {
         self.file_info.skipped_len = skipped_len;
         self.file_info.canceled_len = canceled_len;
         self.file_info.error_len = error_len;
+
+        self.file_info.total_size = total_size;
+        self.file_info.total_new_size = total_new_size;
+        self.file_info.total_duration = total_duration;
+        self.file_info.total_saved_rate = total_saved_rate;
     }
 
     /// ファイルの数を取得
@@ -177,25 +199,6 @@ impl OpenFiles {
         self.file_info.error_len
     }
 
-    /// ファイルのサイズを計算
-    pub fn calc_total_info(&mut self) {
-        let mut total_size = 0;
-        let mut total_new_size = 0;
-        let mut total_duration = 0;
-
-        for file in &self.paths {
-            if matches!(file.status(), OptimizeStatus::Optimized) {
-                total_size += file.size();
-                total_new_size += file.new_size();
-                total_duration += file.duration();
-            }
-        }
-
-        self.file_info.total_size = total_size;
-        self.file_info.total_new_size = total_new_size;
-        self.file_info.total_duration = total_duration;
-    }
-
     /// ファイルの総サイズを取得
     /// * `return` - ファイルの総サイズ
     pub fn total_size(&self) -> u64 {
@@ -216,25 +219,15 @@ impl OpenFiles {
 
     /// ファイルの総節約率を取得
     /// * `return` - ファイルの総節約率
-    pub fn total_saved_rate(&mut self) -> f32 {
-        self.calc_total_info();
-
-        if self.total_new_size() == 0 {
-            return 0.00;
-        }
-
-        // 最適化後のファイズによってパーセントを計算
-        if self.total_size() >= self.total_new_size() {
-            (self.total_size() - self.total_new_size()) as f32 / self.total_size() as f32 * 100.0 * -1.0
-        } else {
-            (self.total_new_size() - self.total_size()) as f32 / self.total_size() as f32 * 100.0 * 1.0
-        }
+    pub fn total_saved_rate(&self) -> f32 {
+        self.file_info.total_saved_rate
     }
 
     /// パスをクリア
     pub fn clear(&mut self) {
         self.paths.clear();
         self.selected_id = None;
+        self.file_info = FileInfo::new();
     }
 
     /// 未処理ファイルがあるかどうか
@@ -266,7 +259,9 @@ impl OpenFiles {
             }
 
             // 元のファイルがキャンセルされていて、最適化済みであれば反映
-            if matches!(file.status(), OptimizeStatus::Canceled) && matches!(result.status(), OptimizeStatus::Optimized) {
+            if matches!(file.status(), OptimizeStatus::Canceled)
+                && matches!(result.status(), OptimizeStatus::Optimized)
+            {
                 *file = result;
                 return;
             }

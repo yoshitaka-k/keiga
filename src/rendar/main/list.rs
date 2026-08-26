@@ -121,7 +121,7 @@ pub(crate) fn view(
                     main::list_row_content(ui, image_file, svg::CHECK, constants::CHECK_ICON_SIZE, optimized_color);
 
                     ui.separator();
-                    ui.label(format!("{:+.2}%", image_file.percent()));
+                    ui.label(format!("{:+.2}%", image_file.saved_rate()));
                     ui.separator();
                     ui.label(format!("{}", duration));
                 }

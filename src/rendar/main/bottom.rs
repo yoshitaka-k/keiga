@@ -17,8 +17,8 @@ pub(crate) fn view(
     optimize_job: &mut OptimizeJob,
     error_token: &mut ErrorToken
 ) {
-    // 未処理、最適化中、最適化済み、エラーのファイル数
-    files.update_file_length();
+    // ファイル情報を更新
+    files.update_file_info();
 
     let standby_len = files.standby_len();
     let optimizing_len = files.optimizing_len();

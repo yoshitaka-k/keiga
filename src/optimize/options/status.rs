@@ -1,5 +1,5 @@
 /// 最適化ステータス
-#[derive(Clone, PartialEq)]
+#[derive(Clone)]
 pub enum OptimizeStatus {
     /// 最適化未実行
     Standby,
