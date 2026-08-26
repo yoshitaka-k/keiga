@@ -1,5 +1,5 @@
 use crate::{app, file};
-use crate::optimize::{OptimizeJob, OptimizeStatus};
+use crate::optimize::OptimizeJob;
 use crate::rendar::{SettingToken};
 
 /// ファイルダイアログを開く
@@ -45,7 +45,7 @@ pub(crate) fn cancel_and_clear(files: &mut file::OpenFiles, optimize_job: &mut O
     // ファイルを1件ずつキャンセル
     for file in files.paths() {
         // 待機中か最適化中でない場合はスキップ
-        if !matches!(file.status(), OptimizeStatus::Standby | OptimizeStatus::Optimizing) {
+        if !file.is_standby_or_optimizing() {
             continue;
         }
         // キャンセル ID を追加してキャンセル状態にする

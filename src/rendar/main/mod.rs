@@ -20,7 +20,6 @@ pub(crate) const LIST_NOTE_SIZE: f32 = 11.0;
 pub(crate) const LIST_CORNER_RADIUS: f32 = 1.0;
 
 use crate::{file, filesize_format};
-use crate::optimize::OptimizeStatus;
 use crate::rendar::assets::{constants, svg, icon_color};
 
 /// アイコンウィジェットを作成
@@ -133,7 +132,7 @@ pub(crate) fn list_row_content(
     ui.label(image_file.file_name());
 
     // ファイルサイズを表示
-    if matches!(*image_file.status(), OptimizeStatus::Optimized) {
+    if image_file.is_optimized() {
         ui.label(format!("({} -> {})", size, new_size));
     } else {
         ui.label(format!("({})", size));

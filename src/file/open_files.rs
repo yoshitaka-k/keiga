@@ -75,7 +75,7 @@ impl OpenFiles {
     /// * `return` - 待機中のファイル1件
     pub fn get_standby_file(&mut self, allow_png: bool) -> Option<&mut file::ImageFile> {
         self.paths.iter_mut().find(|f| {
-            matches!(f.status(), OptimizeStatus::Standby) && (allow_png || !f.is_png())
+            f.is_standby() && (allow_png || !f.is_png())
         })
     }
 
@@ -93,8 +93,8 @@ impl OpenFiles {
     /// * `id` - キャンセルされたファイルの ID
     pub fn set_status_canceled(&mut self, id: u64) {
         if let Some(file) = self.paths.iter_mut().find(|f| *f.id() == id) {
-            // 最適化済み・最適化不要・スキップはキャンセルできない
-            if !matches!(file.status(), OptimizeStatus::Optimized | OptimizeStatus::Unchanged | OptimizeStatus::Skipped) {
+            // 最適化済み・最適化不要・スキップ・エラーはキャンセルできない
+            if !file.is_optimized() && !file.is_unchanged() && !file.is_skipped() && !file.is_error() {
                 file.set_status(OptimizeStatus::Canceled);
             }
         }
@@ -233,19 +233,19 @@ impl OpenFiles {
     /// 未処理ファイルがあるかどうか
     /// * `return` - 未処理ファイルがあるかどうか
     pub fn has_standby(&self) -> bool {
-        self.paths.iter().any(|f| matches!(f.status(), OptimizeStatus::Standby))
+        self.paths.iter().any(|f| f.is_standby())
     }
 
     /// 最適化中のファイルがあるかどうか
     /// * `return` - 最適化中のファイルがあるかどうか
     pub fn has_optimizing(&self) -> bool {
-        self.paths.iter().any(|f| matches!(f.status(), OptimizeStatus::Optimizing))
+        self.paths.iter().any(|f| f.is_optimizing())
     }
 
     /// エラーのファイルがあるかどうか
     /// * `return` - エラーのファイルがあるかどうか
     pub fn has_error(&self) -> bool {
-        self.paths.iter().any(|f| matches!(f.status(), OptimizeStatus::Error(_)))
+        self.paths.iter().any(|f| f.is_error())
     }
 
     /// 最適化結果を既存の一覧へ反映
@@ -254,14 +254,12 @@ impl OpenFiles {
         // 既存のファイル一覧から ID が一致するファイルを検索
         if let Some(file) = self.paths.iter_mut().find(|f| f.id() == result.id()) {
             // 元のファイルが最適化済みであればスキップ
-            if matches!(file.status(), OptimizeStatus::Optimized) {
+            if file.is_optimized() {
                 return;
             }
 
             // 元のファイルがキャンセルされていて、最適化済みであれば反映
-            if matches!(file.status(), OptimizeStatus::Canceled)
-                && matches!(result.status(), OptimizeStatus::Optimized)
-            {
+            if file.is_canceled() && result.is_optimized() {
                 *file = result;
                 return;
             }
@@ -289,7 +287,7 @@ impl OpenFiles {
     /// * `path` - ファイルのパス
     /// * `return` - 待機中か最適化中かどうか
     fn is_standby_or_optimizing(&self, path: &PathBuf) -> bool {
-        self.paths.iter().any(|f| f.path() == path && matches!(f.status(), OptimizeStatus::Standby | OptimizeStatus::Optimizing))
+        self.paths.iter().any(|f| f.path() == path && f.is_standby_or_optimizing())
     }
 
     /// 入力・出力ファイルが一致しているかどうかを確認
@@ -300,7 +298,7 @@ impl OpenFiles {
         self.paths.iter().any(|f| {
             f.path() == path
                 && f.output_path().as_ref() == Some(output_path)
-                && matches!(f.status(), OptimizeStatus::Optimized | OptimizeStatus::Unchanged)
+                && (f.is_optimized() || f.is_unchanged())
         })
     }
 

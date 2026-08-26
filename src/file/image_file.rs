@@ -116,6 +116,54 @@ impl ImageFile {
         matches!(self.extension, extension::Extension::Png)
     }
 
+    /// ファイルが待機中かどうか
+    /// * `return` - ファイルが待機中かどうか
+    pub fn is_standby(&self) -> bool {
+        matches!(self.status, OptimizeStatus::Standby)
+    }
+
+    /// ファイルが最適化中かどうか
+    /// * `return` - ファイルが最適化中かどうか
+    pub fn is_optimizing(&self) -> bool {
+        matches!(self.status, OptimizeStatus::Optimizing)
+    }
+
+    /// ファイルが最適化済みかどうか
+    /// * `return` - ファイルが最適化済みかどうか
+    pub fn is_optimized(&self) -> bool {
+        matches!(self.status, OptimizeStatus::Optimized)
+    }
+
+    /// ファイルが最適化不要かどうか
+    /// * `return` - ファイルが最適化不要かどうか
+    pub fn is_unchanged(&self) -> bool {
+        matches!(self.status, OptimizeStatus::Unchanged)
+    }
+
+    /// ファイルがスキップされているかどうか
+    /// * `return` - ファイルがスキップされているかどうか
+    pub fn is_skipped(&self) -> bool {
+        matches!(self.status, OptimizeStatus::Skipped)
+    }
+
+    /// ファイルがキャンセルされているかどうか
+    /// * `return` - ファイルがキャンセルされているかどうか
+    pub fn is_canceled(&self) -> bool {
+        matches!(self.status, OptimizeStatus::Canceled)
+    }
+
+    /// ファイルがエラーかどうか
+    /// * `return` - ファイルがエラーかどうか
+    pub fn is_error(&self) -> bool {
+        matches!(self.status, OptimizeStatus::Error(_))
+    }
+
+    /// ファイルが待機中・最適化中かどうか
+    /// * `return` - ファイルが待機中・最適化中かどうか
+    pub fn is_standby_or_optimizing(&self) -> bool {
+        matches!(self.status, OptimizeStatus::Standby | OptimizeStatus::Optimizing)
+    }
+
     /// 出力ファイルのパスを作成
     /// * `app` - アプリケーションの設定
     /// * `return` - 出力ファイルのパス
@@ -146,7 +194,7 @@ impl ImageFile {
         canceled: Arc<Mutex<HashSet<u64>>>
     ) -> Result<OptimizeStatus, Box<dyn std::error::Error>> {
         // 待機中・最適化中は再実行しない
-        if !matches!(self.status, OptimizeStatus::Standby | OptimizeStatus::Optimizing) {
+        if !self.is_standby_or_optimizing() {
             return Ok(self.status.clone());
         }
 
