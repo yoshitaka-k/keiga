@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use crate::file;
 use crate::optimize::OptimizeJob;
 
@@ -25,25 +25,27 @@ pub fn space(path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
 /// QuickLook でファイルを表示する
 /// * `path` - ファイルのパス
 /// * `return` - エラーが発生したかどうか
-#[cfg(target_os = "macos")]
-fn quicklook_command(path: &PathBuf) -> Result<(), std::io::Error> {
-    if path.exists() {
-        if let Some(path) = path.to_str() {
-            std::process::Command::new("qlmanage").args(["-p", path]).spawn()?;
-            return Ok(());
-        } else {
-            return Err(std::io::Error::new(std::io::ErrorKind::Other, "Path is not valid"));
-        }
-    } else {
-        return Err(std::io::Error::new(std::io::ErrorKind::Other, "File does not exist"));
+fn quicklook_command(path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    if !path.exists() {
+        return Err("File does not exist".into());
     }
+
+    // ファイルをプレビュー表示
+    return preview_file_command(&path.as_path());
+}
+
+/// QuickLook でファイルを表示する
+#[cfg(target_os = "macos")]
+fn preview_file_command(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    std::process::Command::new("qlmanage").arg("-p").arg(path).spawn()?;
+    Ok(())
 }
 
 /// Windows では QuickLook を使用しない
 /// * `path` - ファイルのパス
 /// * `return` - エラーが発生したかどうか
 #[cfg(target_os = "windows")]
-fn quicklook_command(_path: &PathBuf) -> Result<(), std::io::Error> {
+fn preview_file_command(_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
@@ -51,6 +53,6 @@ fn quicklook_command(_path: &PathBuf) -> Result<(), std::io::Error> {
 /// * `path` - ファイルのパス
 /// * `return` - エラーが発生したかどうか
 #[cfg(target_os = "linux")]
-fn quicklook_command(_path: &PathBuf) -> Result<(), std::io::Error> {
+fn preview_file_command(_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
