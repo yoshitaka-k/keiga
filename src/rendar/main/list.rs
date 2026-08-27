@@ -185,21 +185,21 @@ pub(crate) fn view(
                 if let Err(e) = click::double_click(&path) {
                     eprintln!("Error revealing file: {}", e);
                     error_token.open = true;
-                    error_token.value = Some(e);
+                    error_token.value = Some(e.into());
                 }
             }
             FileListAction::Backspace { id: _id } => {
                 if let Err(e) = key_up::backspace(files, optimize_job) {
                     eprintln!("Error canceling file: {}", e);
                     error_token.open = true;
-                    error_token.value = Some(e);
+                    error_token.value = Some(e.into());
                 }
             }
             FileListAction::Space { path } => {
                 if let Err(e) = key_up::space(&path) {
                     eprintln!("Error revealing file: {}", e);
                     error_token.open = true;
-                    error_token.value = Some(e);
+                    error_token.value = Some(e.into());
                 }
             }
         }

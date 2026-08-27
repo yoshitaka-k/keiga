@@ -3,7 +3,7 @@ use std::sync::{mpsc, Mutex};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::collections::HashSet;
 
-use crate::app;
+use crate::{app, error};
 use crate::file::{open_files, image_file};
 use super::OptimizeStatus;
 
@@ -153,23 +153,23 @@ impl OptimizeJob {
 
     /// 最適化をキャンセル
     /// * `id` - キャンセルするファイルの ID
-    pub fn add_canceled_id(&self, id: u64) -> Result<(), Box<dyn std::error::Error>> {
-        self.canceled.lock().map_err(|e| format!("{}", e))?.insert(id);
+    pub fn add_canceled_id(&self, id: u64) -> error::Result<()> {
+        self.canceled.lock().map_err(|_| error::KeigaError::LockPoisoned)?.insert(id);
         Ok(())
     }
 
     /// キャンセルに登録されているファイル ID を全てクリア
     /// * `return` - 成功かどうか
-    pub fn clear_canceled(&self) -> Result<(), Box<dyn std::error::Error>> {
-        self.canceled.lock().map_err(|e| format!("{}", e))?.clear();
+    pub fn clear_canceled(&self) -> error::Result<()> {
+        self.canceled.lock().map_err(|_| error::KeigaError::LockPoisoned)?.clear();
         Ok(())
     }
 
     /// キャンセルに登録されているファイル ID を削除
     /// * `id` - 削除するファイル ID
     /// * `return` - 成功かどうか
-    pub fn remove_canceled_id(&self, id: u64) -> Result<(), Box<dyn std::error::Error>> {
-        self.canceled.lock().map_err(|e| format!("{}", e))?.remove(&id);
+    pub fn remove_canceled_id(&self, id: u64) -> error::Result<()> {
+        self.canceled.lock().map_err(|_| error::KeigaError::LockPoisoned)?.remove(&id);
         Ok(())
     }
 }

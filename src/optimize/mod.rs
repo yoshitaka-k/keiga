@@ -19,6 +19,7 @@ use std::collections::HashSet;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 use std::path::PathBuf;
+use crate::error;
 
 /// 最適化トークン
 #[derive(Clone)]
@@ -31,8 +32,8 @@ pub struct OptimToken {
 impl OptimToken {
     /// 最適化が中止されたかどうかを返す
     /// * `return` - 最適化が中止されたかどうか
-    pub fn is_canceled(&self) -> Result<bool, Box<dyn std::error::Error>> {
-        Ok(!self.running.load(Ordering::Relaxed) || self.canceled.lock().map_err(|e| format!("{}", e))?.contains(&self.id))
+    pub fn is_canceled(&self) -> error::Result<bool> {
+        Ok(!self.running.load(Ordering::Relaxed) || self.canceled.lock().map_err(|_| error::KeigaError::LockPoisoned)?.contains(&self.id))
     }
 }
 

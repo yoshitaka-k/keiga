@@ -5,8 +5,10 @@ mod file;
 mod rendar;
 mod optimize;
 mod event;
+mod error;
 
 pub use app::App;
+pub use error::KeigaError;
 pub use file::open_files::OpenFiles;
 pub use rendar::Rendar;
 pub use optimize::Jpeg;
