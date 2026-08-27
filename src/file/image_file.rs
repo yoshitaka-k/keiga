@@ -192,7 +192,7 @@ impl ImageFile {
         app: &app::App,
         running: Arc<AtomicBool>,
         canceled: Arc<Mutex<HashSet<u64>>>
-    ) -> Result<OptimizeStatus, Box<dyn std::error::Error>> {
+    ) -> error::Result<OptimizeStatus> {
         // 待機中・最適化中は再実行しない
         if !self.is_standby_or_optimizing() {
             return Ok(self.status.clone());
@@ -207,12 +207,6 @@ impl ImageFile {
             running: Arc::clone(&running),
             canceled: Arc::clone(&canceled),
         };
-
-        // 最適化を中止したかどうかを確認
-        if token.is_canceled()? {
-            self.status = OptimizeStatus::Canceled;
-            return Ok(OptimizeStatus::Canceled);
-        }
 
         // 最適化中にする
         self.status = OptimizeStatus::Optimizing;
@@ -236,7 +230,7 @@ impl ImageFile {
             }
 
             // サポートしていないファイル形式
-            _ => Err(format!("{} \n\nUnsupported extension", self.path.display()).into()),
+            _ => Err(error::KeigaError::UnsupportedExtension(self.path.clone())),
         };
 
         // 最適化結果を処理
@@ -251,7 +245,7 @@ impl ImageFile {
                         self.duration = duration as u64;
 
                         // 最適化後のファイルサイズと節約率を更新
-                        let metadata = output_path.metadata().map_err(|e| format!("{} \n\n{}", output_path.display(), e))?;
+                        let metadata = output_path.metadata().map_err(|e| error::KeigaError::FileError(e.to_string(), output_path.clone()))?;
                         self.new_size = metadata.len();
                         self.saved_rate = file::calc_saved_rate(self.size, self.new_size);
 
@@ -277,7 +271,7 @@ impl ImageFile {
                     OptimizeStatus::Error(e) => {
                         // 最適化エラーに設定
                         self.status = OptimizeStatus::Error(e.clone());
-                        Err(e.to_string().clone().into())
+                        Err(error::KeigaError::OptimizedError(e.to_string(), self.path.clone()))
                     }
                     _ => Ok(self.status.clone())
                 }

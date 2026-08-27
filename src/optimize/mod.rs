@@ -33,7 +33,9 @@ impl OptimToken {
     /// 最適化が中止されたかどうかを返す
     /// * `return` - 最適化が中止されたかどうか
     pub fn is_canceled(&self) -> error::Result<bool> {
-        Ok(!self.running.load(Ordering::Relaxed) || self.canceled.lock().map_err(|_| error::KeigaError::LockPoisoned)?.contains(&self.id))
+        Ok(!self.running.load(Ordering::Relaxed) || self.canceled.lock().map_err(|_| {
+            error::KeigaError::LockPoisoned
+        })?.contains(&self.id))
     }
 }
 
@@ -48,7 +50,7 @@ pub trait Optimizer {
     fn encode(
         path: &PathBuf,
         options: Self::Options,
-    ) -> Result<(usize, Vec<u8>), Box<dyn std::error::Error>>;
+    ) -> error::Result<(usize, Vec<u8>)>;
 
     /// 最適化を行う
     /// * `path` - 最適化するファイルのパス
@@ -61,15 +63,14 @@ pub trait Optimizer {
         output_path: &PathBuf,
         options: Self::Options,
         token: OptimToken
-    ) -> Result<OptimizeStatus, Box<dyn std::error::Error>> {
+    ) -> error::Result<OptimizeStatus> {
         // 最適化中止された場合は処理を中断
         if token.is_canceled()? {
             return Ok(OptimizeStatus::Canceled);
         }
 
-        // ファイルをエンコードする
+        // ファイルを種類に応じてエンコードする
         let (original_size, byte_data) = Self::encode(path, options)?;
-
 
         // 最適化中止された場合は処理を中断
         if token.is_canceled()? {
@@ -81,24 +82,32 @@ pub trait Optimizer {
         if original_size <= new_size {
             // 出力ファイルが存在しない場合は作成
             if path != output_path && !output_path.exists() {
+                // 出力ファイルのパスを作成
                 create_output_path(&output_path)?;
-                std::fs::copy(&path, &output_path)?;
+
+                // ファイルをコピー
+                std::fs::copy(&path, &output_path).map_err(|e| {
+                    error::KeigaError::OptimizedError(e.to_string(), output_path.clone())
+                })?;
             }
             return Ok(OptimizeStatus::Unchanged);
         }
 
         // 出力ファイルのパスを作成
-        if let Err(e) = create_output_path(&output_path) {
-            return Err(e);
-        }
+        create_output_path(&output_path)?;
 
         // 一時ファイルを作成して最適化後のデータを保存
         let temp_path = output_path.with_added_extension(TEMP_EXTENSION);
-        std::fs::write(&temp_path, &byte_data)?;
+        std::fs::write(&temp_path, &byte_data).map_err(|e| {
+            error::KeigaError::OptimizedError(e.to_string(), temp_path.clone())
+        })?;
 
         // 最適化中止された場合は処理を中断
         if token.is_canceled()? {
-            std::fs::remove_file(&temp_path)?;
+            // 一時ファイルを削除
+            std::fs::remove_file(&temp_path).map_err(|e| {
+                error::KeigaError::OptimizedError(e.to_string(), temp_path.clone())
+            })?;
             return Ok(OptimizeStatus::Canceled);
         }
 
@@ -113,19 +122,16 @@ pub trait Optimizer {
 /// 出力ファイルのパスを作成
 /// * `output_path` - 出力パス
 /// * `return` - 出力ファイルのパスが作成できたかどうか
-pub(crate) fn create_output_path(output_path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-    if let Some(parent) = output_path.parent() {
-        if !parent.exists() {
-            match std::fs::create_dir_all(parent) {
-                Ok(_) => (),
-                Err(e) => {
-                    return Err(e.to_string().into());
-                }
-            }
-        }
-    } else {
-        return Err("Output path parent not found".to_string().into());
-    }
+pub(crate) fn create_output_path(output_path: &PathBuf) -> error::Result<()> {
+    // 出力ファイルのパスの親ディレクトリを取得
+    let Some(parent) = output_path.parent() else {
+        return Err(error::KeigaError::OptimizedError("Output path parent not found".to_string(), output_path.clone()));
+    };
+
+    // 出力ファイルのパスの親ディレクトリを作成
+    std::fs::create_dir_all(parent).map_err(|e| {
+        error::KeigaError::OptimizedError(e.to_string(), output_path.clone())
+    })?;
 
     Ok(())
 }
@@ -134,11 +140,13 @@ pub(crate) fn create_output_path(output_path: &PathBuf) -> Result<(), Box<dyn st
 /// * `from` - 一時ファイルのパス
 /// * `to` - 元のファイルのパス
 /// * `return` - 一時ファイルを元のファイルに上書きしたかどうか
-pub(crate) fn replace_file(from: &PathBuf, to: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+pub(crate) fn replace_file(from: &PathBuf, to: &PathBuf) -> error::Result<()> {
     // Windows 以外の環境ではファイルを直接上書き
     #[cfg(not(target_os = "windows"))]
     {
-        std::fs::rename(from, to)?;
+        std::fs::rename(from, to).map_err(|e| {
+            error::KeigaError::OptimizedError(e.to_string(), to.clone())
+        })?;
     }
 
     // Windows 環境では MoveFileExW を使用してファイルを上書き
@@ -158,7 +166,7 @@ pub(crate) fn replace_file(from: &PathBuf, to: &PathBuf) -> Result<(), Box<dyn s
 
         // エラーが発生した場合はエラーを返す
         if result == 0 {
-            return Err(std::io::Error::last_os_error().into());
+            return Err(error::KeigaError::OptimizedError(std::io::Error::last_os_error().to_string(), to.clone()));
         }
     }
     Ok(())

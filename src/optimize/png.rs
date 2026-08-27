@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use crate::optimize;
+use crate::{error, optimize};
 
 /// PNG 最適化を行う構造体
 pub struct Png;
@@ -14,13 +14,20 @@ impl optimize::Optimizer for Png {
     fn encode(
         path: &PathBuf,
         options: Self::Options,
-    ) -> Result<(usize, Vec<u8>), Box<dyn std::error::Error>> {
+    ) -> error::Result<(usize, Vec<u8>)> {
         // 先にファイルを読み込んでおく
-        let input = std::fs::read(path)?;
+        let input = std::fs::read(path).map_err(|e| {
+            error::KeigaError::OptimizedError(e.to_string(), path.clone())
+        })?;
 
         // oxipng でロスレス最適化（パレット維持・ビット深度削減・再圧縮）
-        let output = oxipng::optimize_from_memory(&input, &options.options)?;
+        let output = oxipng::optimize_from_memory(&input, &options.options).map_err(|e| {
+            error::KeigaError::OptimizedError(e.to_string(), path.clone())
+        })?;
 
-        Ok((input.len(), output))
+        // ファイルサイズを取得
+        let size = input.len();
+
+        Ok((size, output))
     }
 }

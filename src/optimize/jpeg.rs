@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use image::ImageReader;
 use image::codecs::jpeg::JpegEncoder;
-use crate::optimize;
+use crate::{error, optimize};
 
 /// JPEG 最適化を行う構造体
 pub struct Jpeg;
@@ -16,20 +16,28 @@ impl optimize::Optimizer for Jpeg {
     fn encode(
         path: &PathBuf,
         options: Self::Options,
-    ) -> Result<(usize, Vec<u8>), Box<dyn std::error::Error>> {
+    ) -> error::Result<(usize, Vec<u8>)> {
         // メモリ上にバッファを作成して最適化
         let mut buffer = Vec::new();
         {
             // ファイルを読み込む
-            let file_image = ImageReader::open(&path)?.decode()?;
+            let file_image = ImageReader::open(&path).map_err(|e| {
+                error::KeigaError::OptimizedError(e.to_string(), path.clone())
+            })?.decode().map_err(|e| {
+                error::KeigaError::OptimizedError(e.to_string(), path.clone())
+            })?;
 
             // JPEG エンコーダーを作成して最適化
             let mut encoder = JpegEncoder::new_with_quality(&mut buffer, options.quality);
-            encoder.encode_image(&file_image)?;
+            encoder.encode_image(&file_image).map_err(|e| {
+                error::KeigaError::OptimizedError(e.to_string(), path.clone())
+            })?;
         }
 
-        // 最適化後のサイズが元のサイズより大きい場合は最適化しない
-        let size = path.metadata()?.len() as usize;
+        // ファイルサイズを取得
+        let size = path.metadata().map_err(|e| {
+            error::KeigaError::OptimizedError(e.to_string(), path.clone())
+        })?.len() as usize;
 
         Ok((size, buffer))
     }

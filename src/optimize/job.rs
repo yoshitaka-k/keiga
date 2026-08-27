@@ -90,9 +90,7 @@ impl OptimizeJob {
             // 最適化を実行するスレッドを作成
             std::thread::spawn(move || {
                 // 最適化を実行
-                if let Err(e) = file.optimize(&app, Arc::clone(&running), Arc::clone(&canceled)) {
-                    file.set_status(OptimizeStatus::Error(e.to_string()));
-                }
+                let _ = file.optimize(&app, Arc::clone(&running), Arc::clone(&canceled));
 
                 // 最適化結果を送信
                 let _ = tx.send(file.clone());
