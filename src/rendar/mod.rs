@@ -6,7 +6,7 @@ mod modal;
 pub use main::view::Rendar;
 
 // モーダルウィンドウの幅
-pub(crate) const MODAL_WINDOW_WIDTH: f32 = 280.0;
+pub(crate) const MODAL_WINDOW_WIDTH: f32 = 320.0;
 pub(crate) const MODAL_WINDOW_SPACING: f32 = 8.0;
 
 // パネルの背景色

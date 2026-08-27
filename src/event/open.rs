@@ -1,4 +1,4 @@
-use crate::{app, file};
+use crate::{app, error, file};
 
 /// ファイルオープンダイアログを開いて選択結果を追加する
 /// * `app` - アプリケーション
@@ -6,7 +6,7 @@ use crate::{app, file};
 pub(crate) fn open_files(
     app: &app::App,
     files: &mut file::OpenFiles,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> error::Result<()> {
     let extensions = &app.extensions_to_string();
 
     // Macのみファイルとフォルダを同時選択できる

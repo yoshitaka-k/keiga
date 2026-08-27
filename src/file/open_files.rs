@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use getset::{Getters, Setters};
 
-use crate::{app, file};
+use crate::{app, error, file};
 use crate::optimize::OptimizeStatus;
 
 /// ファイル情報を管理する構造体
@@ -306,7 +306,7 @@ impl OpenFiles {
     /// * `app` - アプリケーション
     /// * `path` - ドロップされたファイルのパス
     /// * `return` - 結果
-    pub fn add_path(&mut self, app: &app::App, path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn add_path(&mut self, app: &app::App, path: PathBuf) -> error::Result<()> {
         // parent() は path を借りるので、先に PathBuf にして借用を終わらせる
         let base_dir = path.parent().unwrap_or(&path).to_path_buf();
 
@@ -323,8 +323,8 @@ impl OpenFiles {
         app: &app::App,
         path: PathBuf,
         base_dir: &Path
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        let metadata = path.metadata().map_err(|e| format!("{} \n\n{}", path.display(), e))?;
+    ) -> error::Result<()> {
+        let metadata = path.metadata().map_err(|e| error::KeigaError::FileError(e.to_string(), path.clone()))?;
 
         if metadata.is_file() {
             if self.is_allowed_extension(&path) {
@@ -357,8 +357,8 @@ impl OpenFiles {
                 self.paths.push(image_file);
             }
         } else if metadata.is_dir() {
-            for entry in fs::read_dir(&path).map_err(|e| format!("{} \n\n{}", path.display(), e))? {
-                let entry = entry.map_err(|e| format!("{} \n\n{}", path.display(), e))?;
+            for entry in fs::read_dir(&path).map_err(|e| error::KeigaError::FileError(e.to_string(), path.clone()))? {
+                let entry = entry.map_err(|e| error::KeigaError::FileError(e.to_string(), path.clone()))?;
                 self.find_file(app, entry.path(), base_dir)?;
             }
         }

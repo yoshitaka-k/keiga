@@ -7,6 +7,7 @@ pub enum KeigaError {
     FileNotFound(path::PathBuf),
     Io(io::Error),
     LockPoisoned,
+    FileError(String, path::PathBuf),
 }
 
 /// KeigaError を表示
@@ -16,6 +17,7 @@ impl fmt::Display for KeigaError {
             KeigaError::FileNotFound(path) => write!(f, "File does not exist: {}", path.display()),
             KeigaError::Io(e) => write!(f, "IO error: {}", e),
             KeigaError::LockPoisoned => write!(f, "Lock poisoned"),
+            KeigaError::FileError(e, path) => write!(f, "File error: {} \n\n{}", e, path.display()),
         }
     }
 }
@@ -27,6 +29,7 @@ impl error::Error for KeigaError {
             KeigaError::FileNotFound(_) => None,
             KeigaError::Io(ref e) => Some(e),
             KeigaError::LockPoisoned => None,
+            KeigaError::FileError(_, _) => None,
         }
     }
 }

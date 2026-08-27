@@ -148,7 +148,7 @@ impl eframe::App for Rendar {
                 &mut self.files,
             ) {
                 eprintln!("Error opening files: {}", e);
-                self.error_token.value = Some(e);
+                self.error_token.value = Some(e.into());
                 self.error_token.open = true;
             }
         }
@@ -162,7 +162,7 @@ impl eframe::App for Rendar {
                 &mut self.files,
             ) {
                 eprintln!("Error dropping files: {}", e);
-                self.error_token.value = Some(e);
+                self.error_token.value = Some(e.into());
                 self.error_token.open = true;
             }
         });

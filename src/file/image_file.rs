@@ -4,7 +4,7 @@ use std::sync::atomic::{AtomicU64, Ordering, AtomicBool};
 use std::collections::HashSet;
 use getset::{Getters, Setters};
 
-use crate::{app, file};
+use crate::{app, error, file};
 use crate::file::extension;
 use crate::optimize::{self, OptimToken, OptimizeStatus, Optimizer};
 
@@ -68,7 +68,7 @@ impl ImageFile {
     /// * `path` - ファイルのパス
     /// * `relative_path` - ドロップ基準からの相対パス
     /// * `return` - ImageFile のインスタンス
-    pub fn new(path: PathBuf, relative_path: String) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new(path: PathBuf, relative_path: String) -> Result<Self, error::KeigaError> {
         // ファイルの一意な ID を発行
         let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
 
@@ -76,19 +76,19 @@ impl ImageFile {
         let file_name = if let Some(name) = path.file_name() {
             name.to_string_lossy().to_string()
         } else {
-            return Err(format!("{} \n\nFile name not found", path.display()).into());
+            return Err(error::KeigaError::FileError("File name not found".to_string(), path.clone()));
         };
 
         // ファイル拡張子を取得
         let extension = if let Some(ext) = path.extension() {
             extension::Extension::from_str(ext)
         } else {
-            return Err(format!("{} \n\nFile extension not found", path.display()).into());
+            return Err(error::KeigaError::FileError("File extension not found".to_string(), path.clone()));
         };
 
         // ファイルサイズを取得
         let size = path.metadata()
-            .map_err(|e| format!("{} \n\n{}", path.display(), e))?
+            .map_err(|e| error::KeigaError::FileError(e.to_string(), path.clone()))?
             .len();
 
         // 相対パスかどうかを判断
