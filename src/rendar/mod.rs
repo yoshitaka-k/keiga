@@ -37,6 +37,7 @@ pub(crate) const BOTTOM_PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
 };
 
 use getset::Getters;
+use crate::error;
 use crate::optimize::OptimizeStatus;
 
 /// ステータスアイコンの色
@@ -111,7 +112,7 @@ pub struct SettingToken {
 /// エラーモーダルを表示するためのトークン
 pub struct ErrorToken {
     pub open: bool,
-    pub value: Option<Box<dyn std::error::Error>>,
+    pub value: Option<error::KeigaError>,
 }
 
 /// パネルの背景色

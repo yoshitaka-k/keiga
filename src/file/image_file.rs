@@ -245,7 +245,9 @@ impl ImageFile {
                         self.duration = duration as u64;
 
                         // 最適化後のファイルサイズと節約率を更新
-                        let metadata = output_path.metadata().map_err(|e| error::KeigaError::FileError(e.to_string(), output_path.clone()))?;
+                        let metadata = output_path.metadata().map_err(|e| {
+                            error::KeigaError::FileError(e.to_string(), output_path.clone())
+                        })?;
                         self.new_size = metadata.len();
                         self.saved_rate = file::calc_saved_rate(self.size, self.new_size);
 

@@ -150,7 +150,7 @@ pub(crate) fn view(
                 if let Err(e) = button::cancel_and_clear(files, optimize_job) {
                     eprintln!("Error canceling and clearing: {}", e);
                     error_token.open = true;
-                    error_token.value = Some(e.into());
+                    error_token.value = Some(e);
                 }
             }
         });
