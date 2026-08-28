@@ -186,16 +186,39 @@ impl eframe::App for Rendar {
             style.interaction.selectable_labels = false;
         });
 
-        // Command + O キーが押されたらフォルダダイアログを開く
-        if ui.input(|input| {
-            input.modifiers.command && input.key_released(egui::Key::O)
-        }) {
-            button::folder_open(ui, &mut self.open_dialog_token);
+        #[cfg(target_os = "macos")]
+        {
+            // Command + O キーが押されたらフォルダダイアログを開く
+            if ui.input(|input| {
+                input.modifiers.matches_exact(egui::Modifiers::COMMAND)
+                && input.key_released(egui::Key::O)
+            }) {
+                button::folder_open(ui, &mut self.open_dialog_token);
+            }
+        }
+
+        #[cfg(not(target_os = "macos"))]
+        {
+            // Command + O キーが押されたらファイルダイアログを開く
+            if ui.input(|input| {
+                input.modifiers.matches_exact(egui::Modifiers::COMMAND)
+                && input.key_released(egui::Key::O)
+            }) {
+                button::file_open(ui, &mut self.open_dialog_token);
+            }
+
+            // Ctrl + Shift + O キーが押されたらフォルダダイアログを開く
+            if ui.input(|input| {
+                input.modifiers.matches_exact(egui::Modifiers::COMMAND | egui::Modifiers::SHIFT)
+                && input.key_released(egui::Key::O)
+            }) {
+                button::folder_open(ui, &mut self.open_dialog_token);
+            }
         }
 
         // Command + Comma キーが押されたら設定ウィンドウを開く
         if ui.input(|input| {
-            input.modifiers.command && input.key_released(egui::Key::Comma)
+            input.modifiers.matches_exact(egui::Modifiers::COMMAND) && input.key_released(egui::Key::Comma)
         }) {
             button::setting_open(ui, &mut self.setting_token);
         }
