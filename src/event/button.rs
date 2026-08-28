@@ -1,13 +1,25 @@
 use crate::{app, file, error};
 use crate::optimize::OptimizeJob;
-use crate::rendar::{SettingToken};
+use crate::rendar::{SettingToken, OpenDialogToken};
+
+/// フォルダダイアログを開く
+/// * `ui` - UI
+/// * `open_dialog_token` - フォルダダイアログを開くためのトークン
+pub(crate) fn folder_open(ui: &mut egui::Ui, open_dialog_token: &mut OpenDialogToken) {
+    // フォルダダイアログを開くタイミングをずらす
+    open_dialog_token.folder_dialog = true;
+
+    // 再描画を要求
+    ui.ctx().request_repaint();
+}
 
 /// ファイルダイアログを開く
 /// * `ui` - UI
-/// * `open_dialog` - ファイルダイアログを開くフラグ
-pub(crate) fn files_open(ui: &mut egui::Ui, open_dialog: &mut bool) {
+/// * `open_dialog_token` - ファイルダイアログを開くためのトークン
+#[cfg(not(target_os = "macos"))]
+pub(crate) fn file_open(ui: &mut egui::Ui, open_dialog_token: &mut OpenDialogToken) {
     // ファイルダイアログを開くタイミングをずらす
-    *open_dialog = true;
+    open_dialog_token.file_dialog = true;
 
     // 再描画を要求
     ui.ctx().request_repaint();

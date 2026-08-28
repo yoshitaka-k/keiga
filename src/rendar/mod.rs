@@ -102,6 +102,12 @@ pub struct ListRowToken {
     pub height: f32,
 }
 
+/// ファイルダイアログを表示するためのトークン
+pub struct OpenDialogToken {
+    pub file_dialog: bool,
+    pub folder_dialog: bool,
+}
+
 /// 設定ウィンドウを表示するためのトークン
 pub struct SettingToken {
     pub open: bool,

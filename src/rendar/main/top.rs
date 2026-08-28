@@ -1,5 +1,5 @@
 use crate::event::button;
-use crate::rendar::SettingToken;
+use crate::rendar::{SettingToken, OpenDialogToken};
 use crate::rendar::assets::{self, constants, svg};
 
 /// 上部ボタンを表示
@@ -8,7 +8,7 @@ use crate::rendar::assets::{self, constants, svg};
 /// * `setting_token` - 設定モーダルを表示するためのトークン
 pub(crate) fn view(
     ui: &mut egui::Ui,
-    open_dialog: &mut bool,
+    open_dialog_token: &mut OpenDialogToken,
     setting_token: &mut SettingToken,
 ) {
     // ボタンの色を設定
@@ -29,10 +29,26 @@ pub(crate) fn view(
                 button::setting_open(ui, setting_token);
             }
 
-            // 開くボタン
+            #[cfg(target_os = "macos")]
+            let hover_text = "File or Folder Open";
+
+            #[cfg(not(target_os = "macos"))]
+            let hover_text = "Folder Open";
+
+            // フォルダダイアログを開くボタン
             let open_button = egui::Image::new(svg::FOLDER_OPEN).max_height(constants::BUTTON_OPEN_ICON_SIZE).tint(button_color);
-            if ui.button(open_button).on_hover_text("Files Open").clicked() {
-                button::files_open(ui, open_dialog);
+            if ui.button(open_button).on_hover_text(hover_text).clicked() {
+                button::folder_open(ui, open_dialog_token);
+            }
+
+            // ファイルダイアログを開くボタン
+            // Macではフォルダダイアログでもファイルを開けるため、表示しないようにする
+            #[cfg(not(target_os = "macos"))]
+            {
+                let open_button = egui::Image::new(svg::FILE_OPEN).max_height(constants::BUTTON_OPEN_ICON_SIZE).tint(button_color);
+                if ui.button(open_button).on_hover_text("File Open").clicked() {
+                    button::file_open(ui, open_dialog_token);
+                }
             }
         });
     });

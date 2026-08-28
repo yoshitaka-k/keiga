@@ -2,7 +2,7 @@ use crate::app::{self, UpdateJob, UpdatedToken};
 use crate::file;
 use crate::event::{open, drop};
 use crate::optimize::OptimizeJob;
-use crate::rendar::{self, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken};
+use crate::rendar::{self, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken, OpenDialogToken};
 use crate::rendar::assets::{constants, fonts, svg, SoundPlayer};
 use crate::rendar::main::{self, top, list, bottom};
 use crate::rendar::setting::view as setting_window;
@@ -15,7 +15,7 @@ pub struct Rendar {
     status_color: StatusColor,
 
     // ファイルダイアログを開くタイミング
-    open_dialog: bool,
+    open_dialog_token: OpenDialogToken,
 
     // 設定ウィンドウのトークン
     setting_token: SettingToken,
@@ -53,6 +53,7 @@ impl Rendar {
 
         // 開くファイルのインスタンスを作成
         let mut files = file::OpenFiles::new();
+
         // 拡張子を設定
         files.set_extensions(app.extensions_to_string());
 
@@ -60,7 +61,10 @@ impl Rendar {
             app,
             files,
             status_color: StatusColor::new(&cc.egui_ctx),
-            open_dialog: false,
+            open_dialog_token: OpenDialogToken {
+                file_dialog: false,
+                folder_dialog: false,
+            },
             setting_token: SettingToken {
                 open: false,
                 pos: None,
@@ -140,10 +144,23 @@ impl eframe::App for Rendar {
             style.interaction.selectable_labels = false;
         });
 
-        // 開くボタンが押されてたらファイルダイアログを開く
-        if self.open_dialog {
-            self.open_dialog = false;
-            if let Err(e) = open::open_files(
+        // フォルダダイアログを開くボタンが押されてたらフォルダダイアログを開く
+        if self.open_dialog_token.folder_dialog {
+            self.open_dialog_token.folder_dialog = false;
+            if let Err(e) = open::folder(
+                &self.app,
+                &mut self.files,
+            ) {
+                eprintln!("Error opening folders: {}", e);
+                self.error_token.open = true;
+                self.error_token.value = Some(e);
+            }
+        }
+
+        // ファイルダイアログを開くボタンが押されてたらファイルダイアログを開く
+        if self.open_dialog_token.file_dialog {
+            self.open_dialog_token.file_dialog = false;
+            if let Err(e) = open::file(
                 &self.app,
                 &mut self.files,
             ) {
@@ -176,7 +193,7 @@ impl eframe::App for Rendar {
 
         // 上部ボタンを表示
         egui::Panel::top("top_taskbar").frame(top_panel_style).show(ui, |ui| {
-            top::view(ui, &mut self.open_dialog, &mut self.setting_token);
+            top::view(ui, &mut self.open_dialog_token, &mut self.setting_token);
         });
 
         // 状態とかボタンを表示するタスクバーを表示
