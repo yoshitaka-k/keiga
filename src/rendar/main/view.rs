@@ -1,6 +1,6 @@
 use crate::app::{self, UpdateJob, UpdatedToken};
 use crate::file;
-use crate::event::{open, drop, key_up, click};
+use crate::event::{open, drop, key_up, click, button};
 use crate::optimize::OptimizeJob;
 use crate::rendar::{self, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken, OpenDialogToken};
 use crate::rendar::assets::{constants, fonts, svg, SoundPlayer};
@@ -36,6 +36,7 @@ pub struct Rendar {
     sound: SoundPlayer,
 }
 
+/// Rendar の実装
 impl Rendar {
     /// 新しい Rendar を作成
     /// * `cc` - 作成コンテキスト
@@ -119,31 +120,9 @@ impl Rendar {
     fn row_height(&self, ui: &egui::Ui) -> f32 {
         ui.text_style_height(&egui::TextStyle::Body).max(constants::CHECK_ICON_SIZE) + main::SEPARATOR_HEIGHT
     }
-}
 
-impl eframe::App for Rendar {
-    /// 終了前に App の状態を保存
-    /// * `storage` - ストレージ
-    fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, eframe::APP_KEY, &self.app);
-    }
-
-    /// ユーザーインターフェースを描画
-    /// * `ui` - ユーザーインターフェース
-    /// * `frame` - フレーム
-    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        // 最適化結果を反映
-        self.optimize_result();
-
-        // 結果を反映後、まだ未処理があれば最適化を実行
-        self.optimize_run();
-
-        // スタイルを設定
-        ui.ctx().global_style_mut(|style| {
-            // ラベルを選択できないようにする
-            style.interaction.selectable_labels = false;
-        });
-
+    /// ダイアログを開く
+    fn open_dialog(&mut self) {
         // フォルダダイアログを開くボタンが押されてたらフォルダダイアログを開く
         if self.open_dialog_token.folder_dialog {
             self.open_dialog_token.folder_dialog = false;
@@ -169,8 +148,11 @@ impl eframe::App for Rendar {
                 self.error_token.value = Some(e);
             }
         }
+    }
 
-        // ドラッグ&ドロップされたファイルを処理
+    /// ドラッグ&ドロップされたファイルを処理
+    /// * `ui` - UI
+    fn drop_files(&mut self, ui: &egui::Ui) {
         ui.ctx().input(|input| {
             let files = input.raw.dropped_files.clone();
             if let Err(e) = drop::drop_files(
@@ -183,6 +165,52 @@ impl eframe::App for Rendar {
                 self.error_token.value = Some(e);
             }
         });
+    }
+}
+
+/// eframe::App の実装
+impl eframe::App for Rendar {
+    /// 終了前に App の状態を保存
+    /// * `storage` - ストレージ
+    fn save(&mut self, storage: &mut dyn eframe::Storage) {
+        eframe::set_value(storage, eframe::APP_KEY, &self.app);
+    }
+
+    /// ユーザーインターフェースを描画
+    /// * `ui` - ユーザーインターフェース
+    /// * `frame` - フレーム
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        // スタイルを設定
+        ui.ctx().global_style_mut(|style| {
+            // ラベルを選択できないようにする
+            style.interaction.selectable_labels = false;
+        });
+
+        // Command + O キーが押されたらフォルダダイアログを開く
+        if ui.input(|input| {
+            input.modifiers.command && input.key_released(egui::Key::O)
+        }) {
+            button::folder_open(ui, &mut self.open_dialog_token);
+        }
+
+        // Command + Comma キーが押されたら設定ウィンドウを開く
+        if ui.input(|input| {
+            input.modifiers.command && input.key_released(egui::Key::Comma)
+        }) {
+            button::setting_open(ui, &mut self.setting_token);
+        }
+
+        // 最適化結果を反映
+        self.optimize_result();
+
+        // 結果を反映後、まだ未処理があれば最適化を実行
+        self.optimize_run();
+
+        // ダイアログを開く
+        self.open_dialog();
+
+        // ドラッグ&ドロップされたファイルを処理
+        self.drop_files(ui);
 
         // ファイル追加時に最適化を実行
         self.optimize_run();

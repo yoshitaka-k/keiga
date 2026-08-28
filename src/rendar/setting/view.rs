@@ -41,6 +41,13 @@ pub(crate) fn view(
 
     // 設定ウィンドウを表示
     ctx.show_viewport_immediate(window_id, options, |ctx, _class| {
+        // Command + W キーが押されたら閉じる
+        if ctx.input(|input| {
+            input.modifiers.command && input.key_released(egui::Key::W)
+        }) {
+            setting_token.open = false;
+        }
+
         // 更新結果を取得
         update_job.result(updated_token);
 
