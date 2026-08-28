@@ -8,7 +8,6 @@ mod event;
 mod error;
 
 pub use app::App;
-pub use error::KeigaError;
 pub use file::open_files::OpenFiles;
 pub use rendar::Rendar;
 pub use optimize::Jpeg;
@@ -40,23 +39,25 @@ pub fn duration_format(duration: u64) -> String {
 }
 
 /// バージョンを比較するマクロ
-pub fn version_compare(new: &str, old: &str) -> Result<bool, Box<dyn std::error::Error>> {
+pub fn version_compare(new: &str, old: &str) -> error::Result<bool> {
     let new = new.replace("v", "");
     let old = old.replace("v", "");
 
     // 新しいバージョンをメジャー、マイナー、パッチに分割
     let parts: Vec<i32> = new.split(".")
         .map(|x| x.parse::<i32>())
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<std::result::Result<Vec<_>, _>>()
+        .map_err(|_| error::KeigaError::InvalidVersion)?;
     let [new_major, new_minor, new_patch]: [i32; 3] = parts.try_into()
-        .map_err(|_| "Invalid latest version")?;
+        .map_err(|_| error::KeigaError::InvalidVersion)?;
 
     // 古いバージョンをメジャー、マイナー、パッチに分割
     let parts: Vec<i32> = old.split(".")
         .map(|x| x.parse::<i32>())
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<std::result::Result<Vec<_>, _>>()
+        .map_err(|_| error::KeigaError::InvalidVersion)?;
     let [old_major, old_minor, old_patch]: [i32; 3] = parts.try_into()
-        .map_err(|_| "Invalid current version")?;
+        .map_err(|_| error::KeigaError::InvalidVersion)?;
 
     // メジャー、マイナー、パッチを比較
     if new_major != old_major {

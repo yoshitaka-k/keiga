@@ -9,6 +9,7 @@ pub enum KeigaError {
     UnsupportedExtension(path::PathBuf),
     OptimizedError(String, path::PathBuf),
     LockPoisoned,
+    InvalidVersion,
     Io(io::Error),
 }
 
@@ -21,6 +22,7 @@ impl fmt::Display for KeigaError {
             KeigaError::UnsupportedExtension(path) => write!(f, "Unsupported extension: {}", path.display()),
             KeigaError::OptimizedError(e, path) => write!(f, "Optimized error: {} \n\n{}", e, path.display()),
             KeigaError::LockPoisoned => write!(f, "Lock poisoned"),
+            KeigaError::InvalidVersion => write!(f, "Invalid version"),
             KeigaError::Io(e) => write!(f, "IO error: {}", e),
         }
     }
@@ -35,6 +37,7 @@ impl error::Error for KeigaError {
             KeigaError::UnsupportedExtension(_) => None,
             KeigaError::OptimizedError(_, _) => None,
             KeigaError::LockPoisoned => None,
+            KeigaError::InvalidVersion => None,
             KeigaError::Io(ref e) => Some(e),
         }
     }

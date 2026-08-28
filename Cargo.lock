@@ -2081,7 +2081,7 @@ dependencies = [
 
 [[package]]
 name = "keiga"
-version = "1.4.3"
+version = "1.4.4"
 dependencies = [
  "eframe",
  "egui",
