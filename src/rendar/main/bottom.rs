@@ -30,26 +30,18 @@ pub(crate) fn view(
     // デフォルトのスペースの幅を避けておく
     let spacing = ui.spacing().item_spacing.x;
 
-    // アイコンの色
-    let circle_color = *status_color.standby();
-    let optimizing_color = *status_color.optimizing();
-    let optimized_color = *status_color.optimized();
-    let unchanged_color = *status_color.unchanged();
-    let skipped_color = *status_color.skipped();
-    let error_color = *status_color.error();
-
     // 完了アイコンの色
     // 最適化済みがあれば最適化済みの色
     // 最適化済みがなくて最適化不要があれば最適化不要の色
     // それ以外は最適化済みの色
     let completed_color = if optimized_len > 0 {
-         optimized_color
+         *status_color.optimized()
     } else if unchanged_len > 0 {
-        unchanged_color
+        *status_color.unchanged()
     } else if skipped_len > 0 {
-        skipped_color
+        *status_color.skipped()
     } else {
-        optimized_color
+        *status_color.optimized()
     };
 
     ui.horizontal(|ui| {
@@ -63,11 +55,11 @@ pub(crate) fn view(
         // 優先度: 最適化中 > エラー > 最適化済み・最適化不要 > 待機
         let response = if optimizing_len > 0 {
             main::add_padded_icon(ui,
-                main::spinner_widget(main::SPINNER_SIZE, optimizing_color),
+                main::spinner_widget(main::SPINNER_SIZE, *status_color.optimizing()),
             3.0)
         } else if error_len > 0 {
             main::add_padded_icon(ui,
-                main::icon_widget(svg::ERROR, constants::ERROR_ICON_SIZE, error_color),
+                main::icon_widget(svg::ERROR, constants::ERROR_ICON_SIZE, *status_color.error()),
             1.0)
         } else if (optimized_len + unchanged_len + skipped_len) > 0 {
             main::add_padded_icon(ui,
@@ -75,7 +67,7 @@ pub(crate) fn view(
             0.0)
         } else {
             main::add_padded_icon(ui,
-                main::icon_widget(svg::CIRCLE, constants::CIRCLE_ICON_SIZE, circle_color),
+                main::icon_widget(svg::CIRCLE, constants::CIRCLE_ICON_SIZE, *status_color.standby()),
             1.0)
         };
 
@@ -85,13 +77,13 @@ pub(crate) fn view(
 
         // 未処理
         ui.spacing_mut().item_spacing.x = 0.0;
-        ui.label(text_color(&format!("{}", standby_len), circle_color, None));
+        ui.label(text_color(&format!("{}", standby_len), *status_color.standby(), None));
         ui.spacing_mut().item_spacing.x = spacing;
         ui.label(" standby,");
 
         // 最適化中
         ui.spacing_mut().item_spacing.x = 0.0;
-        ui.label(text_color(&format!("{}", optimizing_len), optimizing_color, None));
+        ui.label(text_color(&format!("{}", optimizing_len), *status_color.optimizing(), None));
         ui.spacing_mut().item_spacing.x = spacing;
         ui.label(" optimizing,");
 
@@ -105,21 +97,21 @@ pub(crate) fn view(
             // 最適化済み
             ui.horizontal(|ui| {
                 ui.spacing_mut().item_spacing.x = 0.0;
-                ui.label(text_color(&format!("{}", optimized_len), optimized_color, None));
+                ui.label(text_color(&format!("{}", optimized_len), *status_color.optimized(), None));
                 ui.spacing_mut().item_spacing.x = spacing;
                 ui.label(" optimized.");
             });
             // 最適化不要
             ui.horizontal(|ui| {
                 ui.spacing_mut().item_spacing.x = 0.0;
-                ui.label(text_color(&format!("{}", unchanged_len), unchanged_color, None));
+                ui.label(text_color(&format!("{}", unchanged_len), *status_color.unchanged(), None));
                 ui.spacing_mut().item_spacing.x = spacing;
                 ui.label(" no savings.");
             });
             // スキップ
             ui.horizontal(|ui| {
                 ui.spacing_mut().item_spacing.x = 0.0;
-                ui.label(text_color(&format!("{}", skipped_len), skipped_color, None));
+                ui.label(text_color(&format!("{}", skipped_len), *status_color.skipped(), None));
                 ui.spacing_mut().item_spacing.x = spacing;
                 ui.label(" skipped.");
             });
@@ -127,7 +119,7 @@ pub(crate) fn view(
 
         // エラー
         ui.spacing_mut().item_spacing.x = 0.0;
-        ui.label(text_color(&format!("{}", error_len), error_color, None));
+        ui.label(text_color(&format!("{}", error_len), *status_color.error(), None));
         ui.spacing_mut().item_spacing.x = spacing;
         ui.label(" error");
 
@@ -136,7 +128,7 @@ pub(crate) fn view(
         // 平均保存率
         ui.label("Avg saved rate:");
         ui.spacing_mut().item_spacing.x = 0.0;
-        ui.label(text_color(&format!("{:+.2}%", files.total_saved_rate()), optimized_color, None));
+        ui.label(text_color(&format!("{:+.2}%", files.total_saved_rate()), *status_color.optimized(), None));
         ui.spacing_mut().item_spacing.x = spacing;
 
         // 右寄せ

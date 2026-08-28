@@ -1,6 +1,6 @@
 use crate::app::{self, UpdateJob, UpdatedToken};
 use crate::file;
-use crate::event::{open, drop};
+use crate::event::{open, drop, key_up, click};
 use crate::optimize::OptimizeJob;
 use crate::rendar::{self, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken, OpenDialogToken};
 use crate::rendar::assets::{constants, fonts, svg, SoundPlayer};
@@ -191,6 +191,9 @@ impl eframe::App for Rendar {
         let top_panel_style = rendar::panel_style(ui, rendar::TOP_PANEL_INNER_MARGIN);
         let bottom_panel_style = rendar::panel_style(ui, rendar::BOTTOM_PANEL_INNER_MARGIN);
 
+        // イベント処理のためのアクションを保持
+        let mut pending_actions: Vec<main::EventAction> = Vec::new();
+
         // 上部ボタンを表示
         egui::Panel::top("top_taskbar").frame(top_panel_style).show(ui, |ui| {
             top::view(ui, &mut self.open_dialog_token, &mut self.setting_token);
@@ -222,7 +225,13 @@ impl eframe::App for Rendar {
                     };
 
                     // ファイル一覧を表示
-                    list::view(ui, &self.status_color, &mut self.files, &mut self.optimize_job, list_row_token, &mut self.error_token)
+                    list::view(
+                        ui,
+                        &self.status_color,
+                        &self.files,
+                        list_row_token,
+                        &mut pending_actions,
+                    )
                 }).inner;
 
             // リスト行以外をクリックしたら選択解除
@@ -230,6 +239,36 @@ impl eframe::App for Rendar {
                 self.files.set_selected_id(None);
             }
         });
+
+        // クリックアクションを処理
+        for action in pending_actions {
+            match action {
+                main::EventAction::Click { id } => {
+                    self.files.set_selected_id(Some(id));
+                }
+                main::EventAction::DoubleClick { path } => {
+                    if let Err(e) = click::double_click(&path) {
+                        eprintln!("Error revealing file: {}", e);
+                        self.error_token.open = true;
+                        self.error_token.value = Some(e);
+                    }
+                }
+                main::EventAction::Backspace => {
+                    if let Err(e) = key_up::backspace(&mut self.files, &mut self.optimize_job) {
+                        eprintln!("Error canceling file: {}", e);
+                        self.error_token.open = true;
+                        self.error_token.value = Some(e);
+                    }
+                }
+                main::EventAction::Space { path } => {
+                    if let Err(e) = key_up::space(&path) {
+                        eprintln!("Error revealing file: {}", e);
+                        self.error_token.open = true;
+                        self.error_token.value = Some(e);
+                    }
+                }
+            }
+        }
 
         // 設定ウィンドウを表示
         if self.setting_token.open {

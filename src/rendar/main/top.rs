@@ -1,5 +1,5 @@
 use crate::event::button;
-use crate::rendar::{SettingToken, OpenDialogToken};
+use crate::rendar::{main, SettingToken, OpenDialogToken};
 use crate::rendar::assets::{self, constants, svg};
 
 /// 上部ボタンを表示
@@ -17,7 +17,7 @@ pub(crate) fn view(
 
     ui.horizontal(|ui| {
         ui.horizontal(|ui| {
-            ui.add(egui::Image::new(svg::UPLOAD_FILE).max_height(constants::TOP_MENU_UPLOAD_FILE_ICON_SIZE).tint(icon_color));
+            ui.add(main::icon_widget(svg::UPLOAD_FILE, constants::TOP_MENU_UPLOAD_FILE_ICON_SIZE, icon_color));
             ui.label("Files or Folders to Optimize Drag & Drop");
         });
 

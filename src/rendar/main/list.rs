@@ -1,20 +1,10 @@
-use std::path::PathBuf;
 use egui::Sense;
 
 use crate::{file, duration_format};
-use crate::event::{click, key_up};
-use crate::optimize::{OptimizeJob, OptimizeStatus};
-use crate::rendar::{ListRowToken, ErrorToken, StatusColor};
+use crate::optimize::OptimizeStatus;
+use crate::rendar::{ListRowToken, StatusColor};
 use crate::rendar::assets::{constants, fonts::text_color, svg};
 use crate::rendar::main;
-
-/// ファイル一覧のアクション
-enum FileListAction {
-    Click { id: u64 },
-    DoubleClick { path: PathBuf },
-    Backspace { id: u64 },
-    Space { path: PathBuf },
-}
 
 /// ファイル一覧を表示
 /// * `ui` - UI
@@ -22,47 +12,32 @@ enum FileListAction {
 /// * `status_color` - ステータスアイコンの色
 /// * `row_range` - 表示する行の範囲
 /// * `list_row` - 表示する行の情報
-/// * `error_token` - エラーモーダルを表示するためのトークン
 /// * `return` - いずれかの行がクリックされたかどうか
 pub(crate) fn view(
     ui: &mut egui::Ui,
     status_color: &StatusColor,
-    files: &mut file::OpenFiles,
-    optimize_job: &mut OptimizeJob,
+    files: &file::OpenFiles,
     list_row: ListRowToken,
-    error_token: &mut ErrorToken,
+    pending_actions: &mut Vec<main::EventAction>,
 ) -> bool {
     // UIの幅と行間隔
     let width = ui.available_width();
     let row_spacing = ui.spacing().item_spacing.y;
-    // let col_spacing = ui.spacing().item_spacing.x;
 
     // アクションを処理するためのベクタ
-    let mut pending_action: Vec<FileListAction> = Vec::new();
     let mut row_clicked = false;
-
-    // アイコンの色
-    let circle_color = *status_color.standby();
-    let optimizing_color = *status_color.optimizing();
-    let optimized_color = *status_color.optimized();
-    let unchanged_color = *status_color.unchanged();
-    let skipped_color = *status_color.skipped();
-    let canceled_color = *status_color.canceled();
-    let error_color = *status_color.error();
 
     // 削除キーが押されたら処理予約
     if ui.input(|input| input.key_released(egui::Key::Backspace)) {
-        if let Some(image_file) = files.selected_image_file() {
-            pending_action.push(FileListAction::Backspace {
-                id: *image_file.id(),
-            });
+        if files.selected_id().is_some() {
+            pending_actions.push(main::EventAction::Backspace);
         }
     }
 
     // スペースキーが押されたら処理予約
     if ui.input(|input| input.key_released(egui::Key::Space)) {
         if let Some(image_file) = files.selected_image_file() {
-            pending_action.push(FileListAction::Space {
+            pending_actions.push(main::EventAction::Space {
                 path: image_file.reveal_path().clone(),
             });
         }
@@ -115,13 +90,13 @@ pub(crate) fn view(
             // 最適化ステータスに応じて表示
             match image_file.status() {
                 OptimizeStatus::Standby => {
-                    main::list_row_content(ui, image_file, svg::CIRCLE, constants::CIRCLE_ICON_SIZE, circle_color);
+                    main::list_row_content(ui, image_file, svg::CIRCLE, constants::CIRCLE_ICON_SIZE, *status_color.standby());
                 }
                 OptimizeStatus::Optimizing => {
-                    main::list_row_content(ui, image_file, svg::AUTORENEW, constants::AUTORENEW_ICON_SIZE, optimizing_color);
+                    main::list_row_content(ui, image_file, svg::AUTORENEW, constants::AUTORENEW_ICON_SIZE, *status_color.optimizing());
                 }
                 OptimizeStatus::Optimized => {
-                    main::list_row_content(ui, image_file, svg::CHECK, constants::CHECK_ICON_SIZE, optimized_color);
+                    main::list_row_content(ui, image_file, svg::CHECK, constants::CHECK_ICON_SIZE, *status_color.optimized());
 
                     ui.separator();
                     ui.label(format!("{:+.2}%", image_file.saved_rate()));
@@ -129,28 +104,28 @@ pub(crate) fn view(
                     ui.label(format!("{}", duration));
                 }
                 OptimizeStatus::Unchanged => {
-                    main::list_row_content(ui, image_file, svg::CHECK, constants::CHECK_ICON_SIZE, unchanged_color);
+                    main::list_row_content(ui, image_file, svg::CHECK, constants::CHECK_ICON_SIZE, *status_color.unchanged());
 
                     ui.separator();
-                    ui.label(text_color("No savings", unchanged_color, Some(main::LIST_NOTE_SIZE)));
+                    ui.label(text_color("No savings", *status_color.unchanged(), Some(main::LIST_NOTE_SIZE)));
                 }
                 OptimizeStatus::Skipped => {
-                    main::list_row_content(ui, image_file, svg::CHECK, constants::CHECK_ICON_SIZE, skipped_color);
+                    main::list_row_content(ui, image_file, svg::CHECK, constants::CHECK_ICON_SIZE, *status_color.skipped());
 
                     ui.separator();
-                    ui.label(text_color("Skipped", skipped_color, Some(main::LIST_NOTE_SIZE)));
+                    ui.label(text_color("Skipped", *status_color.skipped(), Some(main::LIST_NOTE_SIZE)));
                 }
                 OptimizeStatus::Canceled => {
-                    main::list_row_content(ui, image_file, svg::CANCEL, constants::CANCEL_ICON_SIZE, canceled_color);
+                    main::list_row_content(ui, image_file, svg::CANCEL, constants::CANCEL_ICON_SIZE, *status_color.canceled());
 
                     ui.separator();
-                    ui.label(text_color("Canceled", canceled_color, Some(main::LIST_NOTE_SIZE)));
+                    ui.label(text_color("Canceled", *status_color.canceled(), Some(main::LIST_NOTE_SIZE)));
                 }
                 OptimizeStatus::Error(e) => {
-                    main::list_row_content(ui, image_file, svg::ERROR, constants::ERROR_ICON_SIZE, error_color);
+                    main::list_row_content(ui, image_file, svg::ERROR, constants::ERROR_ICON_SIZE, *status_color.error());
 
                     ui.separator();
-                    ui.label(text_color(e, error_color, Some(main::LIST_NOTE_SIZE)));
+                    ui.label(text_color(e, *status_color.error(), Some(main::LIST_NOTE_SIZE)));
                 }
             }
         });
@@ -166,45 +141,15 @@ pub(crate) fn view(
 
         // クリックアクションを処理予約
         if response.clicked() {
-            pending_action.push(FileListAction::Click { id: *image_file.id() });
+            pending_actions.push(main::EventAction::Click { id: *image_file.id() });
             row_clicked = true;
         }
 
         // ダブルクリックアクションを処理予約
         if response.double_clicked() {
-            pending_action.push(FileListAction::DoubleClick {
+            pending_actions.push(main::EventAction::DoubleClick {
                 path: image_file.reveal_path().clone(),
             });
-        }
-    }
-
-    // クリックアクションを処理
-    for action in pending_action {
-        match action {
-            FileListAction::Click { id } => {
-                files.set_selected_id(Some(id));
-            }
-            FileListAction::DoubleClick { path } => {
-                if let Err(e) = click::double_click(&path) {
-                    eprintln!("Error revealing file: {}", e);
-                    error_token.open = true;
-                    error_token.value = Some(e);
-                }
-            }
-            FileListAction::Backspace { id: _id } => {
-                if let Err(e) = key_up::backspace(files, optimize_job) {
-                    eprintln!("Error canceling file: {}", e);
-                    error_token.open = true;
-                    error_token.value = Some(e);
-                }
-            }
-            FileListAction::Space { path } => {
-                if let Err(e) = key_up::space(&path) {
-                    eprintln!("Error revealing file: {}", e);
-                    error_token.open = true;
-                    error_token.value = Some(e);
-                }
-            }
         }
     }
 
