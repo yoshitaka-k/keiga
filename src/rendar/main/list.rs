@@ -109,6 +109,9 @@ pub(crate) fn view(
                 .max_rect(row_rect)
                 .layout(egui::Layout::left_to_right(egui::Align::Center)),
         |ui| {
+            // 折り返さないようにして、溢れた分は省略
+            ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
+
             // 最適化ステータスに応じて表示
             match image_file.status() {
                 OptimizeStatus::Standby => {
