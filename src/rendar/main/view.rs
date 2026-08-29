@@ -14,6 +14,12 @@ pub struct Rendar {
     files: file::OpenFiles,
     status_color: StatusColor,
 
+    // スクロールしている描画範囲
+    vertical_scroll_offset: Option<std::ops::Range<usize>>,
+
+    // キーイベント時のスクロール位置
+    pending_scroll_y: Option<f32>,
+
     // ファイルダイアログを開くタイミング
     open_dialog_token: OpenDialogToken,
 
@@ -62,6 +68,8 @@ impl Rendar {
             app,
             files,
             status_color: StatusColor::new(&cc.egui_ctx),
+            vertical_scroll_offset: None,
+            pending_scroll_y: None,
             open_dialog_token: OpenDialogToken {
                 file_dialog: false,
                 folder_dialog: false,
@@ -119,6 +127,36 @@ impl Rendar {
     /// * `return` - 行高
     fn row_height(&self, ui: &egui::Ui) -> f32 {
         ui.text_style_height(&egui::TextStyle::Body).max(constants::CHECK_ICON_SIZE) + main::SEPARATOR_HEIGHT
+    }
+
+    /// 選択行が見える範囲の外なら、スクロール位置を調整
+    /// * `limit_id` - 制限 ID
+    /// * `list_viewport_height` - 利用可能な高さ
+    /// * `row_stride` - 行のストライド（行の高さ + 行の間隔）
+    fn ensure_selected_row_visible(&mut self, list_viewport_height: f32, row_stride: f32, item_spacing: f32) {
+        // 選択されている行のインデックスを取得
+        let Some(index) = self.files.get_selected_index() else {
+            return;
+        };
+
+        // スクロールしている描画範囲を取得
+        let Some(range) = self.vertical_scroll_offset.clone() else {
+            return;
+        };
+
+        // 最後の行はスクロールしないようにする
+        let end = if range.end > 1 { range.end - 1 } else { range.end };
+        // println!("index: {}, range.start: {}, range.end: {}, end: {}", index, range.start, range.end, end);
+
+        // 選択されている行が見える範囲の外なら、スクロール位置を調整
+        if index <= range.start {
+            self.pending_scroll_y = Some(index as f32 * row_stride);
+        } else if index >= end {
+            let content_height = (index + 1) as f32 * row_stride - item_spacing;
+            if content_height > list_viewport_height {
+                self.pending_scroll_y = Some(content_height - list_viewport_height);
+            }
+        }
     }
 
     /// ダイアログを開く
@@ -186,6 +224,9 @@ impl eframe::App for Rendar {
             style.interaction.selectable_labels = false;
         });
 
+        // イベント処理のためのアクションを保持
+        let mut pending_actions: Vec<main::EventAction> = Vec::new();
+
         #[cfg(target_os = "macos")]
         {
             // Command + O キーが押されたらフォルダダイアログを開く
@@ -223,6 +264,51 @@ impl eframe::App for Rendar {
             button::setting_open(ui, &mut self.setting_token);
         }
 
+        // 上キーが押されたら処理予約
+        if ui.input(|input| input.key_released(egui::Key::ArrowUp)) {
+            if let Some(image_file) = self.files.selected_image_file() {
+                pending_actions.push(main::EventAction::Up {
+                    id: *image_file.id(),
+                });
+            }
+        }
+
+        // 下キーが押されたら処理予約
+        if ui.input(|input| input.key_released(egui::Key::ArrowDown)) {
+            if let Some(image_file) = self.files.selected_image_file() {
+            pending_actions.push(main::EventAction::Down {
+                id: *image_file.id(),
+            });
+        }
+        }
+
+        // 削除キーが押されたら処理予約
+        if ui.input(|input| input.key_released(egui::Key::Backspace)) {
+            if self.files.selected_id().is_some() {
+                pending_actions.push(main::EventAction::Backspace);
+            }
+        }
+
+        // エンターキーが押されたら処理予約
+        if ui.input(|input| input.key_released(egui::Key::Enter)) {
+            let Some(image_file) = self.files.selected_image_file() else {
+                return;
+            };
+            pending_actions.push(main::EventAction::Enter {
+                path: image_file.reveal_path().clone(),
+            });
+        }
+
+        // スペースキーが押されたら処理予約
+        if ui.input(|input| input.key_released(egui::Key::Space)) {
+            let Some(image_file) = self.files.selected_image_file() else {
+                return;
+            };
+            pending_actions.push(main::EventAction::Space {
+                path: image_file.reveal_path().clone(),
+            });
+        }
+
         // 最適化結果を反映
         self.optimize_result();
 
@@ -242,8 +328,16 @@ impl eframe::App for Rendar {
         let top_panel_style = rendar::panel_style(ui, rendar::TOP_PANEL_INNER_MARGIN);
         let bottom_panel_style = rendar::panel_style(ui, rendar::BOTTOM_PANEL_INNER_MARGIN);
 
-        // イベント処理のためのアクションを保持
-        let mut pending_actions: Vec<main::EventAction> = Vec::new();
+        // リスト行の高さと行数を取得
+        let row_height = self.row_height(ui);
+        let total_rows = self.files.paths().len();
+
+        // 利用可能な高さを設定
+        let mut list_viewport_height: f32 = 0.0;
+        // 行のストライド（行の高さ + 行の間隔）を設定
+        let mut row_stride: f32 = 0.0;
+        // 行の間隔を設定
+        let mut item_spacing: f32 = 0.0;
 
         // 上部ボタンを表示
         egui::Panel::top("top_taskbar").frame(top_panel_style).show(ui, |ui| {
@@ -257,37 +351,55 @@ impl eframe::App for Rendar {
 
         // 中央パネルを表示
         egui::CentralPanel::default().show(ui, |ui| {
-            let row_height = self.row_height(ui);
-            let total_rows = self.files.paths().len();
+            // 利用可能な高さを設定
+            list_viewport_height = ui.available_height();
+            // 行のストライド（行の高さ + 行の間隔）を設定
+            row_stride = row_height + ui.spacing().item_spacing.y;
+            // 行の間隔を設定
+            item_spacing = ui.spacing().item_spacing.y;
 
-            // ファイル一覧を表示
-            // リスト行をクリックしたら選択状態を保持
-            let row_clicked = egui::ScrollArea::vertical()
+            // スクロールエリアを作成
+            let mut scroll_area = egui::ScrollArea::vertical()
                 // コンテナが小さい時に縮小させない
                 .auto_shrink([false; 2])
                 // スクロールビューの高さを指定
-                .max_height(ui.available_height())
-                // コンテナ内の表示
-                .show_rows(ui, row_height, total_rows, |ui, row_range| {
-                    // 表示する行の情報
-                    let list_row_token = ListRowToken {
-                        range: row_range,
-                        height: row_height,
-                    };
+                .max_height(ui.available_height());
 
-                    // ファイル一覧を表示
-                    list::view(
-                        ui,
-                        &self.status_color,
-                        &self.files,
-                        list_row_token,
-                        &mut pending_actions,
-                    )
-                }).inner;
+            // スクロール位置を設定
+            if let Some(scroll_y) = self.pending_scroll_y.take() {
+                scroll_area = scroll_area.vertical_scroll_offset(scroll_y);
+            }
+
+            // ファイル一覧を表示
+            // リスト行をクリックしたら選択状態を保持
+            let row_clicked = scroll_area.show_rows(
+                ui, row_height, total_rows,
+                |ui, row_range|
+            {
+                // 垂直スクロールオフセットを設定
+                self.vertical_scroll_offset = Some(row_range.clone());
+
+                // 表示する行の情報
+                let list_row_token = ListRowToken {
+                    range: row_range,
+                    height: row_height,
+                };
+
+                // ファイル一覧を表示
+                list::view(
+                    ui,
+                    &self.status_color,
+                    &self.files,
+                    list_row_token,
+                    &mut pending_actions,
+                )
+            }).inner;
 
             // リスト行以外をクリックしたら選択解除
             if ui.input(|i| i.pointer.primary_clicked()) && !row_clicked {
                 self.files.set_selected_id(None);
+                self.vertical_scroll_offset = None;
+                self.pending_scroll_y = None;
             }
         });
 
@@ -304,9 +416,35 @@ impl eframe::App for Rendar {
                         self.error_token.value = Some(e);
                     }
                 }
-                main::EventAction::Backspace => {
-                    if let Err(e) = key_up::backspace(&mut self.files, &mut self.optimize_job) {
-                        eprintln!("Error canceling file: {}", e);
+                main::EventAction::Up { id } => {
+                    let min_id = self.files.get_min_id();
+
+                    // 選択されているファイルの ID が最小の ID より大きい場合
+                    if id > min_id {
+                        self.files.set_selected_id(Some(id - 1));
+                    } else {
+                        self.files.set_selected_id(Some(min_id));
+                    }
+
+                    // 選択されている行が見える範囲の外なら、スクロール位置を調整
+                    self.ensure_selected_row_visible(list_viewport_height, row_stride, item_spacing);
+                }
+                main::EventAction::Down { id } => {
+                    let max_id = self.files.get_max_id();
+
+                    // 選択されているファイルの ID が最大の ID より小さい場合
+                    if id < max_id {
+                        self.files.set_selected_id(Some(id + 1));
+                    } else {
+                        self.files.set_selected_id(Some(max_id));
+                    }
+
+                    // 選択されている行が見える範囲の外なら、スクロール位置を調整
+                    self.ensure_selected_row_visible(list_viewport_height, row_stride, item_spacing);
+                }
+                main::EventAction::Enter { path } => {
+                    if let Err(e) = click::double_click(&path) {
+                        eprintln!("Error revealing file: {}", e);
                         self.error_token.open = true;
                         self.error_token.value = Some(e);
                     }
@@ -314,6 +452,13 @@ impl eframe::App for Rendar {
                 main::EventAction::Space { path } => {
                     if let Err(e) = key_up::space(&path) {
                         eprintln!("Error revealing file: {}", e);
+                        self.error_token.open = true;
+                        self.error_token.value = Some(e);
+                    }
+                }
+                main::EventAction::Backspace => {
+                    if let Err(e) = key_up::backspace(&mut self.files, &mut self.optimize_job) {
+                        eprintln!("Error canceling file: {}", e);
                         self.error_token.open = true;
                         self.error_token.value = Some(e);
                     }

@@ -26,8 +26,11 @@ use crate::rendar::assets::{constants, svg, icon_color};
 pub(crate) enum EventAction {
     Click { id: u64 },
     DoubleClick { path: std::path::PathBuf },
-    Backspace,
+    Up { id: u64 },
+    Down { id: u64 },
+    Enter { path: std::path::PathBuf },
     Space { path: std::path::PathBuf },
+    Backspace,
 }
 
 /// アイコンウィジェットを作成

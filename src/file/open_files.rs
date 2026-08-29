@@ -302,6 +302,35 @@ impl OpenFiles {
         })
     }
 
+    /// 最小の ID を取得
+    /// * `return` - 最小の ID
+    pub fn get_min_id(&self) -> u64 {
+        *self.paths.iter().map(|f| f.id()).min().unwrap_or(&1)
+    }
+
+    /// 最大の ID を取得
+    /// * `return` - 最大の ID
+    pub fn get_max_id(&self) -> u64 {
+        *self.paths.iter().map(|f| f.id()).max().unwrap_or(&1)
+    }
+
+    /// 選択されたファイルのインデックスを取得
+    /// * `return` - 選択されたファイルのインデックス
+    pub fn get_selected_index(&self) -> Option<usize> {
+        if let Some(id) = self.selected_id() {
+            self.paths.iter().position(|p| *p.id() == *id)
+        } else {
+            None
+        }
+    }
+
+    /// ID からインデックスを取得
+    /// * `id` - ID
+    /// * `return` - インデックス
+    pub fn get_index_by_id(&self, id: u64) -> Option<usize> {
+        self.paths.iter().position(|p| *p.id() == id)
+    }
+
     /// パスを追加
     /// * `app` - アプリケーション
     /// * `path` - ドロップされたファイルのパス

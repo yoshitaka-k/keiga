@@ -24,24 +24,8 @@ pub(crate) fn view(
     let width = ui.available_width();
     let row_spacing = ui.spacing().item_spacing.y;
 
-    // アクションを処理するためのベクタ
+    // 行がクリックされたかどうか
     let mut row_clicked = false;
-
-    // 削除キーが押されたら処理予約
-    if ui.input(|input| input.key_released(egui::Key::Backspace)) {
-        if files.selected_id().is_some() {
-            pending_actions.push(main::EventAction::Backspace);
-        }
-    }
-
-    // スペースキーが押されたら処理予約
-    if ui.input(|input| input.key_released(egui::Key::Space)) {
-        if let Some(image_file) = files.selected_image_file() {
-            pending_actions.push(main::EventAction::Space {
-                path: image_file.reveal_path().clone(),
-            });
-        }
-    }
 
     // リスト表示の準備
     let total = files.paths().len();
