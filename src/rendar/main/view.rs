@@ -1,6 +1,6 @@
 use crate::app::{self, UpdateJob, UpdatedToken};
 use crate::file;
-use crate::event::{open, drop, key_up, click, button};
+use crate::event::{open, drop, key, click, button};
 use crate::optimize::OptimizeJob;
 use crate::rendar::{self, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken, OpenDialogToken};
 use crate::rendar::assets::{constants, fonts, svg, SoundPlayer};
@@ -451,14 +451,14 @@ impl eframe::App for Rendar {
                     }
                 }
                 main::EventAction::Space { path } => {
-                    if let Err(e) = key_up::space(&path) {
+                    if let Err(e) = key::space(&path) {
                         eprintln!("Error revealing file: {}", e);
                         self.error_token.open = true;
                         self.error_token.value = Some(e);
                     }
                 }
                 main::EventAction::Backspace => {
-                    if let Err(e) = key_up::backspace(&mut self.files, &mut self.optimize_job) {
+                    if let Err(e) = key::backspace(&mut self.files, &mut self.optimize_job) {
                         eprintln!("Error canceling file: {}", e);
                         self.error_token.open = true;
                         self.error_token.value = Some(e);
