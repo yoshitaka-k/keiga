@@ -68,7 +68,7 @@ pub(crate) fn view(
         // ホバーテキストを設定
         response.on_hover_ui(|ui| {
             ui.label(format!(
-                "Total average duration: {}",
+                "Average duration: {}",
                 duration_format(files.average_duration()),
             ));
 
