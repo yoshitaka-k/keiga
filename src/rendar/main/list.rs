@@ -1,6 +1,6 @@
 use egui::Sense;
 
-use crate::{file, duration_format};
+use crate::{event, file, duration_format};
 use crate::optimize::OptimizeStatus;
 use crate::rendar::{ListRowToken, StatusColor};
 use crate::rendar::assets::{constants, fonts::text_color, svg};
@@ -18,7 +18,7 @@ pub(crate) fn view(
     status_color: &StatusColor,
     files: &file::OpenFiles,
     list_row: ListRowToken,
-    pending_actions: &mut Vec<main::EventAction>,
+    pending_actions: &mut Vec<event::EventAction>,
 ) -> bool {
     // UIの幅と行間隔
     let width = ui.available_width();
@@ -125,13 +125,13 @@ pub(crate) fn view(
 
         // クリックアクションを処理予約
         if response.clicked() {
-            pending_actions.push(main::EventAction::Click { id: *image_file.id() });
+            pending_actions.push(event::EventAction::Click { id: *image_file.id() });
             row_clicked = true;
         }
 
         // ダブルクリックアクションを処理予約
         if response.double_clicked() {
-            pending_actions.push(main::EventAction::DoubleClick {
+            pending_actions.push(event::EventAction::DoubleClick {
                 path: image_file.reveal_path().clone(),
             });
         }

@@ -22,17 +22,6 @@ pub(crate) const LIST_CORNER_RADIUS: f32 = 1.0;
 use crate::{file, filesize_format};
 use crate::rendar::assets::{constants, svg, icon_color};
 
-/// ファイル一覧のアクション
-pub(crate) enum EventAction {
-    Click { id: u64 },
-    DoubleClick { path: std::path::PathBuf },
-    Up { id: u64 },
-    Down { id: u64 },
-    Enter { path: std::path::PathBuf },
-    Space { path: std::path::PathBuf },
-    Backspace,
-}
-
 /// アイコンウィジェットを作成
 /// * `icon` - アイコン
 /// * `size` - アイコンのサイズ
