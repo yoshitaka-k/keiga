@@ -110,6 +110,12 @@ impl ImageFile {
         })
     }
 
+    /// ファイルが JPEG かどうか
+    /// * `return` - ファイルが JPEG かどうか
+    pub fn is_jpeg(&self) -> bool {
+        matches!(self.extension, extension::Extension::Jpeg)
+    }
+
     /// ファイルが PNG かどうか
     /// * `return` - ファイルが PNG かどうか
     pub fn is_png(&self) -> bool {

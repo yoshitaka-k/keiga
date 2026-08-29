@@ -5,20 +5,61 @@ use getset::{Getters, Setters};
 use crate::{app, error, file};
 use crate::optimize::OptimizeStatus;
 
+/// 最適化済みのファイル数を管理する構造体
+#[derive(Clone)]
+struct OptimizedLen {
+    jpeg: u32,
+    png: u32,
+}
+
+impl OptimizedLen {
+    pub fn new() -> Self {
+        Self {
+            jpeg: 0,
+            png: 0,
+        }
+    }
+    pub fn total(&self) -> u32 {
+        self.jpeg + self.png
+    }
+}
+
+/// 最適化時間を管理する構造体
+#[derive(Clone)]
+struct DurationInfo {
+    jpeg: u64,
+    png: u64,
+}
+
+impl DurationInfo {
+    pub fn new() -> Self {
+        Self {
+            jpeg: 0,
+            png: 0,
+        }
+    }
+    pub fn total(&self) -> u64 {
+        self.jpeg + self.png
+    }
+}
+
 /// ファイル情報を管理する構造体
 #[derive(Clone)]
 struct FileInfo {
     standby_len: u32,
     optimizing_len: u32,
-    optimized_len: u32,
+    optimized_len: OptimizedLen,
     unchanged_len: u32,
     skipped_len: u32,
     canceled_len: u32,
     error_len: u32,
     total_size: u64,
     total_new_size: u64,
-    total_duration: u64,
+    total_duration: DurationInfo,
     total_saved_rate: f32,
+    average_duration: u64,
+    jpeg_average_duration: u64,
+    png_average_duration: u64,
 }
 
 impl FileInfo {
@@ -26,15 +67,18 @@ impl FileInfo {
         Self {
             standby_len: 0,
             optimizing_len: 0,
-            optimized_len: 0,
+            optimized_len: OptimizedLen::new(),
             unchanged_len: 0,
             skipped_len: 0,
             canceled_len: 0,
             error_len: 0,
             total_size: 0,
             total_new_size: 0,
-            total_duration: 0,
+            total_duration: DurationInfo::new(),
             total_saved_rate: 0.00,
+            average_duration: 0,
+            jpeg_average_duration: 0,
+            png_average_duration: 0,
         }
     }
 }
@@ -104,7 +148,7 @@ impl OpenFiles {
     pub fn update_file_info(&mut self) {
         let mut standby_len = 0;
         let mut optimizing_len = 0;
-        let mut optimized_len = 0;
+        let mut optimized_len = OptimizedLen::new();
         let mut unchanged_len = 0;
         let mut canceled_len = 0;
         let mut skipped_len = 0;
@@ -112,7 +156,7 @@ impl OpenFiles {
 
         let mut total_size = 0;
         let mut total_new_size = 0;
-        let mut total_duration = 0;
+        let mut total_duration = DurationInfo::new();
 
         // 各ファイルの情報を集計
         for file in &self.paths {
@@ -120,11 +164,16 @@ impl OpenFiles {
                 OptimizeStatus::Standby => standby_len += 1,
                 OptimizeStatus::Optimizing => optimizing_len += 1,
                 OptimizeStatus::Optimized => {
-                    optimized_len += 1;
+                    if file.is_jpeg() {
+                        optimized_len.jpeg += 1;
+                        total_duration.jpeg += file.duration();
+                    } else if file.is_png() {
+                        optimized_len.png += 1;
+                        total_duration.png += file.duration();
+                    }
 
                     total_size += file.size();
                     total_new_size += file.new_size();
-                    total_duration += file.duration();
                 }
                 OptimizeStatus::Unchanged => unchanged_len += 1,
                 OptimizeStatus::Skipped => skipped_len += 1,
@@ -135,6 +184,25 @@ impl OpenFiles {
 
         // 節約率を計算
         let total_saved_rate = file::calc_saved_rate(total_size, total_new_size);
+
+        // 平均最適化時間を計算
+        let average_duration = if optimized_len.total() > 0 {
+            total_duration.total() / optimized_len.total() as u64
+        } else {
+            0
+        };
+
+        let jpeg_average_duration = if optimized_len.jpeg > 0 {
+            total_duration.jpeg / optimized_len.jpeg as u64
+        } else {
+            0
+        };
+
+        let png_average_duration = if optimized_len.png > 0 {
+            total_duration.png / optimized_len.png as u64
+        } else {
+            0
+        };
 
         // ファイル情報を更新
         self.file_info.standby_len = standby_len;
@@ -149,6 +217,9 @@ impl OpenFiles {
         self.file_info.total_new_size = total_new_size;
         self.file_info.total_duration = total_duration;
         self.file_info.total_saved_rate = total_saved_rate;
+        self.file_info.average_duration = average_duration;
+        self.file_info.jpeg_average_duration = jpeg_average_duration;
+        self.file_info.png_average_duration = png_average_duration;
     }
 
     /// ファイルの数を取得
@@ -172,7 +243,7 @@ impl OpenFiles {
     /// 最適化済みのファイルの数を取得
     /// * `return` - 最適化済みのファイルの数
     pub fn optimized_len(&self) -> u32 {
-        self.file_info.optimized_len
+        self.file_info.optimized_len.total()
     }
 
     /// 最適化不要のファイルの数を取得
@@ -211,16 +282,28 @@ impl OpenFiles {
         self.file_info.total_new_size
     }
 
-    /// ファイルの総最適化時間を取得
-    /// * `return` - ファイルの総最適化時間
-    pub fn total_duration(&self) -> u64 {
-        self.file_info.total_duration
-    }
-
     /// ファイルの総節約率を取得
     /// * `return` - ファイルの総節約率
     pub fn total_saved_rate(&self) -> f32 {
         self.file_info.total_saved_rate
+    }
+
+    /// ファイルの平均最適化時間を取得
+    /// * `return` - ファイルの平均最適化時間
+    pub fn average_duration(&self) -> u64 {
+        self.file_info.average_duration
+    }
+
+    /// ファイルの JPEG 平均最適化時間を取得
+    /// * `return` - ファイルの JPEG 平均最適化時間
+    pub fn jpeg_average_duration(&self) -> u64 {
+        self.file_info.jpeg_average_duration
+    }
+
+    /// ファイルの PNG 平均最適化時間を取得
+    /// * `return` - ファイルの PNG 平均最適化時間
+    pub fn png_average_duration(&self) -> u64 {
+        self.file_info.png_average_duration
     }
 
     /// パスをクリア
@@ -228,6 +311,18 @@ impl OpenFiles {
         self.paths.clear();
         self.selected_id = None;
         self.file_info = FileInfo::new();
+    }
+
+    /// JPEG ファイルがあるかどうか
+    /// * `return` - JPEG ファイルがあるかどうか
+    pub fn has_jpeg(&self) -> bool {
+        self.paths.iter().any(|f| f.is_jpeg())
+    }
+
+    /// PNG ファイルがあるかどうか
+    /// * `return` - PNG ファイルがあるかどうか
+    pub fn has_png(&self) -> bool {
+        self.paths.iter().any(|f| f.is_png())
     }
 
     /// 未処理ファイルがあるかどうか

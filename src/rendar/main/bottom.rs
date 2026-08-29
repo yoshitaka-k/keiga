@@ -46,12 +46,6 @@ pub(crate) fn view(
 
     ui.horizontal(|ui| {
         // 処理中アイコンを配置
-        // ホバーテキストを設定
-        let hover_text = format!(
-            "Total optimization duration: {}",
-            duration_format(files.total_duration()),
-        );
-
         // 優先度: 最適化中 > エラー > 最適化済み・最適化不要 > 待機
         let response = if optimizing_len > 0 {
             main::add_padded_icon(ui,
@@ -71,7 +65,31 @@ pub(crate) fn view(
             1.0)
         };
 
-        response.on_hover_text(hover_text);
+        // ホバーテキストを設定
+        response.on_hover_ui(|ui| {
+            ui.label(format!(
+                "Total average duration: {}",
+                duration_format(files.average_duration()),
+            ));
+
+            // JPEG と PNG の平均最適化時間を表示
+            if files.has_jpeg() && files.has_png() {
+                ui.separator();
+
+                if files.has_jpeg() {
+                    ui.label(format!(
+                        "JPEG average duration: {}",
+                        duration_format(files.jpeg_average_duration()),
+                    ));
+                }
+                if files.has_png() {
+                    ui.label(format!(
+                        "PNG average duration: {}",
+                        duration_format(files.png_average_duration()),
+                    ));
+                }
+            }
+        });
 
         ui.separator();
 
