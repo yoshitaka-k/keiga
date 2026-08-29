@@ -232,7 +232,7 @@ impl eframe::App for Rendar {
             // Command + O キーが押されたらフォルダダイアログを開く
             if ui.input(|input| {
                 input.modifiers.matches_exact(egui::Modifiers::COMMAND)
-                && input.key_released(egui::Key::O)
+                && input.key_pressed(egui::Key::O)
             }) {
                 button::folder_open(ui, &mut self.open_dialog_token);
             }
@@ -243,7 +243,7 @@ impl eframe::App for Rendar {
             // Command + O キーが押されたらファイルダイアログを開く
             if ui.input(|input| {
                 input.modifiers.matches_exact(egui::Modifiers::COMMAND)
-                && input.key_released(egui::Key::O)
+                && input.key_pressed(egui::Key::O)
             }) {
                 button::file_open(ui, &mut self.open_dialog_token);
             }
@@ -251,7 +251,7 @@ impl eframe::App for Rendar {
             // Ctrl + Shift + O キーが押されたらフォルダダイアログを開く
             if ui.input(|input| {
                 input.modifiers.matches_exact(egui::Modifiers::COMMAND | egui::Modifiers::SHIFT)
-                && input.key_released(egui::Key::O)
+                && input.key_pressed(egui::Key::O)
             }) {
                 button::folder_open(ui, &mut self.open_dialog_token);
             }
@@ -259,13 +259,14 @@ impl eframe::App for Rendar {
 
         // Command + Comma キーが押されたら設定ウィンドウを開く
         if ui.input(|input| {
-            input.modifiers.matches_exact(egui::Modifiers::COMMAND) && input.key_released(egui::Key::Comma)
+            input.modifiers.matches_exact(egui::Modifiers::COMMAND)
+            && input.key_pressed(egui::Key::Comma)
         }) {
             button::setting_open(ui, &mut self.setting_token);
         }
 
         // 上キーが押されたら処理予約
-        if ui.input(|input| input.key_released(egui::Key::ArrowUp)) {
+        if ui.input(|input| input.key_pressed(egui::Key::ArrowUp)) {
             if let Some(image_file) = self.files.selected_image_file() {
                 pending_actions.push(main::EventAction::Up {
                     id: *image_file.id(),
@@ -274,7 +275,7 @@ impl eframe::App for Rendar {
         }
 
         // 下キーが押されたら処理予約
-        if ui.input(|input| input.key_released(egui::Key::ArrowDown)) {
+        if ui.input(|input| input.key_pressed(egui::Key::ArrowDown)) {
             if let Some(image_file) = self.files.selected_image_file() {
             pending_actions.push(main::EventAction::Down {
                 id: *image_file.id(),
@@ -283,14 +284,14 @@ impl eframe::App for Rendar {
         }
 
         // 削除キーが押されたら処理予約
-        if ui.input(|input| input.key_released(egui::Key::Backspace)) {
+        if ui.input(|input| input.key_pressed(egui::Key::Backspace)) {
             if self.files.selected_id().is_some() {
                 pending_actions.push(main::EventAction::Backspace);
             }
         }
 
         // エンターキーが押されたら処理予約
-        if ui.input(|input| input.key_released(egui::Key::Enter)) {
+        if ui.input(|input| input.key_pressed(egui::Key::Enter)) {
             let Some(image_file) = self.files.selected_image_file() else {
                 return;
             };
@@ -300,7 +301,7 @@ impl eframe::App for Rendar {
         }
 
         // スペースキーが押されたら処理予約
-        if ui.input(|input| input.key_released(egui::Key::Space)) {
+        if ui.input(|input| input.key_pressed(egui::Key::Space)) {
             let Some(image_file) = self.files.selected_image_file() else {
                 return;
             };

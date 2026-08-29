@@ -43,7 +43,8 @@ pub(crate) fn view(
     ctx.show_viewport_immediate(window_id, options, |ctx, _class| {
         // Command + W キーが押されたら閉じる
         if ctx.input(|input| {
-            input.modifiers.matches_exact(egui::Modifiers::COMMAND) && input.key_released(egui::Key::W)
+            input.modifiers.matches_exact(egui::Modifiers::COMMAND)
+            && input.key_pressed(egui::Key::W)
         }) {
             setting_token.open = false;
         }

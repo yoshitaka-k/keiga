@@ -1,6 +1,6 @@
 [package]
 name = "keiga"
-version = "1.4.10"
+version = "1.4.11"
 edition = "2024"
 description = "Lightweight image optimizer"
 authors = ["yoshitaka-k"]
