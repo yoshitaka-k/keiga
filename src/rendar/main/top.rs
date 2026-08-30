@@ -21,7 +21,7 @@ pub(crate) fn view(
             ui.label("Files or Folders to Optimize Drag & Drop");
         });
 
-        // 開くボタンとクリアボタンを右寄せ
+        // 開くボタンと設定ボタンを右寄せに配置
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             // 設定ボタン
             let settings_button = egui::Image::new(svg::SETTINGS).max_height(constants::BUTTON_SETTINGS_ICON_SIZE).tint(button_color);
