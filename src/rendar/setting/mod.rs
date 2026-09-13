@@ -21,7 +21,7 @@ pub(crate) const WARNING_ICON_SPACING: f32 = 3.0;
 
 // ラベルの幅
 pub(crate) const GENERAL_LABEL_WIDTH: f32 = 90.0;
-pub(crate) const CONCURRENT_LABEL_WIDTH: f32 = 124.0;
+pub(crate) const CONCURRENT_LABEL_WIDTH: f32 = 122.0;
 pub(crate) const QUALITY_LABEL_WIDTH: f32 = 78.0;
 
 // 追加のスペースの幅

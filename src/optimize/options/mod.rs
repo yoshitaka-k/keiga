@@ -6,6 +6,7 @@ pub(crate) use png_preset::PngPreset;
 /// JPEG オプション
 #[derive(Clone)]
 pub struct JpegOptions {
+    pub lossy: bool,
     pub quality: u8,
 }
 

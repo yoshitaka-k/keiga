@@ -52,6 +52,24 @@ pub trait Optimizer {
         options: Self::Options,
     ) -> error::Result<(usize, Vec<u8>)>;
 
+    /// Lossy 最適化
+    /// * `path` - 最適化するファイルのパス
+    /// * `options` - 最適化オプション
+    /// * `return` - エンコードされたファイルのサイズとデータ
+    fn lossy(
+        path: &PathBuf,
+        options: Self::Options
+    ) -> error::Result<(usize, Vec<u8>)>;
+
+    /// Lossless 最適化
+    /// * `path` - 最適化するファイルのパス
+    /// * `options` - 最適化オプション
+    /// * `return` - エンコードされたファイルのサイズとデータ
+    fn lossless(
+        path: &PathBuf,
+        options: Self::Options
+    ) -> error::Result<(usize, Vec<u8>)>;
+
     /// 最適化を行う
     /// * `path` - 最適化するファイルのパス
     /// * `output_path` - 出力ファイルのパス

@@ -15,8 +15,8 @@ pub(crate) const LIGHT_MODE_PANEL_COLOR: egui::Color32 = egui::Color32::from_rgb
 
 // パネルの内側のマージン
 pub(crate) const PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
-    left: 8,
-    right: 8,
+    left: 12,
+    right: 12,
     top: 0,
     bottom: 0,
 };

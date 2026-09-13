@@ -17,18 +17,36 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
+    setting::header_panel(ui, svg::IMAGE, "JPEG", None);
+
     egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
-        // JPEG のスライダーを表示
+        // JPEG の圧縮方法を表示
         ui.horizontal(|ui| {
-            rendar::add_label(ui, "JPEG Quality:", setting::QUALITY_LABEL_WIDTH);
+            rendar::add_label(ui, "Compression:", setting::QUALITY_LABEL_WIDTH);
             ui.scope(|ui| {
                 ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
-                ui.add(egui::Slider::new(app.jpeg_quality_mut(), setting::JPEG_QUALITY_MIN..=setting::JPEG_QUALITY_MAX));
+                ui.radio_value(app.jpeg_lossy_mut(), false, "Lossless");
+                ui.radio_value(app.jpeg_lossy_mut(), true, "Lossy");
             });
         });
 
-        // JPEG の品質の注意書きを表示
-        setting::warning_note(ui, &format!("JPEG is lossy compression."));
+        // JPEG の圧縮方法の注意書きを表示
+        if *app.jpeg_lossy() {
+            setting::warning_note(ui, "Re-encodes at the quality below..");
+        } else {
+            setting::warning_note(ui, "losNear-lossless re-encode. Still lossy; may not shrink.");
+        }
+
+        // JPEG のスライダーを表示
+        ui.add_enabled_ui(*app.jpeg_lossy(), |ui| {
+            ui.horizontal(|ui| {
+                rendar::add_label(ui, "Quality:", setting::QUALITY_LABEL_WIDTH);
+                ui.scope(|ui| {
+                    ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
+                    ui.add(egui::Slider::new(app.jpeg_quality_mut(), setting::JPEG_QUALITY_MIN..=setting::JPEG_QUALITY_MAX));
+                });
+            });
+        });
     });
 
     ui.add_space(setting::SETTING_ADD_SPACING);
@@ -37,10 +55,12 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
+    setting::header_panel(ui, svg::IMAGE, "PNG", None);
+
     egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
         // PNG のプリセットを表示
         ui.horizontal(|ui| {
-            rendar::add_label(ui, "PNG Preset:", setting::QUALITY_LABEL_WIDTH);
+            rendar::add_label(ui, "Preset:", setting::QUALITY_LABEL_WIDTH);
             ui.radio_value(app.png_preset_mut(), PngPreset::Min, PngPreset::Min.to_string());
             ui.radio_value(app.png_preset_mut(), PngPreset::Fast, PngPreset::Fast.to_string());
             ui.radio_value(app.png_preset_mut(), PngPreset::Default, PngPreset::Default.to_string());

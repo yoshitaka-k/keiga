@@ -225,8 +225,11 @@ impl ImageFile {
         let result = match self.extension {
             // jpeg ファイルの最適化
             extension::Extension::Jpeg => {
-                let quality = *app.jpeg_quality();
-                optimize::Jpeg::optimize(&self.path, &output_path, optimize::JpegOptions { quality }, token)
+                let options = optimize::JpegOptions {
+                    lossy: *app.jpeg_lossy(),
+                    quality: *app.jpeg_quality(),
+                };
+                optimize::Jpeg::optimize(&self.path, &output_path, options, token)
             }
 
             // png ファイルの最適化

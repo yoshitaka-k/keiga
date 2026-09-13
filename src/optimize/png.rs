@@ -15,6 +15,32 @@ impl optimize::Optimizer for Png {
         path: &PathBuf,
         options: Self::Options,
     ) -> error::Result<(usize, Vec<u8>)> {
+        Self::lossless(path, options)
+    }
+
+    /// TODO: 実装予定
+    /// PNG Lossy 最適化
+    /// quantizr crate で最適化
+    /// * `path` - 最適化する PNG のパス
+    /// * `options` - 最適化オプション
+    /// * `return` - 元のファイルサイズとエンコードされたデータ
+    #[allow(unused)]
+    fn lossy(
+        path: &PathBuf,
+        options: Self::Options
+    ) -> error::Result<(usize, Vec<u8>)> {
+        Ok((0, Vec::new()))
+    }
+
+    /// PNG Lossless 最適化
+    /// oxipng crate で最適化
+    /// * `path` - 最適化する PNG のパス
+    /// * `options` - 最適化オプション
+    /// * `return` - 元のファイルサイズとエンコードされたデータ
+    fn lossless(
+        path: &PathBuf,
+        options: Self::Options
+    ) -> error::Result<(usize, Vec<u8>)> {
         // 先にファイルを読み込んでおく
         let input = std::fs::read(path).map_err(|e| {
             error::KeigaError::OptimizedError(e.to_string(), path.clone())

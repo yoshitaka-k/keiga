@@ -43,9 +43,13 @@ pub struct App {
     #[getset(get = "pub", get_mut = "pub")]
     optimization_num: u8,
 
-    /// PNG 最適化数
+    /// 実行する最適化数 内の PNG 最適化数
     #[getset(get = "pub", get_mut = "pub")]
     png_optimization_num: u8,
+
+    /// JPEG Lossy 最適化
+    #[getset(get = "pub", get_mut = "pub")]
+    jpeg_lossy: bool,
 
     /// JPEG 品質
     #[getset(get = "pub", get_mut = "pub")]
@@ -79,6 +83,7 @@ impl Default for App {
             extensions: default_extensions(),
             optimization_num: DEFAULT_OPTIMIZATION_NUM,
             png_optimization_num: DEFAULT_PNG_OPTIMIZATION_NUM,
+            jpeg_lossy: false,
             jpeg_quality: DEFAULT_JPEG_QUALITY,
             png_preset: DEFAULT_PNG_PRESET,
             skip_same_path: true,
