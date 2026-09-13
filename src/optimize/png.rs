@@ -10,7 +10,7 @@ impl optimize::Optimizer for Png {
     /// PNG ファイルを最適化
     /// * `path` - 最適化する PNG のパス
     /// * `options` - 最適化オプション
-    /// * `return` - エンコードされたファイルのサイズとデータ
+    /// * `return` - 元のファイルサイズとエンコードされたデータ
     fn encode(
         path: &PathBuf,
         options: Self::Options,
