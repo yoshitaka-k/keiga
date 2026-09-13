@@ -30,7 +30,7 @@ Rust の勉強がてら、自分用に Image Optimization ってことで、Keig
 
 | Extension | Optimization |
 | --- | --- |
-| `.jpg` / `.jpeg` | 非可逆（JPEG Quality で再エンコード） |
+| `.jpg` / `.jpeg` | Lossless（[MozJPEG](https://github.com/mozilla/mozjpeg) の擬似可逆。既定）<br>Lossy（JPEG Quality で再エンコード） |
 | `.png` | 可逆（[oxipng](https://github.com/oxipng/oxipng)） |
 
 ダイアログには他の画像拡張子も表示されますが、最適化対象外は `Unsupported extension` になります。
@@ -96,6 +96,8 @@ Rust の勉強がてら、自分用に Image Optimization ってことで、Keig
 | --- | --- |
 | Skip same path | 完了済みの同じ入出力はスキップ。キャンセルとエラーは再実行できる |
 | Output path | 書き出し先。空なら元ファイルを上書き |
+| Sound effects | 最適化完了時に再生。エラーがあればアラート（既定 Play sound） |
+| Volume | 1–10（既定 5） |
 
 ### Concurrent
 
@@ -108,7 +110,8 @@ Rust の勉強がてら、自分用に Image Optimization ってことで、Keig
 
 | Setting | Range | Notes |
 | --- | --- | --- |
-| JPEG Quality | 50–99 | 非可逆（既定 80） |
+| JPEG Compression | Lossless / Lossy | 既定 Lossless。Lossless は MozJPEG の擬似可逆で、完全な可逆ではない |
+| JPEG Quality | 50–99 | Lossy 時のみ有効。非可逆（既定 80） |
 | PNG Preset | Min / Fast / Default / Best / Max | 可逆。oxipng のプリセット |
 
 ### About
