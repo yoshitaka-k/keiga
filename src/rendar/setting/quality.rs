@@ -68,7 +68,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
             ui.radio_value(app.png_preset_mut(), PngPreset::Max, PngPreset::Max.to_string());
         });
 
-        // JPEG の品質の注意書きを表示
-        setting::warning_note(ui, &format!("PNG is lossless compression."));
+        // PNG の品質の注意書きを表示
+        setting::warning_note(ui, "PNG is lossless compression.");
     });
 }
