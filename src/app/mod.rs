@@ -17,6 +17,9 @@ const DEFAULT_PNG_OPTIMIZATION_NUM: u8 = 2;
 /// JPEG 品質のデフォルト値
 const DEFAULT_JPEG_QUALITY: u8 = 80;
 
+/// PNG ディザリングのデフォルト値
+const DEFAULT_PNG_DITHERING: u8 = 80;
+
 /// PNG 最適化プリセットのデフォルト値
 const DEFAULT_PNG_PRESET: PngPreset = PngPreset::Default;
 
@@ -55,9 +58,17 @@ pub struct App {
     #[getset(get = "pub", get_mut = "pub")]
     jpeg_quality: u8,
 
+    /// PNG Lossy 最適化
+    #[getset(get = "pub", get_mut = "pub")]
+    png_lossy: bool,
+
     /// PNG 最適化プリセット
     #[getset(get = "pub", get_mut = "pub")]
     png_preset: PngPreset,
+
+    /// PNG ディザリング
+    #[getset(get = "pub", get_mut = "pub")]
+    png_dithering: u8,
 
     /// 同じパスはスキップ
     #[getset(get = "pub", get_mut = "pub")]
@@ -85,6 +96,8 @@ impl Default for App {
             png_optimization_num: DEFAULT_PNG_OPTIMIZATION_NUM,
             jpeg_lossy: false,
             jpeg_quality: DEFAULT_JPEG_QUALITY,
+            png_lossy: false,
+            png_dithering: DEFAULT_PNG_DITHERING,
             png_preset: DEFAULT_PNG_PRESET,
             skip_same_path: true,
             output_path: "".to_string(),

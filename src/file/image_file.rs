@@ -234,8 +234,12 @@ impl ImageFile {
 
             // png ファイルの最適化
             extension::Extension::Png => {
-                let options = app.png_options();
-                optimize::Png::optimize(&self.path, &output_path, optimize::PngOptions { options }, token)
+                let options = optimize::PngOptions {
+                    lossy: *app.png_lossy(),
+                    dithering: *app.png_dithering(),
+                    options: app.png_options(),
+                };
+                optimize::Png::optimize(&self.path, &output_path, options, token)
             }
 
             // サポートしていないファイル形式

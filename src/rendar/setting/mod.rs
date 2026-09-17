@@ -12,7 +12,7 @@ pub(crate) const WINDOW_TITLE: &str = "Keiga Settings";
 
 // ウィンドウのサイズ
 pub(crate) const WINDOW_WIDTH: f32 = 480.0;
-pub(crate) const WINDOW_HEIGHT: f32 = 270.0;
+pub(crate) const WINDOW_HEIGHT: f32 = 300.0;
 
 // ヘッダーのスペースの幅
 pub(crate) const HEADER_ICON_SPACING: f32 = 4.0;
@@ -43,8 +43,12 @@ pub(crate) const PNG_OPTIMIZATION_NUM_MIN: u8 = 1;
 pub(crate) const PNG_OPTIMIZATION_NUM_MAX: u8 = 3;
 
 // JPEG の品質の最小値と最大値
-pub(crate) const JPEG_QUALITY_MIN: u8 = 50;
-pub(crate) const JPEG_QUALITY_MAX: u8 = 99;
+pub(crate) const JPEG_QUALITY_MIN: u8 = 60;
+pub(crate) const JPEG_QUALITY_MAX: u8 = 100;
+
+// PNG のディザリングの最小値と最大値
+pub(crate) const PNG_DITHERING_MIN: u8 = 0;
+pub(crate) const PNG_DITHERING_MAX: u8 = 100;
 
 // インポート
 use crate::app::UpdateJob;

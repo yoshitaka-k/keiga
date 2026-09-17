@@ -1,6 +1,6 @@
 [package]
 name = "keiga"
-version = "1.5.0"
+version = "1.6.0"
 edition = "2024"
 description = "Lightweight image optimizer"
 authors = ["yoshitaka-k"]
@@ -55,6 +55,8 @@ serde = { version = "1.0.229", features = ["derive"] }
 image = { version = "0.25.10", default-features = false, features = ["jpeg", "png"] }
 mozjpeg = "0.10.13"
 oxipng = { version = "10.2.0", default-features = false, features = ["parallel"] }
+quantizr = "1.4.3"
+png = "0.18.1"
 rayon = "1.12.0"
 getset = "0.1.7"
 env_logger = "0.11.11"

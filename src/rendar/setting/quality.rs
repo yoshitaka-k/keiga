@@ -58,17 +58,44 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
     setting::header_panel(ui, svg::IMAGE, "PNG", None);
 
     egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
-        // PNG のプリセットを表示
+        // PNG の圧縮方法を表示
         ui.horizontal(|ui| {
-            rendar::add_label(ui, "Preset:", setting::QUALITY_LABEL_WIDTH);
-            ui.radio_value(app.png_preset_mut(), PngPreset::Min, PngPreset::Min.to_string());
-            ui.radio_value(app.png_preset_mut(), PngPreset::Fast, PngPreset::Fast.to_string());
-            ui.radio_value(app.png_preset_mut(), PngPreset::Default, PngPreset::Default.to_string());
-            ui.radio_value(app.png_preset_mut(), PngPreset::Best, PngPreset::Best.to_string());
-            ui.radio_value(app.png_preset_mut(), PngPreset::Max, PngPreset::Max.to_string());
+            rendar::add_label(ui, "Compression:", setting::QUALITY_LABEL_WIDTH);
+            ui.scope(|ui| {
+                ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
+                ui.radio_value(app.png_lossy_mut(), false, "Lossless");
+                ui.radio_value(app.png_lossy_mut(), true, "Lossy");
+            });
         });
 
-        // PNG の品質の注意書きを表示
-        setting::warning_note(ui, "PNG is lossless compression.");
+        // PNG の圧縮方法の注意書きを表示
+        if *app.png_lossy() {
+            setting::warning_note(ui, "Reduces to 256 colors. Dithering below.");
+        } else {
+            setting::warning_note(ui, "Pixels unchanged. Uses the preset below.");
+        }
+
+        // PNG のプリセットを表示
+        ui.add_enabled_ui(!*app.png_lossy(), |ui| {
+            ui.horizontal(|ui| {
+                rendar::add_label(ui, "Preset:", setting::QUALITY_LABEL_WIDTH);
+                ui.radio_value(app.png_preset_mut(), PngPreset::Min, PngPreset::Min.to_string());
+                ui.radio_value(app.png_preset_mut(), PngPreset::Fast, PngPreset::Fast.to_string());
+                ui.radio_value(app.png_preset_mut(), PngPreset::Default, PngPreset::Default.to_string());
+                ui.radio_value(app.png_preset_mut(), PngPreset::Best, PngPreset::Best.to_string());
+                ui.radio_value(app.png_preset_mut(), PngPreset::Max, PngPreset::Max.to_string());
+            });
+        });
+
+        // PNG のディザリングのスライダーを表示
+        ui.add_enabled_ui(*app.png_lossy(), |ui| {
+            ui.horizontal(|ui| {
+                rendar::add_label(ui, "Dithering:", setting::QUALITY_LABEL_WIDTH);
+                ui.scope(|ui| {
+                    ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
+                    ui.add(egui::Slider::new(app.png_dithering_mut(), setting::PNG_DITHERING_MIN..=setting::PNG_DITHERING_MAX));
+                });
+            });
+        });
     });
 }

@@ -2087,7 +2087,7 @@ dependencies = [
 
 [[package]]
 name = "keiga"
-version = "1.5.0"
+version = "1.6.0"
 dependencies = [
  "eframe",
  "egui",
@@ -2100,6 +2100,8 @@ dependencies = [
  "log",
  "mozjpeg",
  "oxipng",
+ "png 0.18.1",
+ "quantizr",
  "rayon",
  "rfd",
  "rodio",
@@ -3241,6 +3243,12 @@ name = "pxfm"
 version = "0.1.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d55d956fa96f5ec02be2e13af0e20391a5aa83d6a074e3ad368959d0fab299ea"
+
+[[package]]
+name = "quantizr"
+version = "1.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b28ab4659f6754222a9e96c7a48f68dba03a620f23803c67ccd4ca7c35d55f5f"
 
 [[package]]
 name = "quick-error"
