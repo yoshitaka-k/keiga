@@ -31,7 +31,7 @@ Rust の勉強がてら、自分用に Image Optimization ってことで、Keig
 | Extension | Optimization |
 | --- | --- |
 | `.jpg` / `.jpeg` | Lossless（[MozJPEG](https://github.com/mozilla/mozjpeg) の擬似可逆。既定）<br>Lossy（JPEG Quality で再エンコード） |
-| `.png` | 可逆（[oxipng](https://github.com/oxipng/oxipng)） |
+| `.png` | Lossless（[oxipng](https://github.com/oxipng/oxipng)）<br>Lossy（[quantizr](https://docs.rs/quantizr/latest/quantizr/index.html)） |
 
 ダイアログには他の画像拡張子も表示されますが、最適化対象外は `Unsupported extension` になります。
 
