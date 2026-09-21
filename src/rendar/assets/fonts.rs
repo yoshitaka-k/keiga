@@ -15,9 +15,11 @@ pub fn install(ctx: &egui::Context) {
              .insert(name.to_owned(), Arc::new(FontData::from_static(bytes)));
 
         // デフォルトフォントに無いフォントはフォールバック
+        // プロポーショナルフォント
         if let Some(family) = fonts.families.get_mut(&FontFamily::Proportional) {
             family.push(name.to_owned());
         }
+        // 等幅フォント
         if let Some(family) = fonts.families.get_mut(&FontFamily::Monospace) {
             family.push(name.to_owned());
         }
