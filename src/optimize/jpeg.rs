@@ -81,17 +81,20 @@ impl optimize::Optimizer for Jpeg {
             // 画像を読み込む
             let d = mozjpeg::Decompress::new_mem(&input)?;
             let (width, height) = d.size();
-            let mut image = d.to_colorspace(mozjpeg::ColorSpace::JCS_YCbCr)?;
+            let color_space = Self::colorspace(d.color_space());
+            let mut image = d.to_colorspace(color_space)?;
             let pixels = image.read_scanlines::<u8>()?;
 
             // mozjpeg のコンパレッサーを作成
-            let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_YCbCr);
+            let mut comp = mozjpeg::Compress::new(color_space);
             comp.set_size(width, height);
             // 擬似可逆圧縮を使用
             comp.set_quality(100.0);
-            // サンプリングを 4:4:4 に設定
-            comp.set_chroma_sampling_pixel_sizes((1, 1), (1, 1));
 
+            // YCbCr の場合はサンプリングを 4:4:4 に設定
+            if color_space == mozjpeg::ColorSpace::JCS_YCbCr {
+                comp.set_chroma_sampling_pixel_sizes((1, 1), (1, 1));
+            }
 
             // コンパレッサーを開始
             let mut comp_start = comp.start_compress(Vec::new())?;
@@ -118,6 +121,20 @@ impl optimize::Optimizer for Jpeg {
                     .unwrap_or_else(|| "mozjpeg error".to_string());
                 Err(error::KeigaError::OptimizedError(msg, path.clone()))
             },
+        }
+    }
+}
+
+impl Jpeg {
+    /// libjpeg が変換できる色空間へ揃える
+    /// * `color_space` - 変換する色空間
+    /// * `return` - 変換後の色空間
+    fn colorspace(color_space: mozjpeg::ColorSpace) -> mozjpeg::ColorSpace {
+        match color_space {
+            mozjpeg::ColorSpace::JCS_GRAYSCALE => mozjpeg::ColorSpace::JCS_GRAYSCALE,
+            mozjpeg::ColorSpace::JCS_CMYK => mozjpeg::ColorSpace::JCS_CMYK,
+            mozjpeg::ColorSpace::JCS_YCCK => mozjpeg::ColorSpace::JCS_YCCK,
+            _ => mozjpeg::ColorSpace::JCS_YCbCr,
         }
     }
 }
