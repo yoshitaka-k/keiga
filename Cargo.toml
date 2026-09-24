@@ -21,7 +21,6 @@ name = "Keiga"
 icon = ["target/bundle-icons/*.png"]
 category = "Utility"
 short_description = "Lightweight image optimizer"
-linux_use_terminal = false
 deb_depends = [
     "libgtk-3-0",
     "libxcb-render0",
