@@ -56,10 +56,6 @@ jobs:
         case "${{ matrix.job.target }}" in
           x86_64-pc-windows-gnu)
             cargo bundle --release --target ${{ matrix.job.target }} -f exe
-            # cargo-bundle 0.11.0 が .exe を二重付けするため修正
-            for f in target/x86_64-pc-windows-gnu/release/bundle/exe/*.exe.exe; do
-              mv "$f" "${f%.exe}"
-            done
             ;;
           x86_64-unknown-linux-gnu)
             cargo bundle --release --target ${{ matrix.job.target }} -f deb
