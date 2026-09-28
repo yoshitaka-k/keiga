@@ -1,7 +1,6 @@
 use crate::app;
-use crate::rendar;
-use crate::rendar::assets::svg;
-use crate::rendar::setting;
+use crate::ui::{self, setting};
+use crate::ui::assets::svg;
 
 /// 並行処理数を表示
 /// * `ui` - UI
@@ -16,10 +15,10 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
-    egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
+    egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
         // 全ファイルの最適化数
         ui.horizontal(|ui| {
-            rendar::add_label(ui, "Concurrent All files:", setting::CONCURRENT_LABEL_WIDTH);
+            ui::add_label(ui, "Concurrent All files:", setting::CONCURRENT_LABEL_WIDTH);
             ui.scope(|ui| {
                 ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
                 ui.add(egui::Slider::new(app.optimization_num_mut(), setting::OPTIMIZATION_NUM_MIN..=setting::OPTIMIZATION_NUM_MAX));
@@ -30,7 +29,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
         // PNG の最適化数
         ui.horizontal(|ui| {
-            rendar::add_label(ui, "Concurrent PNG files:", setting::CONCURRENT_LABEL_WIDTH);
+            ui::add_label(ui, "Concurrent PNG files:", setting::CONCURRENT_LABEL_WIDTH);
             ui.scope(|ui| {
                 ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
                 ui.add(egui::Slider::new(app.png_optimization_num_mut(), setting::PNG_OPTIMIZATION_NUM_MIN..=setting::PNG_OPTIMIZATION_NUM_MAX));

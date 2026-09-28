@@ -1,9 +1,9 @@
 use crate::{file, duration_format};
 use crate::event::button;
 use crate::optimize::OptimizeJob;
-use crate::rendar::{ErrorToken, StatusColor};
-use crate::rendar::assets::{self, constants, fonts::text_color, svg};
-use crate::rendar::main;
+use crate::ui::{ErrorToken, StatusColor};
+use crate::ui::assets::{self, constants, fonts::text_color, svg};
+use crate::ui::main;
 
 /// 下部パネルを表示
 /// * `ui` - UI

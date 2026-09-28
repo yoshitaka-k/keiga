@@ -1,7 +1,6 @@
 use crate::app::{self, UpdateJob};
-use crate::rendar;
-use crate::rendar::assets::{self, constants, svg};
-use crate::rendar::setting;
+use crate::ui::{self, setting};
+use crate::ui::assets::{self, constants, svg};
 
 /// バージョンを表示
 /// * `ui` - UI
@@ -14,7 +13,7 @@ pub(crate) fn view(ui: &mut egui::Ui, update_job: &mut UpdateJob) {
 
     ui.separator();
 
-    egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
+    egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
         // アプリのアイコンを表示
         ui.add(egui::Image::new(assets::APP_ICON).max_height(constants::APP_ICON_SIZE));
 

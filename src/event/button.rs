@@ -1,6 +1,6 @@
 use crate::{app, file, error};
 use crate::optimize::OptimizeJob;
-use crate::rendar::{SettingToken, OpenDialogToken};
+use crate::ui::{SettingToken, OpenDialogToken};
 
 /// フォルダダイアログを開く
 /// * `ui` - UI

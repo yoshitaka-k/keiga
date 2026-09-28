@@ -2,14 +2,14 @@
 
 mod app;
 mod file;
-mod rendar;
+mod ui;
 mod optimize;
 mod event;
 mod error;
 
 pub use app::App;
 pub use file::open_files::OpenFiles;
-pub use rendar::Rendar;
+pub use ui::Rendar;
 pub use optimize::Jpeg;
 
 /// ファイルサイズをフォーマットするマクロ

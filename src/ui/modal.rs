@@ -1,6 +1,6 @@
 use crate::app::{UpdateCheck, UpdatedToken};
-use crate::rendar::{self, ErrorToken};
-use crate::rendar::assets::{constants, svg};
+use crate::ui::{self, ErrorToken};
+use crate::ui::assets::{constants, svg};
 
 // モーダルのラベルの幅
 pub(crate) const MODAL_LABEL_WIDTH: f32 = 130.0;
@@ -16,7 +16,7 @@ pub(crate) fn error(ctx: &egui::Context, error_token: &mut ErrorToken) {
 
     // モーダルを表示
     let modal = egui::Modal::new(egui::Id::new("modal_error")).show(ctx, |ui| {
-        ui.set_width(rendar::MODAL_WINDOW_WIDTH);
+        ui.set_width(ui::MODAL_WINDOW_WIDTH);
 
         // 見出し部分
         ui.horizontal(|ui| {
@@ -26,16 +26,16 @@ pub(crate) fn error(ctx: &egui::Context, error_token: &mut ErrorToken) {
 
         ui.separator();
 
-        ui.add_space(rendar::MODAL_WINDOW_SPACING);
+        ui.add_space(ui::MODAL_WINDOW_SPACING);
 
         // エラー内容を表示
         if let Some(error) = &error_token.value {
-            egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
+            egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
                 ui.label(error.to_string());
             });
         }
 
-        ui.add_space(rendar::MODAL_WINDOW_SPACING);
+        ui.add_space(ui::MODAL_WINDOW_SPACING);
     });
 
     // モーダルを閉じたらモーダルを非表示にする
@@ -55,7 +55,7 @@ pub(crate) fn updated(ctx: &egui::Context, updated_token: &mut UpdatedToken) {
 
     // モーダルを表示
     let modal = egui::Modal::new(egui::Id::new("modal_updated")).show(ctx, |ui| {
-        ui.set_width(rendar::MODAL_WINDOW_WIDTH);
+        ui.set_width(ui::MODAL_WINDOW_WIDTH);
 
         // 見出し部分
         ui.horizontal(|ui| {
@@ -80,18 +80,18 @@ pub(crate) fn updated(ctx: &egui::Context, updated_token: &mut UpdatedToken) {
 
         ui.separator();
 
-        ui.add_space(rendar::MODAL_WINDOW_SPACING);
+        ui.add_space(ui::MODAL_WINDOW_SPACING);
 
         // 内容部分
         match &check {
             // アップデートがある場合
             UpdateCheck::Available { version, url } => {
-                egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
-                    rendar::add_label(ui, &format!("New version: {}", version), MODAL_LABEL_WIDTH);
+                egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
+                    ui::add_label(ui, &format!("New version: {}", version), MODAL_LABEL_WIDTH);
                     ui.add(egui::Label::new(
                         egui::RichText::new(format!("Current version: v{}", env!("CARGO_PKG_VERSION"))).weak(),
                     ));
-                    ui.add_space(rendar::MODAL_WINDOW_SPACING);
+                    ui.add_space(ui::MODAL_WINDOW_SPACING);
                 });
 
                 ui.separator();
@@ -104,15 +104,15 @@ pub(crate) fn updated(ctx: &egui::Context, updated_token: &mut UpdatedToken) {
             }
             // アップデートが最新の場合
             UpdateCheck::Latest => {
-                egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
+                egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
                     ui.label(format!("Current version: v{}", env!("CARGO_PKG_VERSION")));
-                    ui.add_space(rendar::MODAL_WINDOW_SPACING);
+                    ui.add_space(ui::MODAL_WINDOW_SPACING);
                 });
             }
             // アップデートが取得できなかった場合
             UpdateCheck::Failed => {
-                egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
-                    ui.add_space(rendar::MODAL_WINDOW_SPACING);
+                egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
+                    ui.add_space(ui::MODAL_WINDOW_SPACING);
                 });
             }
         }

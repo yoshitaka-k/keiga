@@ -2,11 +2,11 @@ use crate::app::{self, UpdateJob, UpdatedToken};
 use crate::file;
 use crate::event::{self, open, key, click, input};
 use crate::optimize::OptimizeJob;
-use crate::rendar::{self, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken, OpenDialogToken};
-use crate::rendar::assets::{constants, fonts, svg, SoundPlayer};
-use crate::rendar::main::{self, top, list, bottom};
-use crate::rendar::setting::view as setting_window;
-use crate::rendar::modal;
+use crate::ui::{self, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken, OpenDialogToken};
+use crate::ui::assets::{constants, fonts, svg, SoundPlayer};
+use crate::ui::main::{self, top, list, bottom};
+use crate::ui::setting::view as setting_window;
+use crate::ui::modal;
 
 /// レンダーを管理する構造体
 pub struct Rendar {
@@ -152,8 +152,8 @@ impl eframe::App for Rendar {
         self.optimize_run();
 
         // パネルのスタイルを設定
-        let top_panel_style = rendar::panel_style(ui, rendar::TOP_PANEL_INNER_MARGIN);
-        let bottom_panel_style = rendar::panel_style(ui, rendar::BOTTOM_PANEL_INNER_MARGIN);
+        let top_panel_style = ui::panel_style(ui, ui::TOP_PANEL_INNER_MARGIN);
+        let bottom_panel_style = ui::panel_style(ui, ui::BOTTOM_PANEL_INNER_MARGIN);
 
         // リスト行の高さと行数を取得
         let row_height = self.row_height(ui);

@@ -1,5 +1,5 @@
 mod generated {
-    use crate::rendar::assets::sounds::SoundSource;
+    use crate::ui::assets::sounds::SoundSource;
     include!(concat!(env!("OUT_DIR"), "/sounds_generated.rs"));
 }
 
@@ -19,7 +19,7 @@ impl SoundSource {
 
 use std::io::Cursor;
 use rodio::{Decoder, MixerDeviceSink, Player};
-use crate::rendar::assets::sounds;
+use crate::ui::assets::sounds;
 
 /// 効果音プレイヤー
 pub struct SoundPlayer {

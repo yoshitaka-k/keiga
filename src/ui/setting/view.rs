@@ -1,8 +1,8 @@
 use crate::app::{self, UpdateJob, UpdatedToken};
-use crate::rendar::{self, SettingTab, SettingToken};
-use crate::rendar::assets::{self, constants, svg};
-use crate::rendar::modal;
-use crate::rendar::setting::{self, general, concurrent, quality, about};
+use crate::ui::{self, SettingTab, SettingToken};
+use crate::ui::assets::{self, constants, svg};
+use crate::ui::modal;
+use crate::ui::setting::{self, general, concurrent, quality, about};
 
 /// 設定ウィンドウを表示
 /// * `ctx` - コンテキスト
@@ -53,7 +53,7 @@ pub(crate) fn view(
         update_job.result(updated_token);
 
         // パネルのスタイルを設定
-        let panel_style = rendar::panel_style(ctx, rendar::TOP_PANEL_INNER_MARGIN);
+        let panel_style = ui::panel_style(ctx, ui::TOP_PANEL_INNER_MARGIN);
 
         // アイコンの色を取得
         let icon_color = assets::icon_color(ctx);

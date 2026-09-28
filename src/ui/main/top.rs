@@ -1,6 +1,6 @@
 use crate::event::button;
-use crate::rendar::{main, SettingToken, OpenDialogToken};
-use crate::rendar::assets::{self, constants, svg};
+use crate::ui::{main, SettingToken, OpenDialogToken};
+use crate::ui::assets::{self, constants, svg};
 
 /// 上部ボタンを表示
 /// * `ui` - UI

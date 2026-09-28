@@ -20,7 +20,7 @@ pub(crate) const LIST_NOTE_SIZE: f32 = 11.0;
 pub(crate) const LIST_CORNER_RADIUS: f32 = 1.0;
 
 use crate::{file, filesize_format};
-use crate::rendar::assets::{constants, svg, icon_color};
+use crate::ui::assets::{constants, svg, icon_color};
 
 /// アイコンウィジェットを作成
 /// * `icon` - アイコン

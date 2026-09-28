@@ -1,6 +1,6 @@
 use crate::{app, file, error};
 use crate::event::{self, drop, button};
-use crate::rendar::{OpenDialogToken, SettingToken};
+use crate::ui::{OpenDialogToken, SettingToken};
 
 /// ドロップされたファイルを処理する
 /// * `ui` - ウィジェットのUI

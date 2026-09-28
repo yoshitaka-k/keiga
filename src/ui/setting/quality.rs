@@ -1,8 +1,7 @@
 use crate::app;
 use crate::optimize::options::PngPreset;
-use crate::rendar;
-use crate::rendar::assets::svg;
-use crate::rendar::setting;
+use crate::ui::{self, setting};
+use crate::ui::assets::svg;
 
 /// 品質を表示
 /// * `ui` - UI
@@ -19,10 +18,10 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     setting::header_panel(ui, svg::IMAGE, "JPEG", None);
 
-    egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
+    egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
         // JPEG の圧縮方法を表示
         ui.horizontal(|ui| {
-            rendar::add_label(ui, "Compression:", setting::QUALITY_LABEL_WIDTH);
+            ui::add_label(ui, "Compression:", setting::QUALITY_LABEL_WIDTH);
             ui.scope(|ui| {
                 ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
                 ui.radio_value(app.jpeg_lossy_mut(), false, "Lossless");
@@ -40,7 +39,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
         // JPEG のスライダーを表示
         ui.add_enabled_ui(*app.jpeg_lossy(), |ui| {
             ui.horizontal(|ui| {
-                rendar::add_label(ui, "Quality:", setting::QUALITY_LABEL_WIDTH);
+                ui::add_label(ui, "Quality:", setting::QUALITY_LABEL_WIDTH);
                 ui.scope(|ui| {
                     ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
                     ui.add(egui::Slider::new(app.jpeg_quality_mut(), setting::JPEG_QUALITY_MIN..=setting::JPEG_QUALITY_MAX));
@@ -57,10 +56,10 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     setting::header_panel(ui, svg::IMAGE, "PNG", None);
 
-    egui::Frame::default().inner_margin(rendar::PANEL_INNER_MARGIN).show(ui, |ui| {
+    egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
         // PNG の圧縮方法を表示
         ui.horizontal(|ui| {
-            rendar::add_label(ui, "Compression:", setting::QUALITY_LABEL_WIDTH);
+            ui::add_label(ui, "Compression:", setting::QUALITY_LABEL_WIDTH);
             ui.scope(|ui| {
                 ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
                 ui.radio_value(app.png_lossy_mut(), false, "Lossless");
@@ -78,7 +77,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
         // PNG のプリセットを表示
         ui.add_enabled_ui(!*app.png_lossy(), |ui| {
             ui.horizontal(|ui| {
-                rendar::add_label(ui, "Preset:", setting::QUALITY_LABEL_WIDTH);
+                ui::add_label(ui, "Preset:", setting::QUALITY_LABEL_WIDTH);
                 ui.radio_value(app.png_preset_mut(), PngPreset::Min, PngPreset::Min.to_string());
                 ui.radio_value(app.png_preset_mut(), PngPreset::Fast, PngPreset::Fast.to_string());
                 ui.radio_value(app.png_preset_mut(), PngPreset::Default, PngPreset::Default.to_string());
@@ -90,7 +89,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
         // PNG のディザリングのスライダーを表示
         ui.add_enabled_ui(*app.png_lossy(), |ui| {
             ui.horizontal(|ui| {
-                rendar::add_label(ui, "Dithering:", setting::QUALITY_LABEL_WIDTH);
+                ui::add_label(ui, "Dithering:", setting::QUALITY_LABEL_WIDTH);
                 ui.scope(|ui| {
                     ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
                     ui.add(egui::Slider::new(app.png_dithering_mut(), setting::PNG_DITHERING_MIN..=setting::PNG_DITHERING_MAX));
