@@ -34,7 +34,7 @@ impl OptimToken {
     /// * `return` - 最適化が中止されたかどうか
     pub fn is_canceled(&self) -> error::Result<bool> {
         Ok(!self.running.load(Ordering::Relaxed) || self.canceled.lock().map_err(|_| {
-            error::KeigaError::LockPoisoned
+            error::KeigaError::lock_poisoned()
         })?.contains(&self.id))
     }
 }
@@ -105,7 +105,7 @@ pub trait Optimizer {
 
                 // ファイルをコピー
                 std::fs::copy(&path, &output_path).map_err(|e| {
-                    error::KeigaError::OptimizedError(e.to_string(), output_path.clone())
+                    error::KeigaError::optimized_error(e.to_string(), output_path.clone())
                 })?;
             }
             return Ok(OptimizeStatus::Unchanged);
@@ -117,14 +117,14 @@ pub trait Optimizer {
         // 一時ファイルを作成して最適化後のデータを保存
         let temp_path = output_path.with_added_extension(TEMP_EXTENSION);
         std::fs::write(&temp_path, &byte_data).map_err(|e| {
-            error::KeigaError::OptimizedError(e.to_string(), temp_path.clone())
+            error::KeigaError::optimized_error(e.to_string(), temp_path.clone())
         })?;
 
         // 最適化中止された場合は処理を中断
         if token.is_canceled()? {
             // 一時ファイルを削除
             std::fs::remove_file(&temp_path).map_err(|e| {
-                error::KeigaError::OptimizedError(e.to_string(), temp_path.clone())
+                error::KeigaError::optimized_error(e.to_string(), temp_path.clone())
             })?;
             return Ok(OptimizeStatus::Canceled);
         }
@@ -143,12 +143,12 @@ pub trait Optimizer {
 pub(crate) fn create_output_path(output_path: &PathBuf) -> error::Result<()> {
     // 出力ファイルのパスの親ディレクトリを取得
     let Some(parent) = output_path.parent() else {
-        return Err(error::KeigaError::OptimizedError("Output path parent not found".to_string(), output_path.clone()));
+        return Err(error::KeigaError::optimized_error("Output path parent not found".to_string(), output_path.clone()));
     };
 
     // 出力ファイルのパスの親ディレクトリを作成
     std::fs::create_dir_all(parent).map_err(|e| {
-        error::KeigaError::OptimizedError(e.to_string(), output_path.clone())
+        error::KeigaError::optimized_error(e.to_string(), output_path.clone())
     })?;
 
     Ok(())
@@ -163,7 +163,7 @@ pub(crate) fn replace_file(from: &PathBuf, to: &PathBuf) -> error::Result<()> {
     #[cfg(not(target_os = "windows"))]
     {
         std::fs::rename(from, to).map_err(|e| {
-            error::KeigaError::OptimizedError(e.to_string(), to.clone())
+            error::KeigaError::optimized_error(e.to_string(), to.clone())
         })?;
     }
 
@@ -184,7 +184,7 @@ pub(crate) fn replace_file(from: &PathBuf, to: &PathBuf) -> error::Result<()> {
 
         // エラーが発生した場合はエラーを返す
         if result == 0 {
-            return Err(error::KeigaError::OptimizedError(std::io::Error::last_os_error().to_string(), to.clone()));
+            return Err(error::KeigaError::optimized_error(std::io::Error::last_os_error().to_string(), to.clone()));
         }
     }
     Ok(())

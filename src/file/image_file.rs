@@ -76,19 +76,19 @@ impl ImageFile {
         let file_name = if let Some(name) = path.file_name() {
             name.to_string_lossy().to_string()
         } else {
-            return Err(error::KeigaError::FileError("File name not found".to_string(), path.clone()));
+            return Err(error::KeigaError::file_error("File name not found".to_string(), path.clone()));
         };
 
         // ファイル拡張子を取得
         let extension = if let Some(ext) = path.extension() {
             extension::Extension::from_str(ext)
         } else {
-            return Err(error::KeigaError::FileError("File extension not found".to_string(), path.clone()));
+            return Err(error::KeigaError::file_error("File extension not found".to_string(), path.clone()));
         };
 
         // ファイルサイズを取得
         let size = path.metadata()
-            .map_err(|e| error::KeigaError::FileError(e.to_string(), path.clone()))?
+            .map_err(|e| error::KeigaError::file_error(e.to_string(), path.clone()))?
             .len();
 
         // 相対パスかどうかを判断
@@ -243,7 +243,7 @@ impl ImageFile {
             }
 
             // サポートしていないファイル形式
-            _ => Err(error::KeigaError::UnsupportedExtension(self.path.clone())),
+            _ => Err(error::KeigaError::unsupported_extension(self.path.clone())),
         };
 
         // 最適化結果を処理
@@ -259,7 +259,7 @@ impl ImageFile {
 
                         // 最適化後のファイルサイズと節約率を更新
                         let metadata = output_path.metadata().map_err(|e| {
-                            error::KeigaError::FileError(e.to_string(), output_path.clone())
+                            error::KeigaError::file_error(e.to_string(), output_path.clone())
                         })?;
                         self.new_size = metadata.len();
                         self.saved_rate = file::calc_saved_rate(self.size, self.new_size);
@@ -286,7 +286,7 @@ impl ImageFile {
                     OptimizeStatus::Error(e) => {
                         // 最適化エラーに設定
                         self.status = OptimizeStatus::Error(e.clone());
-                        Err(error::KeigaError::OptimizedError(e.to_string(), self.path.clone()))
+                        Err(error::KeigaError::optimized_error(e.to_string(), self.path.clone()))
                     }
                     _ => Ok(self.status.clone())
                 }

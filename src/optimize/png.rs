@@ -35,7 +35,7 @@ impl optimize::Optimizer for Png {
     ) -> error::Result<(usize, Vec<u8>)> {
         // 画像を読み込んで画像サイズを取得
         let img = image::open(path).map_err(|e| {
-            error::KeigaError::OptimizedError(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.clone())
         })?;
         let (width, height) = img.dimensions();
         let width = width as usize;
@@ -44,26 +44,26 @@ impl optimize::Optimizer for Png {
         // quantizr インスタンス
         let bytes = img.to_rgba8();
         let image = quantizr::Image::new(&bytes, width, height).map_err(|e| {
-            error::KeigaError::OptimizedError(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.clone())
         })?;
 
         // quantizr オプション
         let mut opts = quantizr::Options::default();
         opts.set_max_colors(256).map_err(|e| {
-            error::KeigaError::OptimizedError(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.clone())
         })?;
 
         // 最適化
         let mut result = quantizr::QuantizeResult::quantize(&image, &opts);
         let dithering_level = options.dithering as f32 / 100.0;
         result.set_dithering_level(dithering_level).map_err(|e| {
-            error::KeigaError::OptimizedError(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.clone())
         })?;
 
         // インデックスを取得
         let mut indexes = vec![0u8; width * height];
         result.remap_image(&image, indexes.as_mut_slice()).map_err(|e| {
-            error::KeigaError::OptimizedError(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.clone())
         })?;
 
         // パレットを取得
@@ -71,12 +71,12 @@ impl optimize::Optimizer for Png {
 
         // 画像を保存
         let output = Self::save_image(&palette, &indexes, width, height).map_err(|e| {
-            error::KeigaError::OptimizedError(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.clone())
         })?;
 
         // 元ファイルのファイルサイズを取得
         let size = path.metadata().map_err(|e| {
-            error::KeigaError::OptimizedError(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.clone())
         })?.len() as usize;
 
         Ok((size, output))
@@ -93,12 +93,12 @@ impl optimize::Optimizer for Png {
     ) -> error::Result<(usize, Vec<u8>)> {
         // 先にファイルを読み込んでおく
         let input = std::fs::read(path).map_err(|e| {
-            error::KeigaError::OptimizedError(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.clone())
         })?;
 
         // oxipng でロスレス最適化（パレット維持・ビット深度削減・再圧縮）
         let output = oxipng::optimize_from_memory(&input, &options.options).map_err(|e| {
-            error::KeigaError::OptimizedError(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.clone())
         })?;
 
         // 元ファイルのファイルサイズを取得

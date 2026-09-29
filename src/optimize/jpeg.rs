@@ -42,21 +42,21 @@ impl optimize::Optimizer for Jpeg {
         {
             // ファイルを読み込む
             let file_image = ImageReader::open(&path).map_err(|e| {
-                error::KeigaError::OptimizedError(e.to_string(), path.clone())
+                error::KeigaError::optimized_error(e.to_string(), path.clone())
             })?.decode().map_err(|e| {
-                error::KeigaError::OptimizedError(e.to_string(), path.clone())
+                error::KeigaError::optimized_error(e.to_string(), path.clone())
             })?;
 
             // JPEG エンコーダーを作成して最適化
             let mut encoder = JpegEncoder::new_with_quality(&mut buffer, options.quality);
             encoder.encode_image(&file_image).map_err(|e| {
-                error::KeigaError::OptimizedError(e.to_string(), path.clone())
+                error::KeigaError::optimized_error(e.to_string(), path.clone())
             })?;
         }
 
         // ファイルサイズを取得
         let size = path.metadata().map_err(|e| {
-            error::KeigaError::OptimizedError(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.clone())
         })?.len() as usize;
 
         Ok((size, buffer))
@@ -73,7 +73,7 @@ impl optimize::Optimizer for Jpeg {
     ) -> error::Result<(usize, Vec<u8>)> {
         // ファイルを読み込む
         let input = std::fs::read(path).map_err(|e| {
-            error::KeigaError::OptimizedError(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.clone())
         })?;
 
         // mozjpegの処理全体を catch_unwind 内に閉じ込める
@@ -112,14 +112,14 @@ impl optimize::Optimizer for Jpeg {
                 Ok((size, output))
             }
             // 通常のエラー
-            Ok(Err(e)) => Err(error::KeigaError::OptimizedError(e.to_string(), path.clone())),
+            Ok(Err(e)) => Err(error::KeigaError::optimized_error(e.to_string(), path.clone())),
             // パニック
             Err(payload) => {
                 let msg = payload
                     .downcast_ref::<String>()
                     .cloned()
                     .unwrap_or_else(|| "mozjpeg error".to_string());
-                Err(error::KeigaError::OptimizedError(msg, path.clone()))
+                Err(error::KeigaError::optimized_error(msg, path.clone()))
             },
         }
     }

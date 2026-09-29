@@ -448,7 +448,7 @@ impl OpenFiles {
         path: PathBuf,
         base_dir: &Path
     ) -> error::Result<()> {
-        let metadata = path.metadata().map_err(|e| error::KeigaError::FileError(e.to_string(), path.clone()))?;
+        let metadata = path.metadata().map_err(|e| error::KeigaError::file_error(e.to_string(), path.clone()))?;
 
         if metadata.is_file() {
             if self.is_allowed_extension(&path) {
@@ -481,8 +481,8 @@ impl OpenFiles {
                 self.paths.push(image_file);
             }
         } else if metadata.is_dir() {
-            for entry in fs::read_dir(&path).map_err(|e| error::KeigaError::FileError(e.to_string(), path.clone()))? {
-                let entry = entry.map_err(|e| error::KeigaError::FileError(e.to_string(), path.clone()))?;
+            for entry in fs::read_dir(&path).map_err(|e| error::KeigaError::file_error(e.to_string(), path.clone()))? {
+                let entry = entry.map_err(|e| error::KeigaError::file_error(e.to_string(), path.clone()))?;
                 self.find_file(app, entry.path(), base_dir)?;
             }
         }

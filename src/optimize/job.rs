@@ -152,14 +152,14 @@ impl OptimizeJob {
     /// 最適化をキャンセル
     /// * `id` - キャンセルするファイルの ID
     pub fn add_canceled_id(&self, id: u64) -> error::Result<()> {
-        self.canceled.lock().map_err(|_| error::KeigaError::LockPoisoned)?.insert(id);
+        self.canceled.lock().map_err(|_| error::KeigaError::lock_poisoned())?.insert(id);
         Ok(())
     }
 
     /// キャンセルに登録されているファイル ID を全てクリア
     /// * `return` - 成功かどうか
     pub fn clear_canceled(&self) -> error::Result<()> {
-        self.canceled.lock().map_err(|_| error::KeigaError::LockPoisoned)?.clear();
+        self.canceled.lock().map_err(|_| error::KeigaError::lock_poisoned())?.clear();
         Ok(())
     }
 
@@ -167,7 +167,7 @@ impl OptimizeJob {
     /// * `id` - 削除するファイル ID
     /// * `return` - 成功かどうか
     pub fn remove_canceled_id(&self, id: u64) -> error::Result<()> {
-        self.canceled.lock().map_err(|_| error::KeigaError::LockPoisoned)?.remove(&id);
+        self.canceled.lock().map_err(|_| error::KeigaError::lock_poisoned())?.remove(&id);
         Ok(())
     }
 }

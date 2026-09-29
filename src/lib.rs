@@ -47,17 +47,17 @@ pub fn version_compare(new: &str, old: &str) -> error::Result<bool> {
     let parts: Vec<i32> = new.split(".")
         .map(|x| x.parse::<i32>())
         .collect::<std::result::Result<Vec<_>, _>>()
-        .map_err(|_| error::KeigaError::InvalidVersion)?;
+        .map_err(|_| error::KeigaError::invalid_version())?;
     let [new_major, new_minor, new_patch]: [i32; 3] = parts.try_into()
-        .map_err(|_| error::KeigaError::InvalidVersion)?;
+        .map_err(|_| error::KeigaError::invalid_version())?;
 
     // 古いバージョンをメジャー、マイナー、パッチに分割
     let parts: Vec<i32> = old.split(".")
         .map(|x| x.parse::<i32>())
         .collect::<std::result::Result<Vec<_>, _>>()
-        .map_err(|_| error::KeigaError::InvalidVersion)?;
+        .map_err(|_| error::KeigaError::invalid_version())?;
     let [old_major, old_minor, old_patch]: [i32; 3] = parts.try_into()
-        .map_err(|_| error::KeigaError::InvalidVersion)?;
+        .map_err(|_| error::KeigaError::invalid_version())?;
 
     // メジャー、マイナー、パッチを比較
     if new_major != old_major {

@@ -6,7 +6,7 @@ use crate::error;
 /// * `return` - エラーが発生したかどうか
 pub fn double_click(path: &PathBuf) -> error::Result<()> {
     if !path.exists() {
-        return Err(error::KeigaError::FileNotFound(path.clone()));
+        return Err(error::KeigaError::file_not_found("File does not exist", path.clone()));
     }
 
     // ファイルを選択表示
