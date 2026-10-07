@@ -12,7 +12,7 @@ pub(crate) const WINDOW_TITLE: &str = "Keiga Settings";
 
 // ウィンドウのサイズ
 pub(crate) const WINDOW_WIDTH: f32 = 480.0;
-pub(crate) const WINDOW_HEIGHT: f32 = 300.0;
+pub(crate) const WINDOW_HEIGHT: f32 = 340.0;
 
 // ヘッダーのスペースの幅
 pub(crate) const HEADER_ICON_SPACING: f32 = 4.0;
@@ -21,11 +21,12 @@ pub(crate) const WARNING_ICON_SPACING: f32 = 3.0;
 
 // ラベルの幅
 pub(crate) const GENERAL_LABEL_WIDTH: f32 = 90.0;
-pub(crate) const CONCURRENT_LABEL_WIDTH: f32 = 122.0;
+pub(crate) const CONCURRENT_LABEL_WIDTH: f32 = 48.0;
 pub(crate) const QUALITY_LABEL_WIDTH: f32 = 78.0;
 
 // 追加のスペースの幅
 pub(crate) const SETTING_ADD_SPACING: f32 = 4.0;
+pub(crate) const SETTING_INDENT_SPACING: f32 = 10.0;
 
 // タブの選択時の背景色
 pub(crate) const DARK_TAB_SELECTED_COLOR: egui::Color32 = egui::Color32::from_rgb(20, 120, 130);
@@ -102,6 +103,15 @@ pub(crate) fn header_panel(
                 }
             });
         }
+    });
+}
+
+/// グループヘッダーパネルを表示
+/// * `ui` - UI
+pub(crate) fn group_header_panel(ui: &mut egui::Ui, label: &str) {
+    ui.horizontal(|ui| {
+        ui.add_space(SETTING_INDENT_SPACING);
+        ui.label(label);
     });
 }
 

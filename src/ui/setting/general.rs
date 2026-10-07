@@ -10,13 +10,16 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
     setting::header_panel(ui, svg::SETTINGS, "General", None);
 
     ui.add_space(setting::HEADER_BOTTOM_SPACING);
-
     ui.separator();
-
     ui.add_space(setting::SETTING_ADD_SPACING);
 
+    // グループヘッダーパネルを表示
+    setting::group_header_panel(ui, "Output path");
+
     // フレームを表示
-    egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
+    egui::Frame::group(ui.style()).show(ui, |ui| {
+        ui.take_available_width();
+
         ui.horizontal(|ui| {
             ui::add_label(ui, "Output path:", setting::GENERAL_LABEL_WIDTH);
             ui.add(
@@ -39,15 +42,11 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
         // 出力パスの注意書きを表示
         setting::warning_note(ui, "Leave empty to overwrite the original files.");
-    });
 
-    ui.add_space(setting::SETTING_ADD_SPACING);
+        ui.add_space(setting::SETTING_ADD_SPACING);
+        ui.separator();
+        ui.add_space(setting::SETTING_ADD_SPACING);
 
-    ui.separator();
-
-    ui.add_space(setting::SETTING_ADD_SPACING);
-
-    egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
         // 同じパスはスキップ
         ui.horizontal(|ui| {
             ui::add_label(ui, "Skip same path:", setting::GENERAL_LABEL_WIDTH);
@@ -61,11 +60,13 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
-    ui.separator();
+    // グループヘッダーパネルを表示
+    setting::group_header_panel(ui, "Sound effects");
 
-    ui.add_space(setting::SETTING_ADD_SPACING);
+    // フレームを表示
+    egui::Frame::group(ui.style()).show(ui, |ui| {
+        ui.take_available_width();
 
-    egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
         // 効果音鳴らす？
         ui.horizontal(|ui| {
             ui::add_label(ui, "Sound effects:", setting::GENERAL_LABEL_WIDTH);

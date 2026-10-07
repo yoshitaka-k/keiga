@@ -18,7 +18,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     setting::header_panel(ui, svg::IMAGE, "JPEG", None);
 
-    egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
+    egui::Frame::group(ui.style()).show(ui, |ui| {
         // JPEG の圧縮方法を表示
         ui.horizontal(|ui| {
             ui::add_label(ui, "Compression:", setting::QUALITY_LABEL_WIDTH);
@@ -50,13 +50,9 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
     ui.add_space(setting::SETTING_ADD_SPACING);
 
-    ui.separator();
-
-    ui.add_space(setting::SETTING_ADD_SPACING);
-
     setting::header_panel(ui, svg::IMAGE, "PNG", None);
 
-    egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
+    egui::Frame::group(ui.style()).show(ui, |ui| {
         // PNG の圧縮方法を表示
         ui.horizontal(|ui| {
             ui::add_label(ui, "Compression:", setting::QUALITY_LABEL_WIDTH);

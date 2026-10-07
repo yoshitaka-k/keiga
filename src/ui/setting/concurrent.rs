@@ -18,7 +18,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
     egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
         // 全ファイルの最適化数
         ui.horizontal(|ui| {
-            ui::add_label(ui, "Concurrent All files:", setting::CONCURRENT_LABEL_WIDTH);
+            ui::add_label(ui, "All files:", setting::CONCURRENT_LABEL_WIDTH);
             ui.scope(|ui| {
                 ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
                 ui.add(egui::Slider::new(app.optimization_num_mut(), setting::OPTIMIZATION_NUM_MIN..=setting::OPTIMIZATION_NUM_MAX));
@@ -29,7 +29,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
 
         // PNG の最適化数
         ui.horizontal(|ui| {
-            ui::add_label(ui, "Concurrent PNG files:", setting::CONCURRENT_LABEL_WIDTH);
+            ui::add_label(ui, "PNG files:", setting::CONCURRENT_LABEL_WIDTH);
             ui.scope(|ui| {
                 ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
                 ui.add(egui::Slider::new(app.png_optimization_num_mut(), setting::PNG_OPTIMIZATION_NUM_MIN..=setting::PNG_OPTIMIZATION_NUM_MAX));
