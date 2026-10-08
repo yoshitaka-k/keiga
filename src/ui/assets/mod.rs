@@ -20,6 +20,17 @@ pub(crate) fn icon_color(ui: &egui::Ui) -> egui::Color32 {
     ui.visuals().text_color()
 }
 
+/// リストなし時のテキスト色
+/// * `ui` - UI
+/// * `return` - リストなし時のテキストの色
+pub(crate) fn list_empty_color(ui: &egui::Ui) -> egui::Color32 {
+    if ui.ctx().global_style().visuals.dark_mode {
+        constants::DARK_MODE_LIST_EMPTY_COLOR
+    } else {
+        constants::LIGHT_MODE_LIST_EMPTY_COLOR
+    }
+}
+
 /// 警告アイコンの色
 /// * `ui` - UI
 /// * `return` - 警告アイコンの色

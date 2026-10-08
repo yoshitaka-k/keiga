@@ -170,6 +170,7 @@ impl eframe::App for Rendar {
         egui::Panel::top("top_taskbar").frame(top_panel_style).show(ui, |ui| {
             top::view(
                 ui,
+                &self.app,
                 &mut self.open_dialog_token,
                 &mut self.setting_token,
             );

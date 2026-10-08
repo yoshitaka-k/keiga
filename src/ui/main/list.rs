@@ -3,7 +3,7 @@ use egui::Sense;
 use crate::{event, file, duration_format};
 use crate::optimize::OptimizeStatus;
 use crate::ui::{ListRowToken, StatusColor};
-use crate::ui::assets::{constants, fonts::text_color, svg};
+use crate::ui::assets::{self, constants, fonts::text_color, svg};
 use crate::ui::main;
 
 /// ファイル一覧を表示
@@ -37,6 +37,13 @@ pub(crate) fn view(
         .get(list_row.range)
         .unwrap_or(&[])
         .to_vec();
+
+    if visible.len() == 0 {
+        ui.horizontal(|ui| {
+            ui.add(main::icon_widget(svg::UPLOAD_FILE, constants::TOP_MENU_UPLOAD_FILE_ICON_SIZE, assets::list_empty_color(ui)));
+            ui.label(text_color("Files or Folders to Optimize Drag & Drop.", assets::list_empty_color(ui), None));
+        });
+    }
 
     // リストを表示
     for (offset, image_file) in visible.iter().enumerate() {

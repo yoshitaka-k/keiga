@@ -32,6 +32,10 @@ pub(crate) const APP_ICON_SIZE: f32 = 64.0;
 pub(crate) const DARK_MODE_BUTTON_ICON_COLOR: egui::Color32 = egui::Color32::from_rgb(200, 200, 200);
 pub(crate) const LIGHT_MODE_BUTTON_ICON_COLOR: egui::Color32 = egui::Color32::from_rgb(130, 130, 130);
 
+// リストなし時のテキスト色
+pub(crate) const DARK_MODE_LIST_EMPTY_COLOR: egui::Color32 = egui::Color32::from_rgb(90, 90, 90);
+pub(crate) const LIGHT_MODE_LIST_EMPTY_COLOR: egui::Color32 = egui::Color32::from_rgb(130, 130, 130);
+
 // リストアイコンの色
 // 最適化中
 pub(crate) const DARK_MODE_OPTIMIZING_COLOR: egui::Color32 = egui::Color32::from_rgb(210, 210, 0);
