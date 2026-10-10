@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::Path;
 use crate::{error, optimize};
 use image::GenericImageView;
 use quantizr;
@@ -14,7 +14,7 @@ impl optimize::Optimizer for Png {
     /// * `options` - 最適化オプション
     /// * `return` - 元のファイルサイズとエンコードされたデータ
     fn encode(
-        path: &PathBuf,
+        path: &Path,
         options: Self::Options,
     ) -> error::Result<(usize, Vec<u8>)> {
         if options.lossy {
@@ -30,12 +30,12 @@ impl optimize::Optimizer for Png {
     /// * `options` - 最適化オプション
     /// * `return` - 元のファイルサイズとエンコードされたデータ
     fn lossy(
-        path: &PathBuf,
+        path: &Path,
         options: Self::Options
     ) -> error::Result<(usize, Vec<u8>)> {
         // 画像を読み込んで画像サイズを取得
         let img = image::open(path).map_err(|e| {
-            error::KeigaError::optimized_error(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
         })?;
         let (width, height) = img.dimensions();
         let width = width as usize;
@@ -44,26 +44,26 @@ impl optimize::Optimizer for Png {
         // quantizr インスタンス
         let bytes = img.to_rgba8();
         let image = quantizr::Image::new(&bytes, width, height).map_err(|e| {
-            error::KeigaError::optimized_error(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
         })?;
 
         // quantizr オプション
         let mut opts = quantizr::Options::default();
         opts.set_max_colors(256).map_err(|e| {
-            error::KeigaError::optimized_error(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
         })?;
 
         // 最適化
         let mut result = quantizr::QuantizeResult::quantize(&image, &opts);
         let dithering_level = options.dithering as f32 / 100.0;
         result.set_dithering_level(dithering_level).map_err(|e| {
-            error::KeigaError::optimized_error(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
         })?;
 
         // インデックスを取得
         let mut indexes = vec![0u8; width * height];
         result.remap_image(&image, indexes.as_mut_slice()).map_err(|e| {
-            error::KeigaError::optimized_error(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
         })?;
 
         // パレットを取得
@@ -71,12 +71,12 @@ impl optimize::Optimizer for Png {
 
         // 画像を保存
         let output = Self::save_image(&palette, &indexes, width, height).map_err(|e| {
-            error::KeigaError::optimized_error(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
         })?;
 
         // 元ファイルのファイルサイズを取得
         let size = path.metadata().map_err(|e| {
-            error::KeigaError::optimized_error(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
         })?.len() as usize;
 
         Ok((size, output))
@@ -88,17 +88,17 @@ impl optimize::Optimizer for Png {
     /// * `options` - 最適化オプション
     /// * `return` - 元のファイルサイズとエンコードされたデータ
     fn lossless(
-        path: &PathBuf,
+        path: &Path,
         options: Self::Options
     ) -> error::Result<(usize, Vec<u8>)> {
         // 先にファイルを読み込んでおく
         let input = std::fs::read(path).map_err(|e| {
-            error::KeigaError::optimized_error(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
         })?;
 
         // oxipng でロスレス最適化（パレット維持・ビット深度削減・再圧縮）
         let output = oxipng::optimize_from_memory(&input, &options.options).map_err(|e| {
-            error::KeigaError::optimized_error(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
         })?;
 
         // 元ファイルのファイルサイズを取得

@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::Path;
 use std::panic;
 use image::{
     ImageReader,
@@ -18,7 +18,7 @@ impl optimize::Optimizer for Jpeg {
     /// * `options` - 最適化オプション
     /// * `return` - 元のファイルサイズとエンコードされたデータ
     fn encode(
-        path: &PathBuf,
+        path: &Path,
         options: Self::Options,
     ) -> error::Result<(usize, Vec<u8>)> {
         if options.lossy {
@@ -34,7 +34,7 @@ impl optimize::Optimizer for Jpeg {
     /// * `options` - 最適化オプション
     /// * `return` - 元のファイルサイズとエンコードされたデータ
     fn lossy(
-        path: &PathBuf,
+        path: &Path,
         options: Self::Options
     ) -> error::Result<(usize, Vec<u8>)> {
         // メモリ上にバッファを作成して最適化
@@ -42,21 +42,21 @@ impl optimize::Optimizer for Jpeg {
         {
             // ファイルを読み込む
             let file_image = ImageReader::open(&path).map_err(|e| {
-                error::KeigaError::optimized_error(e.to_string(), path.clone())
+                error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
             })?.decode().map_err(|e| {
-                error::KeigaError::optimized_error(e.to_string(), path.clone())
+                error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
             })?;
 
             // JPEG エンコーダーを作成して最適化
             let mut encoder = JpegEncoder::new_with_quality(&mut buffer, options.quality);
             encoder.encode_image(&file_image).map_err(|e| {
-                error::KeigaError::optimized_error(e.to_string(), path.clone())
+                error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
             })?;
         }
 
         // ファイルサイズを取得
         let size = path.metadata().map_err(|e| {
-            error::KeigaError::optimized_error(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
         })?.len() as usize;
 
         Ok((size, buffer))
@@ -68,12 +68,12 @@ impl optimize::Optimizer for Jpeg {
     /// * `options` - 最適化オプション
     /// * `return` - 元のファイルサイズとエンコードされたデータ
     fn lossless(
-        path: &PathBuf,
+        path: &Path,
         _options: Self::Options
     ) -> error::Result<(usize, Vec<u8>)> {
         // ファイルを読み込む
         let input = std::fs::read(path).map_err(|e| {
-            error::KeigaError::optimized_error(e.to_string(), path.clone())
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
         })?;
 
         // mozjpegの処理全体を catch_unwind 内に閉じ込める
@@ -112,14 +112,14 @@ impl optimize::Optimizer for Jpeg {
                 Ok((size, output))
             }
             // 通常のエラー
-            Ok(Err(e)) => Err(error::KeigaError::optimized_error(e.to_string(), path.clone())),
+            Ok(Err(e)) => Err(error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())),
             // パニック
             Err(payload) => {
                 let msg = payload
                     .downcast_ref::<String>()
                     .cloned()
                     .unwrap_or_else(|| "mozjpeg error".to_string());
-                Err(error::KeigaError::optimized_error(msg, path.clone()))
+                Err(error::KeigaError::optimized_error(msg, path.to_path_buf()))
             },
         }
     }
