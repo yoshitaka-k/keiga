@@ -1,16 +1,16 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use crate::error;
 
 /// ダブルクリックで Finder でファイルを選択表示する
 /// * `path` - ファイルのパス
 /// * `return` - エラーが発生したかどうか
-pub fn double_click(path: &PathBuf) -> error::Result<()> {
+pub fn double_click(path: &Path) -> error::Result<()> {
     if !path.exists() {
-        return Err(error::KeigaError::file_not_found("File does not exist", path.clone()));
+        return Err(error::KeigaError::file_not_found("File does not exist", path.to_path_buf()));
     }
 
     // ファイルを選択表示
-    reveal_file_command(&path.as_path())
+    reveal_file_command(path)
 }
 
 /// Finder でファイルを選択表示する

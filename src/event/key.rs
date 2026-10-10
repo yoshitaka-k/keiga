@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use crate::{file, error};
 use crate::optimize::OptimizeJob;
 
@@ -16,13 +16,13 @@ pub fn backspace(files: &mut file::OpenFiles, optimize_job: &mut OptimizeJob) ->
 
 /// スペースキーが押されたらファイルを選択表示する
 /// * `path` - ファイルのパス
-pub fn space(path: &PathBuf) -> error::Result<()> {
+pub fn space(path: &Path) -> error::Result<()> {
     if !path.exists() {
-        return Err(error::KeigaError::file_not_found("File does not exist", path.clone()));
+        return Err(error::KeigaError::file_not_found("File does not exist", path.to_path_buf()));
     }
 
     // ファイルをプレビュー表示
-    preview_file_command(&path.as_path())
+    preview_file_command(path)
 }
 
 /// QuickLook でファイルを表示する
