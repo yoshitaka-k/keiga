@@ -12,7 +12,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// ウィンドウのサイズ
 const WINDOW_WIDTH: f32 = 580.0;
-const WINDOW_HEIGHT: f32 = 200.0;
+const WINDOW_HEIGHT: f32 = 240.0;
 const MAX_WINDOW_WIDTH: f32 = 800.0;
 const MAX_WINDOW_HEIGHT: f32 = 1024.0;
 
