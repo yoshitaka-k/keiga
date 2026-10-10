@@ -367,7 +367,7 @@ impl OpenFiles {
     /// ファイルの拡張子が許可されているかどうかを確認
     /// * `path` - ファイルのパス
     /// * `return` - 許可されているかどうか
-    fn is_allowed_extension(&self, path: &PathBuf) -> bool {
+    fn is_allowed_extension(&self, path: &Path) -> bool {
         if let Some(ext) = path.extension() {
             if let Some(ext) = ext.to_str() {
                 if self.extensions.iter().any(|e| e.eq_ignore_ascii_case(ext)) {
@@ -381,7 +381,7 @@ impl OpenFiles {
     /// ファイルが待機中か最適化中かどうかを確認
     /// * `path` - ファイルのパス
     /// * `return` - 待機中か最適化中かどうか
-    fn is_standby_or_optimizing(&self, path: &PathBuf) -> bool {
+    fn is_standby_or_optimizing(&self, path: &Path) -> bool {
         self.paths.iter().any(|f| f.path() == path && f.is_standby_or_optimizing())
     }
 
@@ -389,10 +389,10 @@ impl OpenFiles {
     /// * `path` - ファイルのパス
     /// * `output_path` - 出力ファイルのパス
     /// * `return` - 入力・出力ファイルが一致しているかどうか
-    fn is_input_output_path(&self, path: &PathBuf, output_path: &PathBuf) -> bool {
+    fn is_input_output_path(&self, path: &Path, output_path: &Path) -> bool {
         self.paths.iter().any(|f| {
             f.path() == path
-                && f.output_path().as_ref() == Some(output_path)
+                && f.output_path().as_deref() == Some(output_path)
                 && (f.is_optimized() || f.is_unchanged())
         })
     }
