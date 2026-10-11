@@ -16,14 +16,15 @@ pub enum KeigaError {
 /// KeigaError を表示
 impl fmt::Display for KeigaError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let code = self.code();
         match self {
-            KeigaError::FileNotFound(e, p, _, _) => write!(fmt, "{}: {}", e, p.display()),
-            KeigaError::FileError(e, p, _, _) => write!(fmt, "File error: {} \n\n{}", e, p.display()),
-            KeigaError::UnsupportedExtension(p, _, _) => write!(fmt, "Unsupported extension: {}", p.display()),
-            KeigaError::OptimizedError(e, p, _, _) => write!(fmt, "Optimized error: {} \n\n{}", e, p.display()),
-            KeigaError::LockPoisoned(_, _) => write!(fmt, "Lock poisoned"),
-            KeigaError::InvalidVersion(_, _) => write!(fmt, "Invalid version"),
-            KeigaError::Io(e, _, _) => write!(fmt, "IO error: {}", e),
+            KeigaError::FileNotFound(e, p, _, _) => write!(fmt, "[{}] {}: {}", code, e, p.display()),
+            KeigaError::FileError(e, p, _, _) => write!(fmt, "[{}] File error: {} \n\n{}", code, e, p.display()),
+            KeigaError::UnsupportedExtension(p, _, _) => write!(fmt, "[{}] Unsupported extension: {}", code, p.display()),
+            KeigaError::OptimizedError(e, p, _, _) => write!(fmt, "[{}] Optimized error: {} \n\n{}", code, e, p.display()),
+            KeigaError::LockPoisoned(_, _) => write!(fmt, "[{}] Lock poisoned", code),
+            KeigaError::InvalidVersion(_, _) => write!(fmt, "[{}] Invalid version", code),
+            KeigaError::Io(e, _, _) => write!(fmt, "[{}] IO error: {}", code, e),
         }
     }
 }
@@ -137,4 +138,53 @@ impl KeigaError {
             | Self::Io(_, file, line) => (file, *line),
         }
     }
+
+    /// エラーコード
+    /// エラー項目・ファイル名・行番号を組み合わせて作る
+    /// * `return` - エラーコード
+    pub fn code(&self) -> String {
+        match self {
+            Self::FileNotFound(_, _, f, l) => format!("FNF_{}_{}", Self::file_to_code(f), l),
+            Self::FileError(_, _, f, l) => format!("FE_{}_{}", Self::file_to_code(f), l),
+            Self::UnsupportedExtension(_, f, l) => format!("UE_{}_{}", Self::file_to_code(f), l),
+            Self::OptimizedError(_, _, f, l) => format!("OE_{}_{}", Self::file_to_code(f), l),
+            Self::LockPoisoned(f, l) => format!("LP_{}_{}", Self::file_to_code(f), l),
+            Self::InvalidVersion(f, l) => format!("IVE_{}_{}", Self::file_to_code(f), l),
+            Self::Io(_, f, l) => format!("IO_{}_{}", Self::file_to_code(f), l),
+        }
+    }
+
+    /// ファイルパスからコードを作る
+    /// `src/` 以降を `/` と `_` で区切り、各語の頭文字をつなぐ
+    /// 語が1つならその語をそのまま大文字にする。`mod` は除く
+    /// * `file` - ファイルパス
+    /// * `return` - コード
+    fn file_to_code(file: &str) -> String {
+        let normalized = file.replace('\\', "/");
+        let relative = normalized
+            .rsplit_once("src/")
+            .map(|(_, rest)| rest)
+            .unwrap_or(normalized.as_str());
+        let words: Vec<&str> = relative
+            .trim_end_matches(".rs")
+            .split(['/', '_'])
+            .filter(|word| !word.is_empty() && *word != "mod")
+            .collect();
+
+        match words.as_slice() {
+            [] => "UNKNOWN".to_string(),
+            [word] => word.to_uppercase(),
+            words => words
+                .iter()
+                .filter_map(|word| word.chars().next())
+                .flat_map(|ch| ch.to_uppercase())
+                .collect(),
+        }
+    }
 }
+
+// tests ディレクトリ直下は別クレートになって、非公開関数が呼べないので、
+// 子モジュールとして読むためのパスを指定する
+#[cfg(test)]
+#[path = "../tests/unit/error.rs"]
+mod tests;
