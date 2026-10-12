@@ -199,7 +199,7 @@ impl ImageFile {
         running: Arc<AtomicBool>,
         canceled: Arc<Mutex<HashSet<u64>>>
     ) -> error::Result<OptimizeStatus> {
-        // 待機中・最適化中は再実行しない
+        // 待機中・最適化中以外は再実行しない
         if !self.is_standby_or_optimizing() {
             return Ok(self.status.clone());
         }
