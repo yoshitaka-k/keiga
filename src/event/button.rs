@@ -44,7 +44,10 @@ pub(crate) fn setting_open(ui: &mut egui::Ui, setting_token: &mut SettingToken) 
 /// 最適化を停止（キャンセル）してファイル一覧をクリアする
 /// * `files` - ファイル一覧
 /// * `optimize_job` - 最適化ジョブ
-pub(crate) fn cancel_and_clear(files: &mut file::OpenFiles, optimize_job: &mut OptimizeJob) -> error::Result<()> {
+pub(crate) fn cancel_and_clear(
+    files: &mut file::OpenFiles,
+    optimize_job: &mut OptimizeJob
+) -> error::Result<()> {
     // 最適化を停止（全体キャンセル）
     optimize_job.stop_running();
 
