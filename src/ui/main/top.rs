@@ -45,16 +45,24 @@ pub(crate) fn view(
                 button::setting_open(ui, setting_token);
             }
 
+            // フォルダダイアログを開くボタン
             #[cfg(target_os = "macos")]
-            let hover_text = "File or Folder Open";
-
-            #[cfg(not(target_os = "macos"))]
-            let hover_text = "Folder Open";
+            {
+                let hover_text = "File or Folder Open";
+                let open_button = egui::Image::new(svg::UPLOAD).max_height(constants::BUTTON_OPEN_ICON_SIZE).tint(button_color);
+                if ui.button(open_button).on_hover_text(hover_text).clicked() {
+                    button::folder_open(ui, open_dialog_token);
+                }
+            }
 
             // フォルダダイアログを開くボタン
-            let open_button = egui::Image::new(svg::FOLDER_OPEN).max_height(constants::BUTTON_OPEN_ICON_SIZE).tint(button_color);
-            if ui.button(open_button).on_hover_text(hover_text).clicked() {
-                button::folder_open(ui, open_dialog_token);
+            #[cfg(not(target_os = "macos"))]
+            {
+                let hover_text = "Folder Open";
+                let open_button = egui::Image::new(svg::FOLDER_OPEN).max_height(constants::BUTTON_OPEN_ICON_SIZE).tint(button_color);
+                if ui.button(open_button).on_hover_text(hover_text).clicked() {
+                    button::folder_open(ui, open_dialog_token);
+                }
             }
 
             // ファイルダイアログを開くボタン
