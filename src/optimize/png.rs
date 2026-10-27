@@ -148,23 +148,8 @@ impl Png {
     }
 }
 
+// tests ディレクトリ直下は別クレートになって、非公開関数が呼べないので、
+// 子モジュールとして読むためのパスを指定する
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::optimize::Optimizer;
-
-    #[test]
-    fn lossy_decodes_png_with_jpg_extension() {
-        let path = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/assets/sample/png.jpg"));
-        let options = optimize::PngOptions {
-            lossy: true,
-            dithering: 0,
-            options: oxipng::Options::default(),
-        };
-
-        let (size, output) = Png::lossy(path, options).expect("png content with jpg extension");
-
-        assert!(size > 0);
-        assert!(output.starts_with(&[0x89, b'P', b'N', b'G']));
-    }
-}
+#[path = "../../tests/unit/optimize.rs"]
+mod tests;
