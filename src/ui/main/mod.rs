@@ -19,6 +19,8 @@ pub(crate) const LIST_NOTE_SIZE: f32 = 11.0;
 // リストの角丸
 pub(crate) const LIST_CORNER_RADIUS: f32 = 1.0;
 
+const LIST_MAX_WIDTH_DIVIDER: f32 = 2.25;
+
 use crate::{file, filesize_format};
 use crate::ui::assets::{constants, svg, icon_color};
 
@@ -129,7 +131,12 @@ pub(crate) fn list_row_content(
     add_opentype_icon(ui, image_file);
 
     // ファイル名を表示
-    ui.label(image_file.file_name());
+    ui.scope(|ui| {
+        if !image_file.is_standby_or_optimizing() {
+            ui.set_max_width((ui.available_width() / LIST_MAX_WIDTH_DIVIDER).max(0.0));
+        }
+        ui.label(image_file.file_name());
+    });
 
     // ファイルサイズを表示
     if image_file.is_optimized() {
