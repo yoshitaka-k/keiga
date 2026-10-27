@@ -1,7 +1,6 @@
 use std::path::Path;
 use std::panic;
 use image::{
-    ImageReader,
     codecs::jpeg::JpegEncoder,
 };
 use mozjpeg;
@@ -40,16 +39,12 @@ impl optimize::Optimizer for Jpeg {
         // メモリ上にバッファを作成して最適化
         let mut buffer = Vec::new();
         {
-            // ファイルを読み込む
-            let file_image = ImageReader::open(&path).map_err(|e| {
-                error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
-            })?.decode().map_err(|e| {
-                error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
-            })?;
+            // 画像を読み込む
+            let image = optimize::open_image(path)?;
 
             // JPEG エンコーダーを作成して最適化
             let mut encoder = JpegEncoder::new_with_quality(&mut buffer, options.quality);
-            encoder.encode_image(&file_image).map_err(|e| {
+            encoder.encode_image(&image).map_err(|e| {
                 error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
             })?;
         }

@@ -79,11 +79,21 @@ impl ImageFile {
             return Err(error::KeigaError::file_error("File name not found".to_string(), path.clone()));
         };
 
-        // ファイル拡張子を取得
-        let extension = if let Some(ext) = path.extension() {
-            extension::Extension::from_str(ext)
-        } else {
-            return Err(error::KeigaError::file_error("File extension not found".to_string(), path.clone()));
+        // 画像を読み込む
+        let reader = image::ImageReader::open(&path)
+            .and_then(|r| r.with_guessed_format())
+            .map_err(|e| error::KeigaError::file_error(e.to_string(), path.to_path_buf()))?;
+
+        // 画像のフォーマットを取得
+        let format = reader.format().ok_or_else(|| {
+            error::KeigaError::file_error("Unknown image format".to_string(), path.to_path_buf())
+        })?;
+
+        // 読み取ったフォーマットを拡張子に対応づける
+        let extension = match format {
+            image::ImageFormat::Jpeg => extension::Extension::Jpeg,
+            image::ImageFormat::Png => extension::Extension::Png,
+            _ => extension::Extension::None,
         };
 
         // ファイルサイズを取得

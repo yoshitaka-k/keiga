@@ -137,6 +137,18 @@ pub trait Optimizer {
     }
 }
 
+pub (crate) fn open_image(path: &Path) -> error::Result<image::DynamicImage> {
+    image::ImageReader::open(path)
+        .and_then(|reader| reader.with_guessed_format())
+        .map_err(|e| {
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
+        })?
+        .decode()
+        .map_err(|e| {
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
+        })
+}
+
 /// 出力ファイルのパスを作成
 /// * `output_path` - 出力パス
 /// * `return` - 出力ファイルのパスが作成できたかどうか

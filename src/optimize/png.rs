@@ -33,16 +33,15 @@ impl optimize::Optimizer for Png {
         path: &Path,
         options: Self::Options
     ) -> error::Result<(usize, Vec<u8>)> {
-        // 画像を読み込んで画像サイズを取得
-        let img = image::open(path).map_err(|e| {
-            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
-        })?;
-        let (width, height) = img.dimensions();
+        // 画像を読み込む
+        let image = optimize::open_image(path)?;
+
+        let (width, height) = image.dimensions();
         let width = width as usize;
         let height = height as usize;
 
         // quantizr インスタンス
-        let bytes = img.to_rgba8();
+        let bytes = image.to_rgba8();
         let image = quantizr::Image::new(&bytes, width, height).map_err(|e| {
             error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
         })?;
@@ -146,5 +145,26 @@ impl Png {
             writer.finish()?;
         }
         Ok(output)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::optimize::Optimizer;
+
+    #[test]
+    fn lossy_decodes_png_with_jpg_extension() {
+        let path = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/assets/sample/png.jpg"));
+        let options = optimize::PngOptions {
+            lossy: true,
+            dithering: 0,
+            options: oxipng::Options::default(),
+        };
+
+        let (size, output) = Png::lossy(path, options).expect("png content with jpg extension");
+
+        assert!(size > 0);
+        assert!(output.starts_with(&[0x89, b'P', b'N', b'G']));
     }
 }
