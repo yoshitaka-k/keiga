@@ -1,4 +1,4 @@
-use super::KeigaErrorError;
+use super::KeigaError;
 
 #[test]
 fn index_error_uses_call_site() {

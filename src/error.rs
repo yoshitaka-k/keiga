@@ -8,6 +8,7 @@ pub enum KeigaError {
     FileError(String, path::PathBuf, String, u32),
     UnsupportedExtension(path::PathBuf, String, u32),
     OptimizedError(String, path::PathBuf, String, u32),
+    IndexError(usize, String, u32),
     LockPoisoned(String, u32),
     InvalidVersion(String, u32),
     Io(io::Error, String, u32),
@@ -22,6 +23,7 @@ impl fmt::Display for KeigaError {
             KeigaError::FileError(e, p, _, _) => write!(fmt, "[{}] File error: {} \n\n{}", code, e, p.display()),
             KeigaError::UnsupportedExtension(p, _, _) => write!(fmt, "[{}] Unsupported extension: {}", code, p.display()),
             KeigaError::OptimizedError(e, p, _, _) => write!(fmt, "[{}] Optimized error: {} \n\n{}", code, e, p.display()),
+            KeigaError::IndexError(i, _, _) => write!(fmt, "[{}] Index error: {}", code, i),
             KeigaError::LockPoisoned(_, _) => write!(fmt, "[{}] Lock poisoned", code),
             KeigaError::InvalidVersion(_, _) => write!(fmt, "[{}] Invalid version", code),
             KeigaError::Io(e, _, _) => write!(fmt, "[{}] IO error: {}", code, e),
@@ -37,6 +39,7 @@ impl error::Error for KeigaError {
             KeigaError::FileError(_, _, _, _) => None,
             KeigaError::UnsupportedExtension(_, _, _) => None,
             KeigaError::OptimizedError(_, _, _, _) => None,
+            KeigaError::IndexError(_, _, _) => None,
             KeigaError::LockPoisoned(_, _) => None,
             KeigaError::InvalidVersion(_, _) => None,
             KeigaError::Io(ref e, _, _) => Some(e),
@@ -108,6 +111,16 @@ impl KeigaError {
         Self::LockPoisoned(file, line)
     }
 
+    /// インデックスエラー
+    /// * `index` - インデックス
+    /// * `return` - インデックスエラー
+    #[allow(dead_code)]
+    #[track_caller]
+    pub fn index_error(index: usize) -> Self {
+        let (file, line) = Self::caller();
+        Self::IndexError(index, file, line)
+    }
+
     /// バージョンが不正
     /// * `return` - バージョンが不正
     #[track_caller]
@@ -133,6 +146,7 @@ impl KeigaError {
             | Self::FileError(_, _, file, line)
             | Self::UnsupportedExtension(_, file, line)
             | Self::OptimizedError(_, _, file, line)
+            | Self::IndexError(_, file, line)
             | Self::LockPoisoned(file, line)
             | Self::InvalidVersion(file, line)
             | Self::Io(_, file, line) => (file, *line),
@@ -148,6 +162,7 @@ impl KeigaError {
             Self::FileError(_, _, f, l) => format!("FE_{}_{}", Self::file_to_code(f), l),
             Self::UnsupportedExtension(_, f, l) => format!("UE_{}_{}", Self::file_to_code(f), l),
             Self::OptimizedError(_, _, f, l) => format!("OE_{}_{}", Self::file_to_code(f), l),
+            Self::IndexError(i, f, l) => format!("IE_{}_{}_{}", Self::file_to_code(f), l, i),
             Self::LockPoisoned(f, l) => format!("LP_{}_{}", Self::file_to_code(f), l),
             Self::InvalidVersion(f, l) => format!("IVE_{}_{}", Self::file_to_code(f), l),
             Self::Io(_, f, l) => format!("IO_{}_{}", Self::file_to_code(f), l),

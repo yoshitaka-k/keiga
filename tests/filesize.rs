@@ -23,6 +23,6 @@ fn filesize_format_mb() {
 #[test]
 fn filesize_format_gb() {
     assert_eq!(filesize_format(1024 * 1024 * 1024), "1.00 GB");
-    assert_eq!(filesize_format(1023i64 * 1024 * 1024 * 1024), "1023.00 GB");
-    assert_eq!(filesize_format(1024i64 * 1024 * 1024 * 1024 - 1), "1024.00 GB");
+    assert_eq!(filesize_format(1023 * 1024 * 1024 * 1024), "1023.00 GB");
+    assert_eq!(filesize_format(1024 * 1024 * 1024 * 1024 - 1), "1024.00 GB");
 }

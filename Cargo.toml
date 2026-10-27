@@ -1,11 +1,14 @@
 [package]
 name = "keiga"
-version = "1.8.2"
+version = "1.8.3"
 edition = "2024"
 description = "Lightweight image optimizer"
 authors = ["yoshitaka-k"]
 repository = "yoshitaka-k/keiga"
 license = "Apache-2.0"
+
+[lints.rust]
+linker_messages = "allow"
 
 [profile.release]
 # サイズ小さくしてパフォーマンスアップ狙う
