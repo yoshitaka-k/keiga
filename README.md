@@ -21,7 +21,7 @@ Rust の勉強がてら、自分用に Image Optimization ってことで、Keig
 フォルダや画像をドロップすると、対応形式をその場で最適化します。出力先が空なら元ファイルを上書きし、指定していれば相対パスを保ったままそちらへ書き出します。
 
 <p align="center">
-  <img src="assets/readme/keiga-preview.png" alt="Keiga screenshot" width="640">
+  <img src="assets/readme/preview.png" alt="Keiga screenshot" width="640">
 </p>
 
 ## Supported formats
@@ -31,16 +31,18 @@ Rust の勉強がてら、自分用に Image Optimization ってことで、Keig
 | Extension | Optimization |
 | --- | --- |
 | `.jpg` / `.jpeg` | Lossless（[MozJPEG](https://github.com/mozilla/mozjpeg) の擬似可逆。既定）<br>Lossy（JPEG Quality で再エンコード） |
-| `.png` | Lossless（[oxipng](https://github.com/oxipng/oxipng)）<br>Lossy（[quantizr](https://docs.rs/quantizr/latest/quantizr/index.html)） |
+| `.png` | Lossless（[oxipng](https://github.com/oxipng/oxipng)）<br>Lossy（[quantizr](https://docs.rs/quantizr/latest/quantizr/index.html)。256色。Dithering で調整） |
 
-ダイアログには他の画像拡張子も表示されますが、最適化対象外は `Unsupported extension` になります。
+ダイアログには他の画像拡張子も表示されますが、最適化対象外はエラーコード付きの `Unsupported extension` になります。
 
-最適化後のサイズが元より小さくならない場合は上書きせず、`Unchanged`（No savings）になります。出力先が別パスなら、元ファイルをそのままコピーします。
+最適化後のサイズが元より小さくならない場合は上書きせず、`Unchanged`（No savings）になります。出力先が別パスで、書き出し先にファイルがまだ無いときだけ、元ファイルをそのままコピーします。
 
 ## Usage
 
 - フォルダまたはファイルを **ドラッグ＆ドロップ**
-- 右上のフォルダボタンから開く（macOS はファイルとフォルダを同時選択可。それ以外はフォルダのみ）
+- 右上から開く（macOS はファイルとフォルダを同時選択可。それ以外はファイル用とフォルダ用のボタンが別）
+
+画面左上には、いまの JPEG / PNG の品質設定が出ます。Lossy の JPEG は品質%、Lossy の PNG はディザリング%、Lossless の PNG はプリセット名です。
 
 追加されたファイルは待機（standby）から順に自動で最適化されます。フォルダ経由で追加した行はフォルダアイコン、単体ファイルは画像アイコンです。
 
@@ -58,9 +60,9 @@ Rust の勉強がてら、自分用に Image Optimization ってことで、Keig
 | Unchanged | 縮小できなかった |
 | Skipped | 同じ入出力が完了済みのためスキップ |
 | Canceled | キャンセル済み |
-| Error | 失敗（メッセージを表示） |
+| Error | 失敗（エラーコード付きのメッセージを表示） |
 
-下部バーは standby / optimizing / completed / error の件数と平均節約率です。completed にホバーすると optimized / no savings / skipped の内訳、左のアイコンにホバーすると合計所要時間が出ます。
+下部バーは standby / optimizing / completed / error の件数と平均節約率です。completed にホバーすると optimized / no savings / skipped の内訳、左のアイコンにホバーすると最適化できたファイルの平均所要時間が出ます。JPEG と PNG が両方あるときは、形式ごとの平均も並びます。
 
 ## Mouse & keyboard
 
@@ -111,8 +113,10 @@ Rust の勉強がてら、自分用に Image Optimization ってことで、Keig
 | Setting | Range | Notes |
 | --- | --- | --- |
 | JPEG Compression | Lossless / Lossy | 既定 Lossless。Lossless は MozJPEG の擬似可逆で、完全な可逆ではない |
-| JPEG Quality | 50–99 | Lossy 時のみ有効。非可逆（既定 80） |
-| PNG Preset | Min / Fast / Default / Best / Max | 可逆。oxipng のプリセット |
+| JPEG Quality | 60–100 | Lossy 時のみ有効。非可逆（既定 80） |
+| PNG Compression | Lossless / Lossy | 既定 Lossless。Lossy は 256色への減色 |
+| PNG Preset | Min / Fast / Default / Best / Max | Lossless 時のみ有効。oxipng のプリセット（既定 Default） |
+| PNG Dithering | 0–100 | Lossy 時のみ有効（既定 80） |
 
 ### About
 
