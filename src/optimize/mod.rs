@@ -137,6 +137,9 @@ pub trait Optimizer {
     }
 }
 
+/// 画像を読み込む
+/// * `path` - 読み込む画像のパス
+/// * `return` - 読み込んだ画像
 pub (crate) fn open_image(path: &Path) -> error::Result<image::DynamicImage> {
     image::ImageReader::open(path)
         .and_then(|reader| reader.with_guessed_format())
