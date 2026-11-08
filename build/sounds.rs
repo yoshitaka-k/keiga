@@ -12,7 +12,7 @@ pub(crate) fn generate_sounds_generated(sounds_dir: &Path, out_dir: &String) {
     for sound_name in &sound_names {
         let const_name = to_const_name(sound_name);
         let asset_path = format!("assets/sounds/{sound_name}.mp3");
-        output.push_str(&format!("#[allow(dead_code)]\n
+        output.push_str(&format!("#[allow(dead_code)]
 pub const {const_name}: SoundSource = SoundSource::new(include_bytes!({}));\n",
             include_assets_path(&asset_path),
         ));

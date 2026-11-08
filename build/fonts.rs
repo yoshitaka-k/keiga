@@ -12,7 +12,7 @@ pub(crate) fn generate_fonts_generated(fonts_dir: &Path, out_dir: &String) {
     for font_name in &font_names {
         let const_name = to_const_name(font_name);
         let asset_path = format!("assets/fonts/{font_name}.ttf");
-        output.push_str(&format!("#[allow(dead_code)]\n
+        output.push_str(&format!("#[allow(dead_code)]
 pub const {const_name}: &[u8] = include_bytes!({});\n",
             include_assets_path(&asset_path),
         ));
