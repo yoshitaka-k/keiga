@@ -1,3 +1,5 @@
+use std::fmt;
+
 /// 最適化ステータス
 #[derive(Clone)]
 pub enum OptimizeStatus {
@@ -17,18 +19,18 @@ pub enum OptimizeStatus {
     Error(String),
 }
 
-impl OptimizeStatus {
+impl fmt::Display for OptimizeStatus {
     /// 最適化ステータスを文字列に変換
     /// * `return` - 最適化ステータスを文字列に変換
-    pub fn to_string(&self) -> String {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            OptimizeStatus::Standby => "Standby".to_string(),
-            OptimizeStatus::Optimizing => "Optimizing".to_string(),
-            OptimizeStatus::Optimized => "Optimized".to_string(),
-            OptimizeStatus::Unchanged => "Unchanged".to_string(),
-            OptimizeStatus::Skipped => "Skipped".to_string(),
-            OptimizeStatus::Canceled => "Canceled".to_string(),
-            OptimizeStatus::Error(message) => format!("Error: {}", message),
+            OptimizeStatus::Standby => write!(f, "Standby"),
+            OptimizeStatus::Optimizing => write!(f, "Optimizing"),
+            OptimizeStatus::Optimized => write!(f, "Optimized"),
+            OptimizeStatus::Unchanged => write!(f, "Unchanged"),
+            OptimizeStatus::Skipped => write!(f, "Skipped"),
+            OptimizeStatus::Canceled => write!(f, "Canceled"),
+            OptimizeStatus::Error(message) => write!(f, "Error: {}", message),
         }
     }
 }

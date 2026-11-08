@@ -35,7 +35,7 @@ pub(crate) fn view(
             if *app.png_lossy() {
                 ui.label(format!("({}%)", app.png_dithering()));
             } else {
-                ui.label(format!("({})", app.png_preset().to_string()));
+                ui.label(format!("({})", app.png_preset()));
             }
         },
         |ui| {

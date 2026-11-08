@@ -1,3 +1,4 @@
+use std::fmt;
 use serde::{Deserialize, Serialize};
 use oxipng::Options;
 
@@ -23,16 +24,18 @@ impl PngPreset {
             PngPreset::Max => Options::from_preset(6),
         }
     }
+}
 
+impl fmt::Display for PngPreset {
     /// PNG プリセットを文字列に変換
     /// * `return` - プリセットの文字列
-    pub fn to_string(&self) -> String {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            PngPreset::Min => "Min".to_string(),
-            PngPreset::Fast => "Fast".to_string(),
-            PngPreset::Default => "Default".to_string(),
-            PngPreset::Best => "Best".to_string(),
-            PngPreset::Max => "Max".to_string(),
+            PngPreset::Min => write!(f, "Min"),
+            PngPreset::Fast => write!(f, "Fast"),
+            PngPreset::Default => write!(f, "Default"),
+            PngPreset::Best => write!(f, "Best"),
+            PngPreset::Max => write!(f, "Max"),
         }
     }
 }
