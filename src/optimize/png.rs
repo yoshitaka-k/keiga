@@ -116,7 +116,7 @@ impl Png {
     /// * `return` - 保存結果
     fn save_image(
         palette: &quantizr::Palette,
-        indexes: &Vec<u8>,
+        indexes: &[u8],
         width: usize,
         height: usize
     ) -> Result<Vec<u8>, Box<dyn std::error::Error>> {

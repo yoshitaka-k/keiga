@@ -12,7 +12,7 @@ pub(crate) fn view(
     ctx: &egui::Context,
     app: &mut app::App,
     setting_token: &mut SettingToken,
-    mut update_job: &mut UpdateJob,
+    update_job: &mut UpdateJob,
     updated_token: &mut UpdatedToken,
 ) {
     // ウィンドウのIDを生成
