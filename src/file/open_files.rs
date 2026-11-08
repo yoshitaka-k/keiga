@@ -127,7 +127,7 @@ impl OpenFiles {
     /// * `return` - 選択されたファイルのパス
     pub fn selected_image_file(&self) -> Option<file::ImageFile> {
         if let Some(id) = self.selected_id() {
-            self.paths.iter().find(|p| *p.id() == *id).map(|p| p.clone())
+            self.paths.iter().find(|p| *p.id() == *id).cloned()
         } else {
             None
         }
@@ -368,13 +368,11 @@ impl OpenFiles {
     /// * `path` - ファイルのパス
     /// * `return` - 許可されているかどうか
     fn is_allowed_extension(&self, path: &Path) -> bool {
-        if let Some(ext) = path.extension() {
-            if let Some(ext) = ext.to_str() {
-                if self.extensions.iter().any(|e| e.eq_ignore_ascii_case(ext)) {
+        if let Some(ext) = path.extension()
+            && let Some(ext) = ext.to_str()
+                && self.extensions.iter().any(|e| e.eq_ignore_ascii_case(ext)) {
                     return true;
                 }
-            }
-        }
         false
     }
 
@@ -463,7 +461,7 @@ impl OpenFiles {
                 let mut image_file = file::ImageFile::new(path, relative_path)?;
 
                 // 同じパスが待機中か最適化中なら、新規行をエラーで追加
-                if self.is_standby_or_optimizing(&image_file.path()) {
+                if self.is_standby_or_optimizing(image_file.path()) {
                     image_file.set_status(OptimizeStatus::Error("Already in progress".to_string()));
                     self.paths.push(image_file);
                     return Ok(());

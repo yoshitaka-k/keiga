@@ -65,13 +65,13 @@ impl StatusColor {
     /// * `return` - ステータスアイコンの色
     pub fn new(ctx: &egui::Context) -> Self {
         Self {
-            standby: assets::status_icon_color(&ctx, OptimizeStatus::Standby),
-            optimizing: assets::status_icon_color(&ctx, OptimizeStatus::Optimizing),
-            optimized: assets::status_icon_color(&ctx, OptimizeStatus::Optimized),
-            unchanged: assets::status_icon_color(&ctx, OptimizeStatus::Unchanged),
-            skipped: assets::status_icon_color(&ctx, OptimizeStatus::Skipped),
-            canceled: assets::status_icon_color(&ctx, OptimizeStatus::Canceled),
-            error: assets::status_icon_color(&ctx, OptimizeStatus::Error(String::new())),
+            standby: assets::status_icon_color(ctx, OptimizeStatus::Standby),
+            optimizing: assets::status_icon_color(ctx, OptimizeStatus::Optimizing),
+            optimized: assets::status_icon_color(ctx, OptimizeStatus::Optimized),
+            unchanged: assets::status_icon_color(ctx, OptimizeStatus::Unchanged),
+            skipped: assets::status_icon_color(ctx, OptimizeStatus::Skipped),
+            canceled: assets::status_icon_color(ctx, OptimizeStatus::Canceled),
+            error: assets::status_icon_color(ctx, OptimizeStatus::Error(String::new())),
         }
     }
 }

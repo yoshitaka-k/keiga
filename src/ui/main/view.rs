@@ -396,7 +396,7 @@ impl Rendar {
                     self.files.set_selected_id(Some(*id));
                 }
                 event::EventAction::DoubleClick { path } => {
-                    if let Err(e) = click::double_click(&path) {
+                    if let Err(e) = click::double_click(path) {
                         eprintln!("Error revealing file: {}", e);
                         self.error_token.open = true;
                         self.error_token.value = Some(e);
@@ -429,14 +429,14 @@ impl Rendar {
                     self.ensure_selected_row_visible(list_viewport_height, row_stride, item_spacing);
                 }
                 event::EventAction::Enter { path } => {
-                    if let Err(e) = click::double_click(&path) {
+                    if let Err(e) = click::double_click(path) {
                         eprintln!("Error revealing file: {}", e);
                         self.error_token.open = true;
                         self.error_token.value = Some(e);
                     }
                 }
                 event::EventAction::Space { path } => {
-                    if let Err(e) = key::space(&path) {
+                    if let Err(e) = key::space(path) {
                         eprintln!("Error revealing file: {}", e);
                         self.error_token.open = true;
                         self.error_token.value = Some(e);

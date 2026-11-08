@@ -86,7 +86,7 @@ pub(crate) fn view(
                 SettingTab::General => general::view(ui, app),
                 SettingTab::Concurrent => concurrent::view(ui, app),
                 SettingTab::Quality => quality::view(ui, app),
-                SettingTab::About => about::view(ui, &mut update_job),
+                SettingTab::About => about::view(ui, update_job),
             }
         });
 

@@ -96,15 +96,15 @@ pub trait Optimizer {
         }
 
         // 最適化後のサイズが元のサイズより大きい場合は最適化しない
-        let new_size = byte_data.len() as usize;
+        let new_size = byte_data.len();
         if original_size <= new_size {
             // 出力ファイルが存在しない場合は作成
             if path != output_path && !output_path.exists() {
                 // 出力ファイルのパスを作成
-                create_output_path(&output_path)?;
+                create_output_path(output_path)?;
 
                 // ファイルをコピー
-                std::fs::copy(&path, &output_path).map_err(|e| {
+                std::fs::copy(path, output_path).map_err(|e| {
                     error::KeigaError::optimized_error(e.to_string(), output_path.to_path_buf())
                 })?;
             }
@@ -112,7 +112,7 @@ pub trait Optimizer {
         }
 
         // 出力ファイルのパスを作成
-        create_output_path(&output_path)?;
+        create_output_path(output_path)?;
 
         // 一時ファイルを作成して最適化後のデータを保存
         let temp_path = output_path.with_added_extension(TEMP_EXTENSION);
@@ -130,7 +130,7 @@ pub trait Optimizer {
         }
 
         // 一時ファイルを元のファイルに上書き
-        replace_file(&temp_path, &output_path)?;
+        replace_file(&temp_path, output_path)?;
 
         Ok(OptimizeStatus::Optimized)
 

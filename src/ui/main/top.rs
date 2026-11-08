@@ -23,7 +23,7 @@ pub(crate) fn view(
             ui.label("Quality: ");
 
             ui.label("JPEG: ");
-            ui.label(format!("{}", if *app.jpeg_lossy() { "Lossy" } else { "Lossless" }));
+            ui.label((if *app.jpeg_lossy() { "Lossy" } else { "Lossless" }).to_string());
             if *app.jpeg_lossy() {
                 ui.label(format!("({}%)", app.jpeg_quality()));
             }
@@ -31,7 +31,7 @@ pub(crate) fn view(
             ui.label("|");
 
             ui.label("PNG: ");
-            ui.label(format!("{}", if *app.png_lossy() { "Lossy" } else { "Lossless" }));
+            ui.label((if *app.png_lossy() { "Lossy" } else { "Lossless" }).to_string());
             if *app.png_lossy() {
                 ui.label(format!("({}%)", app.png_dithering()));
             } else {

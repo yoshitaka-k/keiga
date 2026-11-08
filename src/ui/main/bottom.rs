@@ -156,13 +156,12 @@ pub(crate) fn view(
 
             // クリアボタン
             let clear_button = egui::Image::new(svg::CLEAR_ALL).max_height(constants::BUTTON_CLEAR_ICON_SIZE).tint(button_color);
-            if ui.button(clear_button).on_hover_text("Cancel and Clear").clicked() {
-                if let Err(e) = button::cancel_and_clear(files, optimize_job) {
+            if ui.button(clear_button).on_hover_text("Cancel and Clear").clicked()
+                && let Err(e) = button::cancel_and_clear(files, optimize_job) {
                     eprintln!("Error canceling and clearing: {}", e);
                     error_token.open = true;
                     error_token.value = Some(e);
                 }
-            }
         });
     });
 }

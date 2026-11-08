@@ -3,7 +3,6 @@ use std::panic;
 use image::{
     codecs::jpeg::JpegEncoder,
 };
-use mozjpeg;
 use crate::{error, optimize};
 
 /// JPEG 最適化を行う構造体

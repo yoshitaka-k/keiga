@@ -30,11 +30,10 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
         });
         ui.horizontal(|ui| {
             ui.add_space(setting::GENERAL_LABEL_WIDTH + ui.spacing().item_spacing.x);
-            if ui.button("Browse").clicked() {
-                if let Some(path) = rfd::FileDialog::new().pick_folder() {
+            if ui.button("Browse").clicked()
+                && let Some(path) = rfd::FileDialog::new().pick_folder() {
                     *app.output_path_mut() = path.to_string_lossy().into_owned();
                 }
-            }
             if ui.button("Clear").clicked() {
                 app.output_path_mut().clear();
             }

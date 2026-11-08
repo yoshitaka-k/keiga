@@ -38,7 +38,7 @@ pub(crate) fn view(
         .unwrap_or(&[])
         .to_vec();
 
-    if visible.len() == 0 {
+    if visible.is_empty() {
         ui.horizontal(|ui| {
             ui.add(main::icon_widget(svg::UPLOAD_FILE, constants::TOP_MENU_UPLOAD_FILE_ICON_SIZE, assets::list_empty_color(ui)));
             ui.label(text_color("Files or Folders to Optimize Drag & Drop.", assets::list_empty_color(ui), None));
@@ -60,7 +60,7 @@ pub(crate) fn view(
         );
 
         // 交互に背景色
-        if index % 2 == 0 {
+        if index.is_multiple_of(2) {
             ui.painter().rect_filled(row_rect, main::LIST_CORNER_RADIUS, main::alternate_background_color(ui));
         }
 
@@ -92,7 +92,7 @@ pub(crate) fn view(
                     ui.separator();
                     ui.label(format!("{:+.2}%", image_file.saved_rate()));
                     ui.separator();
-                    ui.label(format!("{}", duration));
+                    ui.label(duration.to_string());
                 }
                 OptimizeStatus::Unchanged => {
                     main::list_row_content(ui, image_file, svg::CHECK, constants::CHECK_ICON_SIZE, *status_color.unchanged());

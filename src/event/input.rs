@@ -72,13 +72,12 @@ pub fn command_comma(ui: &mut egui::Ui, setting_token: &mut SettingToken) {
 /// * `files` - 開いているファイル
 /// * `pending_actions` - 処理予約
 pub fn arrow_up(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions: &mut Vec<event::EventAction>) {
-    if ui.input(|input| input.key_pressed(egui::Key::ArrowUp)) {
-        if let Some(image_file) = files.selected_image_file() {
+    if ui.input(|input| input.key_pressed(egui::Key::ArrowUp))
+        && let Some(image_file) = files.selected_image_file() {
             pending_actions.push(event::EventAction::Up {
                 id: *image_file.id(),
             });
         }
-    }
 }
 
 /// 下矢印キーが押されたら選択された行を下に移動する
@@ -86,13 +85,12 @@ pub fn arrow_up(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions:
 /// * `files` - 開いているファイル
 /// * `pending_actions` - 処理予約
 pub fn arrow_down(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions: &mut Vec<event::EventAction>) {
-    if ui.input(|input| input.key_pressed(egui::Key::ArrowDown)) {
-        if let Some(image_file) = files.selected_image_file() {
+    if ui.input(|input| input.key_pressed(egui::Key::ArrowDown))
+        && let Some(image_file) = files.selected_image_file() {
             pending_actions.push(event::EventAction::Down {
                 id: *image_file.id(),
             });
         }
-    }
 }
 
 /// エンターキーが押されたら選択された行を開く
@@ -100,13 +98,12 @@ pub fn arrow_down(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_action
 /// * `files` - 開いているファイル
 /// * `pending_actions` - 処理予約
 pub fn enter(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions: &mut Vec<event::EventAction>) {
-    if ui.input(|input| input.key_pressed(egui::Key::Enter)) {
-        if let Some(image_file) = files.selected_image_file() {
+    if ui.input(|input| input.key_pressed(egui::Key::Enter))
+        && let Some(image_file) = files.selected_image_file() {
             pending_actions.push(event::EventAction::Enter {
                 path: image_file.reveal_path().clone(),
             });
         }
-    }
 }
 
 /// スペースキーが押されたら選択された行を開く
@@ -114,13 +111,12 @@ pub fn enter(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions: &m
 /// * `files` - 開いているファイル
 /// * `pending_actions` - 処理予約
 pub fn space(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions: &mut Vec<event::EventAction>) {
-    if ui.input(|input| input.key_pressed(egui::Key::Space)) {
-        if let Some(image_file) = files.selected_image_file() {
+    if ui.input(|input| input.key_pressed(egui::Key::Space))
+        && let Some(image_file) = files.selected_image_file() {
             pending_actions.push(event::EventAction::Space {
                 path: image_file.reveal_path().clone(),
             });
         }
-    }
 }
 
 /// バックスペースキーが押されたら選択された行を削除する
@@ -128,9 +124,8 @@ pub fn space(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions: &m
 /// * `files` - 開いているファイル
 /// * `pending_actions` - 処理予約
 pub fn backspace(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions: &mut Vec<event::EventAction>) {
-    if ui.input(|input| input.key_pressed(egui::Key::Backspace)) {
-        if files.selected_id().is_some() {
+    if ui.input(|input| input.key_pressed(egui::Key::Backspace))
+        && files.selected_id().is_some() {
             pending_actions.push(event::EventAction::Backspace);
         }
-    }
 }

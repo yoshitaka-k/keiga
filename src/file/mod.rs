@@ -21,11 +21,11 @@ pub(crate) fn calc_saved_rate(size: u64, new_size: u64) -> f32 {
     };
 
     // 節約率を計算
-    let saved_rate = if size == 0 {
+    
+
+    if size == 0 {
         0.00f32
     } else {
         (calc_size as f32 / size as f32 * 100.0) * if is_minus { -1.0 } else { 1.0 }
-    };
-
-    saved_rate
+    }
 }

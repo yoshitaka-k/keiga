@@ -31,7 +31,7 @@ impl SoundPlayer {
     /// 新しい効果音プレイヤーを作成
     pub fn new() -> Self {
         let handle = rodio::DeviceSinkBuilder::open_default_sink().unwrap();
-        let player = rodio::Player::connect_new(&handle.mixer());
+        let player = rodio::Player::connect_new(handle.mixer());
 
         Self { _stream: handle, player }
     }
@@ -45,12 +45,12 @@ impl SoundPlayer {
 
     /// 完了時の効果音を再生
     pub fn play_completed(&self) {
-        self.play_sound(&sounds::COMPLETED.bytes);
+        self.play_sound(sounds::COMPLETED.bytes);
     }
 
     /// エラー時の効果音を再生
     pub fn play_alert(&self) {
-        self.play_sound(&sounds::ALERT.bytes);
+        self.play_sound(sounds::ALERT.bytes);
     }
 
     /// 効果音を再生

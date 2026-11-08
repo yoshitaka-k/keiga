@@ -1,7 +1,6 @@
 use std::path::Path;
 use crate::{error, optimize};
 use image::GenericImageView;
-use quantizr;
 
 /// PNG 最適化を行う構造体
 pub struct Png;
@@ -69,7 +68,7 @@ impl optimize::Optimizer for Png {
         let palette = result.get_palette();
 
         // 画像を保存
-        let output = Self::save_image(&palette, &indexes, width, height).map_err(|e| {
+        let output = Self::save_image(palette, &indexes, width, height).map_err(|e| {
             error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
         })?;
 
@@ -141,7 +140,7 @@ impl Png {
             encoder.set_trns(trans);
             let mut writer = encoder.write_header()?;
 
-            writer.write_image_data(&indexes)?;
+            writer.write_image_data(indexes)?;
             writer.finish()?;
         }
         Ok(output)
