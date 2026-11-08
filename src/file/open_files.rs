@@ -103,6 +103,12 @@ pub struct OpenFiles {
     file_info: FileInfo,
 }
 
+impl Default for OpenFiles {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl OpenFiles {
     /// 新しい OpenFiles を作成
     /// * `return` - OpenFiles のインスタンス
@@ -226,6 +232,12 @@ impl OpenFiles {
     /// * `return` - ファイルの数
     pub fn len(&self) -> usize {
         self.paths.len()
+    }
+
+    /// ファイルが空かどうかを取得
+    /// * `return` - ファイルが空かどうか
+    pub fn is_empty(&self) -> bool {
+        self.paths.is_empty()
     }
 
     /// 未処理のファイルの数を取得

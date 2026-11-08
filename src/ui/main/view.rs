@@ -157,7 +157,7 @@ impl eframe::App for Rendar {
 
         // リスト行の高さと行数を取得
         let row_height = self.row_height(ui);
-        let total_rows = self.files.paths().len();
+        let total_rows = self.files.len();
 
         // 利用可能な高さを設定
         let mut list_viewport_height: f32 = 0.0;

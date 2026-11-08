@@ -28,7 +28,7 @@ pub(crate) fn view(
     let mut row_clicked = false;
 
     // リスト表示の準備
-    let total = files.paths().len();
+    let total = files.len();
     let selected_id = *files.selected_id();
     let start = list_row.range.start;
 
@@ -38,7 +38,8 @@ pub(crate) fn view(
         .unwrap_or(&[])
         .to_vec();
 
-    if visible.is_empty() {
+    // ファイルが空の場合は表示
+    if files.is_empty() {
         ui.horizontal(|ui| {
             ui.add(main::icon_widget(svg::UPLOAD_FILE, constants::TOP_MENU_UPLOAD_FILE_ICON_SIZE, assets::list_empty_color(ui)));
             ui.label(text_color("Files or Folders to Optimize Drag & Drop.", assets::list_empty_color(ui), None));

@@ -55,12 +55,8 @@ pub(crate) fn alternate_background_color(ui: &egui::Ui) -> egui::Color32 {
 /// 選択されている背景色を取得
 /// * `ui` - UI
 /// * `return` - 選択されている背景色
-pub(crate) fn selected_background_color(ui: &egui::Ui) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
-        egui::Color32::from_rgba_unmultiplied(20, 120, 130, 50)
-    } else {
-        egui::Color32::from_rgba_unmultiplied(20, 120, 130, 50)
-    }
+pub(crate) fn selected_background_color(_ui: &egui::Ui) -> egui::Color32 {
+    egui::Color32::from_rgba_unmultiplied(20, 120, 130, 50)
 }
 
 /// アイコンセルを表示

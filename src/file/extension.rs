@@ -18,14 +18,4 @@ impl Extension {
             _ => Self::None,
         }
     }
-
-    /// Extension を文字列に変換
-    /// * `return` - 文字列
-    pub fn to_str(self) -> &'static str {
-        match self {
-            Self::Jpeg => "jpg",
-            Self::Png => "png",
-            Self::None => "",
-        }
-    }
 }
