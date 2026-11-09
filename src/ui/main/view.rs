@@ -4,7 +4,7 @@ use crate::event::{self, open, key, click, input};
 use crate::optimize::OptimizeJob;
 use crate::ui::{self, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken, OpenDialogToken};
 use crate::ui::assets::{constants, fonts, svg};
-use crate::ui::main::{self, top, list, bottom};
+use crate::ui::main::{self, top, middle, bottom};
 use crate::ui::setting::view as setting_window;
 use crate::ui::modal;
 
@@ -224,7 +224,7 @@ impl eframe::App for Rendar {
                 };
 
                 // ファイル一覧を表示
-                list::view(
+                middle::view(
                     ui,
                     &self.status_color,
                     &self.files,
