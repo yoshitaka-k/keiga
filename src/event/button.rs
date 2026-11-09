@@ -1,4 +1,4 @@
-use crate::{app, file, error};
+use crate::{file, error, update};
 use crate::optimize::OptimizeJob;
 use crate::ui::{SettingToken, OpenDialogToken};
 
@@ -84,6 +84,6 @@ pub(crate) fn cancel_and_clear(
 /// アップデートを確認する
 /// * `update_job` - 更新ジョブ
 /// * `updated_token` - 更新モーダルを表示するためのトークン
-pub(crate) fn check_for_update(update_job: &mut app::UpdateJob) {
+pub(crate) fn check_for_update(update_job: &mut update::UpdateJob) {
     update_job.run();
 }

@@ -1,6 +1,6 @@
-use crate::app::{UpdateCheck, UpdatedToken};
 use crate::ui::{self, ErrorToken};
 use crate::ui::assets::{constants, svg};
+use crate::update::{UpdateCheck, UpdatedToken};
 
 // モーダルのラベルの幅
 pub(crate) const MODAL_LABEL_WIDTH: f32 = 130.0;

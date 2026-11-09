@@ -1,8 +1,8 @@
-use crate::app::{self, UpdateJob, UpdatedToken};
-use crate::ui::{self, SettingTab, SettingToken};
-use crate::ui::assets::{self, constants, svg};
-use crate::ui::modal;
-use crate::ui::setting::{self, general, concurrent, quality, about};
+use crate::{app, ui};
+use crate::ui::{assets, setting, modal, SettingTab, SettingToken};
+use crate::ui::assets::{constants, svg};
+use crate::ui::setting::{general, concurrent, quality, about};
+use crate::update::{UpdateJob, UpdatedToken};
 
 /// 設定ウィンドウを表示
 /// * `ctx` - コンテキスト

@@ -33,9 +33,9 @@ pub(crate) const DARK_TAB_SELECTED_COLOR: egui::Color32 = egui::Color32::from_rg
 pub(crate) const LIGHT_TAB_SELECTED_COLOR: egui::Color32 = egui::Color32::from_rgb(130, 220, 210);
 
 // インポート
-use crate::app::UpdateJob;
 use crate::event::button;
 use crate::ui::assets::{self, constants, svg};
+use crate::update::UpdateJob;
 
 /// タブの選択時の背景色を取得
 /// * `ui` - UI

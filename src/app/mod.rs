@@ -1,7 +1,3 @@
-mod update;
-
-pub(crate) use update::{UpdateCheck, UpdateJob, UpdatedToken};
-
 use getset::{Getters, MutGetters};
 use serde::{Deserialize, Serialize};
 use oxipng::{Options, StripChunks};

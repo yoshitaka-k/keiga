@@ -1,5 +1,4 @@
-use crate::app::{self, UpdateJob, UpdatedToken};
-use crate::{file, sounds};
+use crate::{app, file, sounds};
 use crate::event::{self, open, key, click, input};
 use crate::optimize::OptimizeJob;
 use crate::ui::{self, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken, OpenDialogToken};
@@ -7,6 +6,7 @@ use crate::ui::assets::{constants, fonts, svg};
 use crate::ui::main::{self, top, middle, bottom};
 use crate::ui::setting::view as setting_window;
 use crate::ui::modal;
+use crate::update::{UpdateJob, UpdatedToken};
 
 /// レンダーを管理する構造体
 pub struct Rendar {

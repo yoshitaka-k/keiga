@@ -1,7 +1,7 @@
 use crate::{GITHUB_URL, ui};
-use crate::app::UpdateJob;
 use crate::ui::{assets, setting};
 use crate::ui::assets::{constants, svg};
+use crate::update::UpdateJob;
 
 /// バージョンを表示
 /// * `ui` - UI

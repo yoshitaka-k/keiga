@@ -7,6 +7,7 @@ mod optimize;
 mod event;
 mod error;
 mod sounds;
+mod update;
 
 pub use app::App;
 pub use ui::Rendar;
