@@ -13,7 +13,7 @@ static NEXT_ID: AtomicU64 = AtomicU64::new(1);
 
 /// 画像ファイルを管理する構造体
 #[derive(Clone, Getters, Setters)]
-pub struct ImageFile {
+pub(crate) struct ImageFile {
     /// ファイルの一意な ID
     #[getset(get = "pub")]
     id: u64,

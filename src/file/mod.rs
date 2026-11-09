@@ -1,6 +1,6 @@
-pub mod extension;
-pub mod open_files;
-pub mod image_file;
+mod extension;
+mod open_files;
+mod image_file;
 
 pub(crate) use open_files::OpenFiles;
 pub(crate) use image_file::ImageFile;
@@ -21,7 +21,7 @@ pub(crate) fn calc_saved_rate(size: u64, new_size: u64) -> f32 {
     };
 
     // 節約率を計算
-    
+
 
     if size == 0 {
         0.00f32

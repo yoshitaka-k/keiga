@@ -8,9 +8,7 @@ mod event;
 mod error;
 
 pub use app::App;
-pub use file::open_files::OpenFiles;
 pub use ui::Rendar;
-pub use optimize::Jpeg;
 
 /// ファイルサイズをフォーマットするマクロ
 pub fn filesize_format(size: u64) -> String {

@@ -85,7 +85,7 @@ impl FileInfo {
 
 /// ドロップされたファイルを管理する構造体
 #[derive(Clone, Getters, Setters)]
-pub struct OpenFiles {
+pub(crate) struct OpenFiles {
     /// ファイル一覧
     #[getset(get = "pub")]
     paths: Vec<file::ImageFile>,
@@ -101,12 +101,6 @@ pub struct OpenFiles {
     /// ファイル情報
     #[getset(get = "pub")]
     file_info: FileInfo,
-}
-
-impl Default for OpenFiles {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 impl OpenFiles {
@@ -270,28 +264,10 @@ impl OpenFiles {
         self.file_info.skipped_len
     }
 
-    /// キャンセルされたファイルの数を取得
-    /// * `return` - キャンセルされたファイルの数
-    pub fn canceled_len(&self) -> u32 {
-        self.file_info.canceled_len
-    }
-
     /// エラーのファイルの数を取得
     /// * `return` - エラーのファイルの数
     pub fn error_len(&self) -> u32 {
         self.file_info.error_len
-    }
-
-    /// ファイルの総サイズを取得
-    /// * `return` - ファイルの総サイズ
-    pub fn total_size(&self) -> u64 {
-        self.file_info.total_size
-    }
-
-    /// ファイルの総新サイズを取得
-    /// * `return` - ファイルの総新サイズ
-    pub fn total_new_size(&self) -> u64 {
-        self.file_info.total_new_size
     }
 
     /// ファイルの総節約率を取得
@@ -427,13 +403,6 @@ impl OpenFiles {
         } else {
             None
         }
-    }
-
-    /// ID からインデックスを取得
-    /// * `id` - ID
-    /// * `return` - インデックス
-    pub fn get_index_by_id(&self, id: u64) -> Option<usize> {
-        self.paths.iter().position(|p| *p.id() == id)
     }
 
     /// パスを追加

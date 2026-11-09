@@ -3,8 +3,7 @@ use std::sync::{mpsc, Mutex};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::collections::HashSet;
 
-use crate::{app, error};
-use crate::file::{open_files, image_file};
+use crate::{app, error, file};
 use super::OptimizeStatus;
 
 const RUNNING_COUNT_NUM: usize = 1;
@@ -14,9 +13,9 @@ pub struct OptimizeJob {
     ctx: egui::Context,
 
     /// 最適化結果を送信するチャネル
-    result_tx: mpsc::Sender<image_file::ImageFile>,
+    result_tx: mpsc::Sender<file::ImageFile>,
     /// 最適化結果を受信するチャネル
-    result_rx: mpsc::Receiver<image_file::ImageFile>,
+    result_rx: mpsc::Receiver<file::ImageFile>,
 
     /// 最適化実行フラグ
     running: Arc<AtomicBool>,
@@ -51,7 +50,7 @@ impl OptimizeJob {
     /// 最適化を実行
     /// * `app` - アプリケーション
     /// * `files` - ファイルリスト
-    pub fn run(&self, app: &app::App, files: &mut open_files::OpenFiles) {
+    pub fn run(&self, app: &app::App, files: &mut file::OpenFiles) {
         // 待機中のファイルがある場合は最適化実行中フラグを立てる
         if files.has_standby() {
             self.start_running();
@@ -111,7 +110,7 @@ impl OptimizeJob {
 
     /// 最適化結果を反映
     /// * `files` - ファイルリスト
-    pub fn result(&self, files: &mut open_files::OpenFiles) {
+    pub fn result(&self, files: &mut file::OpenFiles) {
         // 最適化結果を受信
         while let Ok(result) = self.result_rx.try_recv() {
             // ファイル ID を控えておく
