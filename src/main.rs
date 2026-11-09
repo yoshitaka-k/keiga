@@ -3,11 +3,9 @@
 #![warn(clippy::all, rust_2018_idioms)]
 
 use std::env;
-use keiga::Rendar;
-use keiga::App;
+use keiga::{APP_NAME, App, Rendar};
 
-/// アプリケーション名
-const APP_NAME: &str = "Keiga";
+/// バージョン
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// ウィンドウのサイズ

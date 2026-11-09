@@ -10,27 +10,41 @@ use crate::optimize::options::PngPreset;
 
 /// 最適化数のデフォルト値
 const DEFAULT_OPTIMIZATION_NUM: u8 = 4;
-
 /// PNG 最適化数のデフォルト値
 const DEFAULT_PNG_OPTIMIZATION_NUM: u8 = 2;
-
 /// JPEG 品質のデフォルト値
 const DEFAULT_JPEG_QUALITY: u8 = 80;
-
 /// PNG ディザリングのデフォルト値
 const DEFAULT_PNG_DITHERING: u8 = 80;
-
 /// PNG 最適化プリセットのデフォルト値
 const DEFAULT_PNG_PRESET: PngPreset = PngPreset::Default;
-
 /// 効果音の音量のデフォルト値
 const DEFAULT_SOUND_VOLUME: u8 = 5;
 
-/// GitHub リポジトリ URL
-pub(crate) const GITHUB_URL: &str = "https://github.com/{repository}";
+// 効果音の音量のスライダーの最小値
+pub(crate) const SOUND_VOLUME_MIN: u8 = 1;
+// 効果音の音量のスライダーの最大値
+pub(crate) const SOUND_VOLUME_MAX: u8 = 10;
 
-/// アップデート確認リクエスト URL
-pub(crate) const REQUEST_URL: &str = "https://api.github.com/repos/{repository}/releases/latest";
+// 並行処理数の最小値
+pub(crate) const OPTIMIZATION_NUM_MIN: u8 = 3;
+// 並行処理数の最大値
+pub(crate) const OPTIMIZATION_NUM_MAX: u8 = 8;
+
+// PNG 最適化数の最小値
+pub(crate) const PNG_OPTIMIZATION_NUM_MIN: u8 = 1;
+// PNG 最適化数の最大値
+pub(crate) const PNG_OPTIMIZATION_NUM_MAX: u8 = 3;
+
+// JPEG の品質の最小値
+pub(crate) const JPEG_QUALITY_MIN: u8 = 60;
+// JPEG の品質の最大値
+pub(crate) const JPEG_QUALITY_MAX: u8 = 100;
+
+// PNG のディザリングの最小値
+pub(crate) const PNG_DITHERING_MIN: u8 = 0;
+// PNG のディザリングの最大値
+pub(crate) const PNG_DITHERING_MAX: u8 = 100;
 
 /// アプリケーションを管理する構造体
 #[derive(Clone, Getters, MutGetters)]

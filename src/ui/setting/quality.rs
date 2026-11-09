@@ -42,7 +42,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
                 ui::add_label(ui, "Quality:", setting::QUALITY_LABEL_WIDTH);
                 ui.scope(|ui| {
                     ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
-                    ui.add(egui::Slider::new(app.jpeg_quality_mut(), setting::JPEG_QUALITY_MIN..=setting::JPEG_QUALITY_MAX));
+                    ui.add(egui::Slider::new(app.jpeg_quality_mut(), app::JPEG_QUALITY_MIN..=app::JPEG_QUALITY_MAX));
                 });
             });
         });
@@ -88,7 +88,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
                 ui::add_label(ui, "Dithering:", setting::QUALITY_LABEL_WIDTH);
                 ui.scope(|ui| {
                     ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
-                    ui.add(egui::Slider::new(app.png_dithering_mut(), setting::PNG_DITHERING_MIN..=setting::PNG_DITHERING_MAX));
+                    ui.add(egui::Slider::new(app.png_dithering_mut(), app::PNG_DITHERING_MIN..=app::PNG_DITHERING_MAX));
                 });
             });
         });

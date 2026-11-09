@@ -32,25 +32,6 @@ pub(crate) const SETTING_INDENT_SPACING: f32 = 10.0;
 pub(crate) const DARK_TAB_SELECTED_COLOR: egui::Color32 = egui::Color32::from_rgb(20, 120, 130);
 pub(crate) const LIGHT_TAB_SELECTED_COLOR: egui::Color32 = egui::Color32::from_rgb(130, 220, 210);
 
-// 効果音の音量のスライダーの最小値と最大値
-pub(crate) const SOUND_VOLUME_MIN: u8 = 1;
-pub(crate) const SOUND_VOLUME_MAX: u8 = 10;
-
-// 並行処理数の最小値と最大値
-pub(crate) const OPTIMIZATION_NUM_MIN: u8 = 3;
-pub(crate) const OPTIMIZATION_NUM_MAX: u8 = 8;
-
-pub(crate) const PNG_OPTIMIZATION_NUM_MIN: u8 = 1;
-pub(crate) const PNG_OPTIMIZATION_NUM_MAX: u8 = 3;
-
-// JPEG の品質の最小値と最大値
-pub(crate) const JPEG_QUALITY_MIN: u8 = 60;
-pub(crate) const JPEG_QUALITY_MAX: u8 = 100;
-
-// PNG のディザリングの最小値と最大値
-pub(crate) const PNG_DITHERING_MIN: u8 = 0;
-pub(crate) const PNG_DITHERING_MAX: u8 = 100;
-
 // インポート
 use crate::app::UpdateJob;
 use crate::event::button;

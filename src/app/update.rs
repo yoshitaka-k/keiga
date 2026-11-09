@@ -2,7 +2,7 @@ use std::sync::mpsc;
 use serde::Deserialize;
 use getset::Getters;
 
-use crate::{app, version_compare};
+use crate::{REQUEST_URL, version_compare};
 
 /// アップデート確認の結果
 #[derive(Clone)]
@@ -65,7 +65,7 @@ impl UpdateJob {
         let ctx = self.ctx.clone();
         let mut token = self.updated_token.clone();
 
-        let request_url = app::REQUEST_URL.replace("{repository}", env!("CARGO_PKG_REPOSITORY"));
+        let request_url = REQUEST_URL.replace("{repository}", env!("CARGO_PKG_REPOSITORY"));
         let request = ehttp::Request::get(request_url);
 
         ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {

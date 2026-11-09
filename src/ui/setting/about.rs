@@ -1,6 +1,7 @@
-use crate::app::{self, UpdateJob};
-use crate::ui::{self, setting};
-use crate::ui::assets::{self, constants, svg};
+use crate::{GITHUB_URL, ui};
+use crate::app::UpdateJob;
+use crate::ui::{assets, setting};
+use crate::ui::assets::{constants, svg};
 
 /// バージョンを表示
 /// * `ui` - UI
@@ -31,7 +32,7 @@ pub(crate) fn view(ui: &mut egui::Ui, update_job: &mut UpdateJob) {
         // リポジトリを表示
         ui.horizontal(|ui| {
             ui.label("Repository:");
-            ui.hyperlink_to(env!("CARGO_PKG_REPOSITORY"), app::GITHUB_URL.replace("{repository}", env!("CARGO_PKG_REPOSITORY")));
+            ui.hyperlink_to(env!("CARGO_PKG_REPOSITORY"), GITHUB_URL.replace("{repository}", env!("CARGO_PKG_REPOSITORY")));
         });
     });
 }

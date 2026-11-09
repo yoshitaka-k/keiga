@@ -11,6 +11,15 @@ mod sounds;
 pub use app::App;
 pub use ui::Rendar;
 
+/// アプリケーション名
+pub const APP_NAME: &str = "Keiga";
+
+/// GitHub リポジトリ URL
+pub(crate) const GITHUB_URL: &str = "https://github.com/{repository}";
+
+/// アップデート確認リクエスト URL
+pub(crate) const REQUEST_URL: &str = "https://api.github.com/repos/{repository}/releases/latest";
+
 /// ファイルサイズをフォーマットするマクロ
 pub fn filesize_format(size: u64) -> String {
     if size < 1024 {
