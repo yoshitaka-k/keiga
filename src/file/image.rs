@@ -5,7 +5,6 @@ use std::collections::HashSet;
 use getset::{Getters, Setters};
 
 use crate::{app, error, file};
-use crate::file::extension;
 use crate::optimize::{self, OptimToken, OptimizeStatus, Optimizer};
 
 /// Image の一意な ID を発行するカウンタ
@@ -40,7 +39,7 @@ pub(crate) struct Image {
 
     /// ファイルの拡張子
     #[getset(get = "pub")]
-    extension: extension::Extension,
+    extension: file::Extension,
 
     /// ファイルの最適化ステータス
     #[getset(get = "pub", set = "pub")]
@@ -91,9 +90,9 @@ impl Image {
 
         // 読み取ったフォーマットを拡張子に対応づける
         let extension = match format {
-            image::ImageFormat::Jpeg => extension::Extension::Jpeg,
-            image::ImageFormat::Png => extension::Extension::Png,
-            _ => extension::Extension::None,
+            image::ImageFormat::Jpeg => file::Extension::Jpeg,
+            image::ImageFormat::Png => file::Extension::Png,
+            _ => file::Extension::None,
         };
 
         // ファイルサイズを取得
@@ -123,13 +122,13 @@ impl Image {
     /// ファイルが JPEG かどうか
     /// * `return` - ファイルが JPEG かどうか
     pub fn is_jpeg(&self) -> bool {
-        matches!(self.extension, extension::Extension::Jpeg)
+        matches!(self.extension, file::Extension::Jpeg)
     }
 
     /// ファイルが PNG かどうか
     /// * `return` - ファイルが PNG かどうか
     pub fn is_png(&self) -> bool {
-        matches!(self.extension, extension::Extension::Png)
+        matches!(self.extension, file::Extension::Png)
     }
 
     /// ファイルが待機中かどうか
@@ -234,7 +233,7 @@ impl Image {
         // 最適化を実行
         let result = match self.extension {
             // jpeg ファイルの最適化
-            extension::Extension::Jpeg => {
+            file::Extension::Jpeg => {
                 let options = optimize::JpegOptions {
                     lossy: *app.jpeg_lossy(),
                     quality: *app.jpeg_quality(),
@@ -243,7 +242,7 @@ impl Image {
             }
 
             // png ファイルの最適化
-            extension::Extension::Png => {
+            file::Extension::Png => {
                 let options = optimize::PngOptions {
                     lossy: *app.png_lossy(),
                     dithering: *app.png_dithering(),

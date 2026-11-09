@@ -1,9 +1,16 @@
-mod extension;
 mod open_files;
 mod image;
 
 pub(crate) use open_files::OpenFiles;
 pub(crate) use image::Image;
+
+/// ファイルの拡張子を管理する列挙型
+#[derive(Clone)]
+pub(crate) enum Extension {
+    Jpeg,
+    Png,
+    None,
+}
 
 /// 最適化済みのファイル数を管理する構造体
 #[derive(Clone)]
