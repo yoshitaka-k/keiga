@@ -49,8 +49,8 @@ fn reveal_file_command(path: &Path) -> error::Result<()> {
         .arg("--type=method_call")
         .arg("/org/freedesktop/FileManager1")
         .arg("org.freedesktop.FileManager1.ShowItems")
-        .arg(format!("array:string:\"{uri}\""))
-        .arg("string:\"\"")
+        .arg(format!("array:string:{uri}"))
+        .arg("string:")
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .status();
