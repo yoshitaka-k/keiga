@@ -58,7 +58,7 @@ pub(crate) fn cancel_and_clear(
     let mut error = None;
 
     // ファイルを1件ずつキャンセル
-    for file in files.paths() {
+    for file in files.images() {
         // 待機中か最適化中でない場合はスキップ
         if !file.is_standby_or_optimizing() {
             continue;

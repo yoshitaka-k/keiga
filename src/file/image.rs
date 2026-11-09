@@ -8,12 +8,12 @@ use crate::{app, error, file};
 use crate::file::extension;
 use crate::optimize::{self, OptimToken, OptimizeStatus, Optimizer};
 
-/// ImageFile の一意な ID を発行するカウンタ
+/// Image の一意な ID を発行するカウンタ
 static NEXT_ID: AtomicU64 = AtomicU64::new(1);
 
 /// 画像ファイルを管理する構造体
 #[derive(Clone, Getters, Setters)]
-pub(crate) struct ImageFile {
+pub(crate) struct Image {
     /// ファイルの一意な ID
     #[getset(get = "pub")]
     id: u64,
@@ -63,11 +63,11 @@ pub(crate) struct ImageFile {
     duration: u64,
 }
 
-impl ImageFile {
-    /// 新しい ImageFile を作成
+impl Image {
+    /// 新しい Image を作成
     /// * `path` - ファイルのパス
     /// * `relative_path` - ドロップ基準からの相対パス
-    /// * `return` - ImageFile のインスタンス
+    /// * `return` - Image のインスタンス
     pub fn new(path: PathBuf, relative_path: String) -> Result<Self, error::KeigaError> {
         // ファイルの一意な ID を発行
         let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);

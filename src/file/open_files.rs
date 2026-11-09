@@ -10,7 +10,7 @@ use crate::optimize::OptimizeStatus;
 pub(crate) struct OpenFiles {
     /// ファイル一覧
     #[getset(get = "pub")]
-    paths: Vec<file::ImageFile>,
+    images: Vec<file::Image>,
 
     /// 許可されたファイル拡張子
     #[getset(set = "pub")]
@@ -30,7 +30,7 @@ impl OpenFiles {
     /// * `return` - OpenFiles のインスタンス
     pub fn new() -> Self {
         Self {
-            paths: vec![],
+            images: vec![],
             extensions: vec![],
             selected_id: None,
             file_info: file::FileInfo::new(),
@@ -39,17 +39,17 @@ impl OpenFiles {
 
     /// 待機中のファイルを1件取得
     /// * `return` - 待機中のファイル1件
-    pub fn get_standby_file(&mut self, allow_png: bool) -> Option<&mut file::ImageFile> {
-        self.paths.iter_mut().find(|f| {
+    pub fn get_standby_file(&mut self, allow_png: bool) -> Option<&mut file::Image> {
+        self.images.iter_mut().find(|f| {
             f.is_standby() && (allow_png || !f.is_png())
         })
     }
 
     /// 選択されたファイルのパスを取得
     /// * `return` - 選択されたファイルのパス
-    pub fn selected_image_file(&self) -> Option<file::ImageFile> {
+    pub fn selected_image_file(&self) -> Option<file::Image> {
         if let Some(id) = self.selected_id() {
-            self.paths.iter().find(|p| *p.id() == *id).cloned()
+            self.images.iter().find(|p| *p.id() == *id).cloned()
         } else {
             None
         }
@@ -58,7 +58,7 @@ impl OpenFiles {
     /// キャンセルされたファイルのステータスを更新
     /// * `id` - キャンセルされたファイルの ID
     pub fn set_status_canceled(&mut self, id: u64) {
-        if let Some(file) = self.paths.iter_mut().find(|f| *f.id() == id) {
+        if let Some(file) = self.images.iter_mut().find(|f| *f.id() == id) {
             // 最適化済み・最適化不要・スキップ・エラーはキャンセルできない
             if !file.is_optimized() && !file.is_unchanged() && !file.is_skipped() && !file.is_error() {
                 file.set_status(OptimizeStatus::Canceled);
@@ -81,7 +81,7 @@ impl OpenFiles {
         let mut total_duration = file::DurationInfo::new();
 
         // 各ファイルの情報を集計
-        for file in &self.paths {
+        for file in &self.images {
             match file.status() {
                 OptimizeStatus::Standby => standby_len += 1,
                 OptimizeStatus::Optimizing => optimizing_len += 1,
@@ -147,13 +147,13 @@ impl OpenFiles {
     /// ファイルの数を取得
     /// * `return` - ファイルの数
     pub fn len(&self) -> usize {
-        self.paths.len()
+        self.images.len()
     }
 
     /// ファイルが空かどうかを取得
     /// * `return` - ファイルが空かどうか
     pub fn is_empty(&self) -> bool {
-        self.paths.is_empty()
+        self.images.is_empty()
     }
 
     /// 未処理のファイルの数を取得
@@ -218,7 +218,7 @@ impl OpenFiles {
 
     /// パスをクリア
     pub fn clear(&mut self) {
-        self.paths.clear();
+        self.images.clear();
         self.selected_id = None;
         self.file_info = file::FileInfo::new();
     }
@@ -226,38 +226,38 @@ impl OpenFiles {
     /// JPEG ファイルがあるかどうか
     /// * `return` - JPEG ファイルがあるかどうか
     pub fn has_jpeg(&self) -> bool {
-        self.paths.iter().any(|f| f.is_jpeg())
+        self.images.iter().any(|f| f.is_jpeg())
     }
 
     /// PNG ファイルがあるかどうか
     /// * `return` - PNG ファイルがあるかどうか
     pub fn has_png(&self) -> bool {
-        self.paths.iter().any(|f| f.is_png())
+        self.images.iter().any(|f| f.is_png())
     }
 
     /// 未処理ファイルがあるかどうか
     /// * `return` - 未処理ファイルがあるかどうか
     pub fn has_standby(&self) -> bool {
-        self.paths.iter().any(|f| f.is_standby())
+        self.images.iter().any(|f| f.is_standby())
     }
 
     /// 最適化中のファイルがあるかどうか
     /// * `return` - 最適化中のファイルがあるかどうか
     pub fn has_optimizing(&self) -> bool {
-        self.paths.iter().any(|f| f.is_optimizing())
+        self.images.iter().any(|f| f.is_optimizing())
     }
 
     /// エラーのファイルがあるかどうか
     /// * `return` - エラーのファイルがあるかどうか
     pub fn has_error(&self) -> bool {
-        self.paths.iter().any(|f| f.is_error())
+        self.images.iter().any(|f| f.is_error())
     }
 
     /// 最適化結果を既存の一覧へ反映
     /// * `results` - 最適化済みのファイル
-    pub fn apply_result(&mut self, result: file::ImageFile) {
+    pub fn apply_result(&mut self, result: file::Image) {
         // 既存のファイル一覧から ID が一致するファイルを検索
-        if let Some(file) = self.paths.iter_mut().find(|f| f.id() == result.id()) {
+        if let Some(file) = self.images.iter_mut().find(|f| f.id() == result.id()) {
             // 元のファイルが最適化済みであればスキップ
             if file.is_optimized() {
                 return;
@@ -290,7 +290,7 @@ impl OpenFiles {
     /// * `path` - ファイルのパス
     /// * `return` - 待機中か最適化中かどうか
     fn is_standby_or_optimizing(&self, path: &Path) -> bool {
-        self.paths.iter().any(|f| f.path() == path && f.is_standby_or_optimizing())
+        self.images.iter().any(|f| f.path() == path && f.is_standby_or_optimizing())
     }
 
     /// 入力・出力ファイルが一致しているかどうかを確認
@@ -298,7 +298,7 @@ impl OpenFiles {
     /// * `output_path` - 出力ファイルのパス
     /// * `return` - 入力・出力ファイルが一致しているかどうか
     fn is_input_output_path(&self, path: &Path, output_path: &Path) -> bool {
-        self.paths.iter().any(|f| {
+        self.images.iter().any(|f| {
             f.path() == path
                 && f.output_path().as_deref() == Some(output_path)
                 && (f.is_optimized() || f.is_unchanged())
@@ -308,20 +308,20 @@ impl OpenFiles {
     /// 最小の ID を取得
     /// * `return` - 最小の ID
     pub fn get_min_id(&self) -> u64 {
-        *self.paths.iter().map(|f| f.id()).min().unwrap_or(&1)
+        *self.images.iter().map(|f| f.id()).min().unwrap_or(&1)
     }
 
     /// 最大の ID を取得
     /// * `return` - 最大の ID
     pub fn get_max_id(&self) -> u64 {
-        *self.paths.iter().map(|f| f.id()).max().unwrap_or(&1)
+        *self.images.iter().map(|f| f.id()).max().unwrap_or(&1)
     }
 
     /// 選択されたファイルのインデックスを取得
     /// * `return` - 選択されたファイルのインデックス
     pub fn get_selected_index(&self) -> Option<usize> {
         if let Some(id) = self.selected_id() {
-            self.paths.iter().position(|p| *p.id() == *id)
+            self.images.iter().position(|p| *p.id() == *id)
         } else {
             None
         }
@@ -361,25 +361,25 @@ impl OpenFiles {
                     .into_owned();
 
                 // ファイルを作成
-                let mut image_file = file::ImageFile::new(path, relative_path)?;
+                let mut image = file::Image::new(path, relative_path)?;
 
                 // 同じパスが待機中か最適化中なら、新規行をエラーで追加
-                if self.is_standby_or_optimizing(image_file.path()) {
-                    image_file.set_status(OptimizeStatus::Error("Already in progress".to_string()));
-                    self.paths.push(image_file);
+                if self.is_standby_or_optimizing(image.path()) {
+                    image.set_status(OptimizeStatus::Error("Already in progress".to_string()));
+                    self.images.push(image);
                     return Ok(());
                 }
 
                 // 同じ入力を同じ出力先へ書き済みなら、新規行をスキップで追加
                 if *app.skip_same_path()
-                    && self.is_input_output_path(image_file.path(), &image_file.make_output_path(app))
+                    && self.is_input_output_path(image.path(), &image.make_output_path(app))
                 {
-                    image_file.set_status(OptimizeStatus::Skipped);
-                    self.paths.push(image_file);
+                    image.set_status(OptimizeStatus::Skipped);
+                    self.images.push(image);
                     return Ok(());
                 }
 
-                self.paths.push(image_file);
+                self.images.push(image);
             }
         } else if metadata.is_dir() {
             for entry in fs::read_dir(&path).map_err(|e| error::KeigaError::file_error(e.to_string(), path.clone()))? {

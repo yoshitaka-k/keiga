@@ -13,9 +13,9 @@ pub struct OptimizeJob {
     ctx: egui::Context,
 
     /// 最適化結果を送信するチャネル
-    result_tx: mpsc::Sender<file::ImageFile>,
+    result_tx: mpsc::Sender<file::Image>,
     /// 最適化結果を受信するチャネル
-    result_rx: mpsc::Receiver<file::ImageFile>,
+    result_rx: mpsc::Receiver<file::Image>,
 
     /// 最適化実行フラグ
     running: Arc<AtomicBool>,

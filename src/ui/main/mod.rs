@@ -91,7 +91,7 @@ pub(crate) fn add_icon_cell(
 /// * `return` - OpenTypeアイコンのレスポンス
 pub(crate) fn add_opentype_icon(
     ui: &mut egui::Ui,
-    path: &file::ImageFile,
+    path: &file::Image,
 ) -> egui::Response {
     let icon_color = icon_color(ui);
     if *path.is_relative_path() {
@@ -103,39 +103,39 @@ pub(crate) fn add_opentype_icon(
 
 /// リスト行のコンテンツを表示
 /// * `ui` - UI
-/// * `image_file` - ファイル
+/// * `image` - ファイル
 /// * `icon` - アイコン
 /// * `icon_size` - アイコンのサイズ
 /// * `icon_color` - アイコンの色
 pub(crate) fn list_row_content(
     ui: &mut egui::Ui,
-    image_file: &file::ImageFile,
+    image: &file::Image,
     icon: egui::ImageSource<'static>,
     icon_size: f32,
     icon_color: egui::Color32
 ) {
     // 表示するファイルサイズを計算
-    let size = filesize_format(*image_file.size());
-    let new_size = filesize_format(*image_file.new_size());
+    let size = filesize_format(*image.size());
+    let new_size = filesize_format(*image.new_size());
 
     // アイコンセルを表示
     add_icon_cell(ui,
         icon_widget(icon, icon_size, icon_color)
-    , true).on_hover_text(image_file.status().to_string());
+    , true).on_hover_text(image.status().to_string());
 
     // オープンタイプアイコンを表示
-    add_opentype_icon(ui, image_file);
+    add_opentype_icon(ui, image);
 
     // ファイル名を表示
     ui.scope(|ui| {
-        if !image_file.is_standby_or_optimizing() {
+        if !image.is_standby_or_optimizing() {
             ui.set_max_width((ui.available_width() / LIST_MAX_WIDTH_DIVIDER).max(0.0));
         }
-        ui.label(image_file.file_name());
+        ui.label(image.file_name());
     });
 
     // ファイルサイズを表示
-    if image_file.is_optimized() {
+    if image.is_optimized() {
         ui.label(format!("({} -> {})", size, new_size));
     } else {
         ui.label(format!("({})", size));

@@ -33,7 +33,7 @@ pub(crate) fn view(
     let start = list_row.range.start;
 
     // 表示するファイルを取得
-    let visible: Vec<_> = files.paths()
+    let visible: Vec<_> = files.images()
         .get(list_row.range)
         .unwrap_or(&[])
         .to_vec();

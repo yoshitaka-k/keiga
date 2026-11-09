@@ -1,9 +1,9 @@
 mod extension;
 mod open_files;
-mod image_file;
+mod image;
 
 pub(crate) use open_files::OpenFiles;
-pub(crate) use image_file::ImageFile;
+pub(crate) use image::Image;
 
 /// 最適化済みのファイル数を管理する構造体
 #[derive(Clone)]
