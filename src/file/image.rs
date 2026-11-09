@@ -274,36 +274,18 @@ impl Image {
                         self.saved_rate = file::calc_saved_rate(self.size, self.new_size);
 
                         // 最適化済みに設定
-                        self.status = OptimizeStatus::Optimized;
-                        Ok(OptimizeStatus::Optimized)
-                    }
-                    OptimizeStatus::Unchanged => {
-                        // 最適化不要に設定
-                        self.status = OptimizeStatus::Unchanged;
-                        Ok(OptimizeStatus::Unchanged)
-                    }
-                    OptimizeStatus::Canceled => {
-                        // 最適化中止に設定
-                        self.status = OptimizeStatus::Canceled;
-                        Ok(OptimizeStatus::Canceled)
-                    }
-                    OptimizeStatus::Skipped => {
-                        // 最適化スキップに設定
-                        self.status = OptimizeStatus::Skipped;
-                        Ok(OptimizeStatus::Skipped)
+                        Ok(status)
                     }
                     OptimizeStatus::Error(e) => {
                         // 最適化エラーに設定
-                        self.status = OptimizeStatus::Error(e.clone());
-                        Err(error::KeigaError::optimized_error(e.to_string(), self.path.clone()))
+                        Ok(OptimizeStatus::Error(e.clone()))
                     }
-                    _ => Ok(self.status.clone())
+                    _ => Ok(status)
                 }
             }
             Err(e) => {
                 // 最適化エラーに設定
-                self.status = OptimizeStatus::Error(e.to_string());
-                Err(e)
+                Ok(OptimizeStatus::Error(e.to_string()))
             }
         }
     }

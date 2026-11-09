@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use std::sync::{mpsc, Mutex};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::collections::HashSet;
 
 use crate::{app, error, file};
@@ -88,11 +89,26 @@ impl OptimizeJob {
 
             // 最適化を実行するスレッドを作成
             std::thread::spawn(move || {
-                // 最適化を実行
-                let _ = file.optimize(&app, Arc::clone(&running), Arc::clone(&canceled));
+                let result = catch_unwind(AssertUnwindSafe(|| {
+                    // 最適化を実行
+                    file.optimize(&app, Arc::clone(&running), Arc::clone(&canceled))
+                }));
+
+                let status = match result {
+                    Ok(Ok(status)) => status,
+                    Ok(Err(e)) => OptimizeStatus::Error(e.to_string()),
+                    Err(payload) => {
+                        let message = payload.downcast_ref::<&str>().map(|s| s.to_string())
+                            .or_else(|| payload.downcast_ref::<String>().cloned())
+                            .unwrap_or_else(|| "Unknown error".to_string());
+                        OptimizeStatus::Error(message)
+                    }
+                };
+
+                file.set_status(status);
 
                 // 最適化結果を送信
-                let _ = tx.send(file.clone());
+                let _ = tx.send(file);
 
                 // この最適化のスレッドが終わってからカウントを減らす
                 running_count.fetch_sub(RUNNING_COUNT_NUM, Ordering::Relaxed);
