@@ -5,84 +5,6 @@ use getset::{Getters, Setters};
 use crate::{app, error, file};
 use crate::optimize::OptimizeStatus;
 
-/// 最適化済みのファイル数を管理する構造体
-#[derive(Clone)]
-struct OptimizedLen {
-    jpeg: u32,
-    png: u32,
-}
-
-impl OptimizedLen {
-    pub fn new() -> Self {
-        Self {
-            jpeg: 0,
-            png: 0,
-        }
-    }
-    pub fn total(&self) -> u32 {
-        self.jpeg + self.png
-    }
-}
-
-/// 最適化時間を管理する構造体
-#[derive(Clone)]
-struct DurationInfo {
-    jpeg: u64,
-    png: u64,
-}
-
-impl DurationInfo {
-    pub fn new() -> Self {
-        Self {
-            jpeg: 0,
-            png: 0,
-        }
-    }
-    pub fn total(&self) -> u64 {
-        self.jpeg + self.png
-    }
-}
-
-/// ファイル情報を管理する構造体
-#[derive(Clone)]
-struct FileInfo {
-    standby_len: u32,
-    optimizing_len: u32,
-    optimized_len: OptimizedLen,
-    unchanged_len: u32,
-    skipped_len: u32,
-    canceled_len: u32,
-    error_len: u32,
-    total_size: u64,
-    total_new_size: u64,
-    total_duration: DurationInfo,
-    total_saved_rate: f32,
-    average_duration: u64,
-    jpeg_average_duration: u64,
-    png_average_duration: u64,
-}
-
-impl FileInfo {
-    pub fn new() -> Self {
-        Self {
-            standby_len: 0,
-            optimizing_len: 0,
-            optimized_len: OptimizedLen::new(),
-            unchanged_len: 0,
-            skipped_len: 0,
-            canceled_len: 0,
-            error_len: 0,
-            total_size: 0,
-            total_new_size: 0,
-            total_duration: DurationInfo::new(),
-            total_saved_rate: 0.00,
-            average_duration: 0,
-            jpeg_average_duration: 0,
-            png_average_duration: 0,
-        }
-    }
-}
-
 /// ドロップされたファイルを管理する構造体
 #[derive(Clone, Getters, Setters)]
 pub(crate) struct OpenFiles {
@@ -100,7 +22,7 @@ pub(crate) struct OpenFiles {
 
     /// ファイル情報
     #[getset(get = "pub")]
-    file_info: FileInfo,
+    file_info: file::FileInfo,
 }
 
 impl OpenFiles {
@@ -111,7 +33,7 @@ impl OpenFiles {
             paths: vec![],
             extensions: vec![],
             selected_id: None,
-            file_info: FileInfo::new(),
+            file_info: file::FileInfo::new(),
         }
     }
 
@@ -148,7 +70,7 @@ impl OpenFiles {
     pub fn update_file_info(&mut self) {
         let mut standby_len = 0;
         let mut optimizing_len = 0;
-        let mut optimized_len = OptimizedLen::new();
+        let mut optimized_len = file::OptimizedLen::new();
         let mut unchanged_len = 0;
         let mut canceled_len = 0;
         let mut skipped_len = 0;
@@ -156,7 +78,7 @@ impl OpenFiles {
 
         let mut total_size = 0;
         let mut total_new_size = 0;
-        let mut total_duration = DurationInfo::new();
+        let mut total_duration = file::DurationInfo::new();
 
         // 各ファイルの情報を集計
         for file in &self.paths {
@@ -298,7 +220,7 @@ impl OpenFiles {
     pub fn clear(&mut self) {
         self.paths.clear();
         self.selected_id = None;
-        self.file_info = FileInfo::new();
+        self.file_info = file::FileInfo::new();
     }
 
     /// JPEG ファイルがあるかどうか
