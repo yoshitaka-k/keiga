@@ -85,17 +85,13 @@ pub trait Optimizer {
         token: OptimToken
     ) -> error::Result<OptimizeStatus> {
         // 最適化中止された場合は処理を中断
-        if token.is_canceled()? {
-            return Ok(OptimizeStatus::Canceled);
-        }
+        if token.is_canceled()? { return Ok(OptimizeStatus::Canceled); }
 
         // ファイルを種類に応じてエンコードする
         let (original_size, byte_data) = Self::encode(path, options)?;
 
         // 最適化中止された場合は処理を中断
-        if token.is_canceled()? {
-            return Ok(OptimizeStatus::Canceled);
-        }
+        if token.is_canceled()? { return Ok(OptimizeStatus::Canceled); }
 
         // 最適化後のサイズが元のサイズより大きい場合は最適化しない
         let new_size = byte_data.len();
@@ -128,9 +124,7 @@ pub trait Optimizer {
         })?;
 
         // 最適化中止された場合は処理を中断
-        if token.is_canceled()? {
-            return Ok(OptimizeStatus::Canceled);
-        }
+        if token.is_canceled()? { return Ok(OptimizeStatus::Canceled); }
 
         // 一時ファイルを元のファイルに上書き
         replace_file(&temp_path, output_path)?;
