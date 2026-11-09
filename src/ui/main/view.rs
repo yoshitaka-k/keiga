@@ -54,9 +54,12 @@ impl Rendar {
         svg::install(&cc.egui_ctx);
 
         // 前回保存した App があれば復元（なければ引数の app を使う）
-        let app = cc.storage
+        let mut app = cc.storage
             .and_then(|storage| eframe::get_value(storage, eframe::APP_KEY))
             .unwrap_or(app);
+
+        // 範囲外の値をクランプ
+        app.clamp_values();
 
         // 開くファイルのインスタンスを作成
         let mut files = file::OpenFiles::new();

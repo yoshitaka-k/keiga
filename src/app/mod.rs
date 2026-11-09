@@ -150,4 +150,13 @@ impl App {
         options.strip = StripChunks::Safe;
         options
     }
+
+    /// 値をクランプする
+    pub(crate) fn clamp_values(&mut self) {
+        self.jpeg_quality = self.jpeg_quality.clamp(JPEG_QUALITY_MIN, JPEG_QUALITY_MAX);
+        self.png_dithering = self.png_dithering.clamp(PNG_DITHERING_MIN, PNG_DITHERING_MAX);
+        self.optimization_num = self.optimization_num.clamp(OPTIMIZATION_NUM_MIN, OPTIMIZATION_NUM_MAX);
+        self.png_optimization_num = self.png_optimization_num.clamp(PNG_OPTIMIZATION_NUM_MIN, PNG_OPTIMIZATION_NUM_MAX);
+        self.sound_volume = self.sound_volume.clamp(SOUND_VOLUME_MIN, SOUND_VOLUME_MAX);
+    }
 }
