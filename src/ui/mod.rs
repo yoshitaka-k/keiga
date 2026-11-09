@@ -80,8 +80,8 @@ impl StatusColor {
 #[derive(PartialEq)]
 pub enum SettingTab {
     General,
-    Concurrent,
     Quality,
+    Concurrent,
     About,
 }
 
@@ -89,8 +89,8 @@ impl SettingTab {
     fn to_string(&self) -> &str {
         match self {
             SettingTab::General => "General",
-            SettingTab::Concurrent => "Concurrent",
             SettingTab::Quality => "Quality",
+            SettingTab::Concurrent => "Concurrent",
             SettingTab::About => "About",
         }
     }

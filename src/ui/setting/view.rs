@@ -71,8 +71,8 @@ pub(crate) fn view(
 
                 // タブを表示
                 ui.selectable_value(&mut setting_token.tab, SettingTab::General, SettingTab::General.to_string());
-                ui.selectable_value(&mut setting_token.tab, SettingTab::Concurrent, SettingTab::Concurrent.to_string());
                 ui.selectable_value(&mut setting_token.tab, SettingTab::Quality, SettingTab::Quality.to_string());
+                ui.selectable_value(&mut setting_token.tab, SettingTab::Concurrent, SettingTab::Concurrent.to_string());
                 ui.selectable_value(&mut setting_token.tab, SettingTab::About, SettingTab::About.to_string());
 
                 // タブの選択時の背景色をリセット
@@ -84,8 +84,8 @@ pub(crate) fn view(
             // タブに応じて表示内容を切り替え
             match setting_token.tab {
                 SettingTab::General => general::view(ui, app),
-                SettingTab::Concurrent => concurrent::view(ui, app),
                 SettingTab::Quality => quality::view(ui, app),
+                SettingTab::Concurrent => concurrent::view(ui, app),
                 SettingTab::About => about::view(ui, update_job),
             }
         });
