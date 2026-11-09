@@ -1,9 +1,9 @@
 use crate::app::{self, UpdateJob, UpdatedToken};
-use crate::file;
+use crate::{file, sounds};
 use crate::event::{self, open, key, click, input};
 use crate::optimize::OptimizeJob;
 use crate::ui::{self, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken, OpenDialogToken};
-use crate::ui::assets::{constants, fonts, svg, SoundPlayer};
+use crate::ui::assets::{constants, fonts, svg};
 use crate::ui::main::{self, top, list, bottom};
 use crate::ui::setting::view as setting_window;
 use crate::ui::modal;
@@ -39,7 +39,7 @@ pub struct Rendar {
     update_job: UpdateJob,
 
     // 効果音プレイヤー
-    sound: SoundPlayer,
+    sound: sounds::SoundPlayer,
 }
 
 /// Rendar の実装
@@ -89,7 +89,7 @@ impl Rendar {
             },
             optimize_job: OptimizeJob::new(cc.egui_ctx.clone()),
             update_job: UpdateJob::new(cc.egui_ctx.clone()),
-            sound: SoundPlayer::new(),
+            sound: sounds::SoundPlayer::new(),
         }
     }
 }
