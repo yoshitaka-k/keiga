@@ -2,9 +2,11 @@ pub(crate) mod options;
 mod job;
 mod jpeg;
 mod png;
+mod guard;
 pub use jpeg::Jpeg;
 pub use png::Png;
 pub(crate) use job::OptimizeJob;
+use guard::OptimizeGuard;
 pub(crate) use options::{
     OptimizeStatus,
     JpegOptions,
@@ -116,21 +118,25 @@ pub trait Optimizer {
 
         // 一時ファイルを作成して最適化後のデータを保存
         let temp_path = output_path.with_added_extension(TEMP_EXTENSION);
+
+        // 一時ファイルを削除するためのガードを作成
+        let mut guard = OptimizeGuard::new(temp_path.clone());
+
+        // 一時ファイルを作成して最適化後のデータを保存
         std::fs::write(&temp_path, &byte_data).map_err(|e| {
             error::KeigaError::optimized_error(e.to_string(), temp_path.to_path_buf())
         })?;
 
         // 最適化中止された場合は処理を中断
         if token.is_canceled()? {
-            // 一時ファイルを削除
-            std::fs::remove_file(&temp_path).map_err(|e| {
-                error::KeigaError::optimized_error(e.to_string(), temp_path.to_path_buf())
-            })?;
             return Ok(OptimizeStatus::Canceled);
         }
 
         // 一時ファイルを元のファイルに上書き
         replace_file(&temp_path, output_path)?;
+
+        // 削除しない
+        guard.keep();
 
         Ok(OptimizeStatus::Optimized)
 
