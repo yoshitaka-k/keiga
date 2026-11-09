@@ -96,16 +96,25 @@ pub trait Optimizer {
         // 最適化後のサイズが元のサイズより大きい場合は最適化しない
         let new_size = byte_data.len();
         if original_size <= new_size {
-            // 出力ファイルが存在しない場合は作成
-            if path != output_path && !output_path.exists() {
-                // 出力ファイルのパスを作成
-                create_output_path(output_path)?;
+            // 出力ファイルが存在しない場合は作成、エラーが発生した場合はエラーを返す
+            match output_path.try_exists() {
+                Ok(true) => (),
+                Ok(false) => {
+                    if path != output_path {
+                        // 出力ファイルのパスを作成
+                        create_output_path(output_path)?;
 
-                // ファイルをコピー
-                std::fs::copy(path, output_path).map_err(|e| {
-                    error::KeigaError::optimized_error(e.to_string(), output_path.to_path_buf())
-                })?;
+                        // ファイルをコピー
+                        std::fs::copy(path, output_path).map_err(|e| {
+                            error::KeigaError::optimized_error(e.to_string(), output_path.to_path_buf())
+                        })?;
+                    }
+                }
+                Err(e) => {
+                    return Err(error::KeigaError::optimized_error(e.to_string(), output_path.to_path_buf()));
+                }
             }
+
             return Ok(OptimizeStatus::Unchanged);
         }
 
@@ -155,7 +164,7 @@ pub (crate) fn open_image(path: &Path) -> error::Result<image::DynamicImage> {
 /// 出力ファイルのパスを作成
 /// * `output_path` - 出力パス
 /// * `return` - 出力ファイルのパスが作成できたかどうか
-pub(crate) fn create_output_path(output_path: &Path) -> error::Result<()> {
+fn create_output_path(output_path: &Path) -> error::Result<()> {
     // 出力ファイルのパスの親ディレクトリを取得
     let Some(parent) = output_path.parent() else {
         return Err(error::KeigaError::optimized_error("Output path parent not found".to_string(), output_path.to_path_buf()));
@@ -164,16 +173,14 @@ pub(crate) fn create_output_path(output_path: &Path) -> error::Result<()> {
     // 出力ファイルのパスの親ディレクトリを作成
     std::fs::create_dir_all(parent).map_err(|e| {
         error::KeigaError::optimized_error(e.to_string(), output_path.to_path_buf())
-    })?;
-
-    Ok(())
+    })
 }
 
 /// 一時ファイルを元のファイルに上書き
 /// * `from` - 一時ファイルのパス
 /// * `to` - 元のファイルのパス
 /// * `return` - 一時ファイルを元のファイルに上書きしたかどうか
-pub(crate) fn replace_file(from: &Path, to: &Path) -> error::Result<()> {
+fn replace_file(from: &Path, to: &Path) -> error::Result<()> {
     // Windows 以外の環境ではファイルを直接上書き
     #[cfg(not(target_os = "windows"))]
     {
