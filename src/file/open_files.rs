@@ -349,7 +349,12 @@ impl OpenFiles {
         path: PathBuf,
         base_dir: &Path
     ) -> error::Result<()> {
-        let metadata = path.metadata().map_err(|e| error::KeigaError::file_error(e.to_string(), path.clone()))?;
+        // ファイルの存在を確認
+        // シンボリックリンクは無視する
+        let metadata = match path.symlink_metadata() {
+            Ok(metadata) => metadata,
+            Err(e) => return Err(error::KeigaError::file_error(e.to_string(), path.clone())),
+        };
 
         if metadata.is_file() {
             if self.is_allowed_extension(&path) {
