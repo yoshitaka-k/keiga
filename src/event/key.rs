@@ -18,7 +18,7 @@ pub fn backspace(files: &mut file::OpenFiles, optimize_job: &mut OptimizeJob) ->
 /// * `path` - ファイルのパス
 pub fn space(path: &Path) -> error::Result<()> {
     if !path.exists() {
-        return Err(error::KeigaError::file_not_found("File does not exist", path.to_path_buf()));
+        return Err(error::KeigaError::file_not_found(path.to_path_buf()));
     }
 
     // ファイルをプレビュー表示

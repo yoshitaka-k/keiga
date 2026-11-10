@@ -4,7 +4,7 @@ pub type Result<T> = std::result::Result<T, KeigaError>;
 
 #[derive(Debug)]
 pub enum KeigaError {
-    FileNotFound(String, path::PathBuf, String, u32),
+    FileNotFound(path::PathBuf, String, u32),
     FileError(String, path::PathBuf, String, u32),
     UnsupportedExtension(path::PathBuf, String, u32),
     OptimizedError(String, path::PathBuf, String, u32),
@@ -19,7 +19,7 @@ impl fmt::Display for KeigaError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         let code = self.code();
         match self {
-            KeigaError::FileNotFound(e, p, _, _) => write!(fmt, "[{}] {}: {}", code, e, p.display()),
+            KeigaError::FileNotFound(p, _, _) => write!(fmt, "[{}] File not found: {}", code, p.display()),
             KeigaError::FileError(e, p, _, _) => write!(fmt, "[{}] File error: {} \n\n{}", code, e, p.display()),
             KeigaError::UnsupportedExtension(p, _, _) => write!(fmt, "[{}] Unsupported extension: {}", code, p.display()),
             KeigaError::OptimizedError(e, p, _, _) => write!(fmt, "[{}] Optimized error: {} \n\n{}", code, e, p.display()),
@@ -35,7 +35,7 @@ impl fmt::Display for KeigaError {
 impl error::Error for KeigaError {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match *self {
-            KeigaError::FileNotFound(_, _, _, _) => None,
+            KeigaError::FileNotFound(_, _, _) => None,
             KeigaError::FileError(_, _, _, _) => None,
             KeigaError::UnsupportedExtension(_, _, _) => None,
             KeigaError::OptimizedError(_, _, _, _) => None,
@@ -69,9 +69,9 @@ impl KeigaError {
     /// * `path` - ファイルパス
     /// * `return` - ファイルが見つからないエラー
     #[track_caller]
-    pub fn file_not_found(message: impl Into<String>, path: path::PathBuf) -> Self {
+    pub fn file_not_found(path: path::PathBuf) -> Self {
         let (file, line) = Self::caller();
-        Self::FileNotFound(message.into(), path, file, line)
+        Self::FileNotFound(path, file, line)
     }
 
     /// ファイルエラー
@@ -142,7 +142,7 @@ impl KeigaError {
     /// * `return` - ファイル名と行番号
     pub fn location(&self) -> (&str, u32) {
         match self {
-            Self::FileNotFound(_, _, file, line)
+            Self::FileNotFound(_, file, line)
             | Self::FileError(_, _, file, line)
             | Self::UnsupportedExtension(_, file, line)
             | Self::OptimizedError(_, _, file, line)
@@ -158,7 +158,7 @@ impl KeigaError {
     /// * `return` - エラーコード
     pub fn code(&self) -> String {
         match self {
-            Self::FileNotFound(_, _, f, l) => format!("FNF_{}_{}", Self::file_to_code(f), l),
+            Self::FileNotFound(_, f, l) => format!("FNF_{}_{}", Self::file_to_code(f), l),
             Self::FileError(_, _, f, l) => format!("FE_{}_{}", Self::file_to_code(f), l),
             Self::UnsupportedExtension(_, f, l) => format!("UE_{}_{}", Self::file_to_code(f), l),
             Self::OptimizedError(_, _, f, l) => format!("OE_{}_{}", Self::file_to_code(f), l),
