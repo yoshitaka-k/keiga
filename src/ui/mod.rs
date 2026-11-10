@@ -3,7 +3,7 @@ mod assets;
 mod setting;
 mod modal;
 
-pub use main::view::Rendar;
+pub use main::render::Rendar;
 
 // モーダルウィンドウの幅
 pub(crate) const MODAL_WINDOW_WIDTH: f32 = 320.0;
