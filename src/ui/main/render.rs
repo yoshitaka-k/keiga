@@ -153,10 +153,6 @@ impl eframe::App for Rendar {
         // ファイル追加時に最適化を実行
         self.optimize_run();
 
-        // パネルのスタイルを設定
-        let top_panel_style = ui::panel_style(ui, ui::TOP_PANEL_INNER_MARGIN);
-        let bottom_panel_style = ui::panel_style(ui, ui::BOTTOM_PANEL_INNER_MARGIN);
-
         // リスト行の高さと行数を取得
         let row_height = self.row_height(ui);
         let total_rows = self.files.len();
@@ -169,25 +165,21 @@ impl eframe::App for Rendar {
         let mut item_spacing: f32 = 0.0;
 
         // 上部ボタンを表示
-        egui::Panel::top("top_taskbar").frame(top_panel_style).show(ui, |ui| {
-            top::view(
-                ui,
-                &self.config,
-                &mut self.open_dialog_token,
-                &mut self.setting_token,
-            );
-        });
+        top::view(
+            ui,
+            &self.config,
+            &mut self.open_dialog_token,
+            &mut self.setting_token,
+        );
 
         // 状態とかボタンを表示するタスクバーを表示
-        egui::Panel::bottom("bottom_taskbar").frame(bottom_panel_style).show(ui, |ui| {
-            bottom::view(
-                ui,
-                &self.status_color,
-                &mut self.files,
-                &mut self.optimize_job,
-                &mut self.error_token,
-            );
-        });
+        bottom::view(
+            ui,
+            &self.status_color,
+            &mut self.files,
+            &mut self.optimize_job,
+            &mut self.error_token,
+        );
 
         // 中央パネルを表示
         egui::CentralPanel::default().show(ui, |ui| {
