@@ -66,6 +66,15 @@ impl OpenFiles {
         }
     }
 
+    /// エラーのファイルのステータスを更新
+    /// * `id` - エラーのファイルの ID
+    /// * `error` - エラー内容
+    pub fn set_status_error(&mut self, id: u64, error: &str) {
+        if let Some(file) = self.images.iter_mut().find(|f| *f.id() == id) {
+            file.set_status(OptimizeStatus::Error(error.to_string()));
+        }
+    }
+
     /// ファイル情報を更新
     pub fn update_file_info(&mut self) {
         let mut standby_len = 0;
@@ -251,6 +260,30 @@ impl OpenFiles {
     /// * `return` - エラーのファイルがあるかどうか
     pub fn has_error(&self) -> bool {
         self.images.iter().any(|f| f.is_error())
+    }
+
+    /// 入力が違くて、出力パスが一致するファイルが処理中、処理済みの状態であるかどうか
+    /// * `path` - 入力パス
+    /// * `output_path` - 出力パス
+    /// * `return` - 入力が違くて、出力パスが一致するファイルが処理中、処理済みの状態であるかどうか
+    pub fn has_output_conflict(&self,
+        path: &Path,
+        output_path: Option<&Path>,
+    ) -> bool {
+        if let Some(output_path) = output_path {
+            // 出力パスが一致するファイルでリサイズ中、リサイズ済み、変更なしの状態
+            self.images.iter().any(|f| {
+                f.path() != path
+                    && f.output_path().as_deref() == Some(output_path)
+                    && (
+                        f.is_optimizing()
+                        || f.is_optimized()
+                        || f.is_unchanged()
+                    )
+            })
+        } else {
+            false
+        }
     }
 
     /// 最適化結果を既存の一覧へ反映
