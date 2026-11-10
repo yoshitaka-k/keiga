@@ -397,27 +397,13 @@ impl Rendar {
                     }
                 }
                 event::EventAction::Up { id } => {
-                    let min_id = self.files.get_min_id();
-
-                    // 選択されているファイルの ID が最小の ID より大きい場合
-                    if *id > min_id {
-                        self.files.set_selected_id(Some(*id - 1));
-                    } else {
-                        self.files.set_selected_id(Some(min_id));
-                    }
+                    key::up(&mut self.files, *id);
 
                     // 選択されている行が見える範囲の外なら、スクロール位置を調整
                     self.ensure_selected_row_visible(list_viewport_height, row_stride, item_spacing);
                 }
                 event::EventAction::Down { id } => {
-                    let max_id = self.files.get_max_id();
-
-                    // 選択されているファイルの ID が最大の ID より小さい場合
-                    if *id < max_id {
-                        self.files.set_selected_id(Some(*id + 1));
-                    } else {
-                        self.files.set_selected_id(Some(max_id));
-                    }
+                    key::down(&mut self.files, *id);
 
                     // 選択されている行が見える範囲の外なら、スクロール位置を調整
                     self.ensure_selected_row_visible(list_viewport_height, row_stride, item_spacing);
