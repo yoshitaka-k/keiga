@@ -73,10 +73,8 @@ pub fn command_comma(ui: &mut egui::Ui, setting_token: &mut SettingToken) {
 /// * `pending_actions` - 処理予約
 pub fn arrow_up(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions: &mut Vec<event::EventAction>) {
     if ui.input(|input| input.key_pressed(egui::Key::ArrowUp))
-        && let Some(image_file) = files.selected_image_file() {
-            pending_actions.push(event::EventAction::Up {
-                id: *image_file.id(),
-            });
+        && files.selected_index().is_some() {
+            pending_actions.push(event::EventAction::Up);
         }
 }
 
@@ -86,10 +84,8 @@ pub fn arrow_up(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions:
 /// * `pending_actions` - 処理予約
 pub fn arrow_down(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions: &mut Vec<event::EventAction>) {
     if ui.input(|input| input.key_pressed(egui::Key::ArrowDown))
-        && let Some(image_file) = files.selected_image_file() {
-            pending_actions.push(event::EventAction::Down {
-                id: *image_file.id(),
-            });
+        && files.selected_index().is_some() {
+            pending_actions.push(event::EventAction::Down);
         }
 }
 
@@ -99,7 +95,7 @@ pub fn arrow_down(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_action
 /// * `pending_actions` - 処理予約
 pub fn enter(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions: &mut Vec<event::EventAction>) {
     if ui.input(|input| input.key_pressed(egui::Key::Enter))
-        && let Some(image_file) = files.selected_image_file() {
+        && let Some(image_file) = files.selected_image() {
             pending_actions.push(event::EventAction::Enter {
                 path: image_file.reveal_path().clone(),
             });
@@ -112,7 +108,7 @@ pub fn enter(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions: &m
 /// * `pending_actions` - 処理予約
 pub fn space(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions: &mut Vec<event::EventAction>) {
     if ui.input(|input| input.key_pressed(egui::Key::Space))
-        && let Some(image_file) = files.selected_image_file() {
+        && let Some(image_file) = files.selected_image() {
             pending_actions.push(event::EventAction::Space {
                 path: image_file.reveal_path().clone(),
             });
@@ -125,7 +121,7 @@ pub fn space(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions: &m
 /// * `pending_actions` - 処理予約
 pub fn backspace(ui: &mut egui::Ui, files: &mut file::OpenFiles, pending_actions: &mut Vec<event::EventAction>) {
     if ui.input(|input| input.key_pressed(egui::Key::Backspace))
-        && files.selected_id().is_some() {
+        && files.selected_index().is_some() {
             pending_actions.push(event::EventAction::Backspace);
         }
 }

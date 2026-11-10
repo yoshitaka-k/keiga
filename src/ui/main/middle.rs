@@ -28,7 +28,7 @@ pub(crate) fn view(
 
     // リスト表示の準備
     let total = files.len();
-    let selected_id = *files.selected_id();
+    let selected_index = files.selected_index();
     let start = list_row.range.start;
 
     // 表示するファイルを取得
@@ -65,7 +65,7 @@ pub(crate) fn view(
         }
 
         // 選択されている場合は背景を表示
-        if selected_id == Some(*image_file.id()) {
+        if *selected_index == Some(index) {
             ui.painter().rect_filled(row_rect, ui::LIST_CORNER_RADIUS, main::selected_background_color(ui));
         }
 
@@ -132,7 +132,7 @@ pub(crate) fn view(
 
         // クリックアクションを処理予約
         if response.clicked() {
-            pending_actions.push(event::EventAction::Click { id: *image_file.id() });
+            pending_actions.push(event::EventAction::Click { index: index });
             row_clicked = true;
         }
 

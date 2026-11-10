@@ -18,7 +18,7 @@ pub(crate) struct OpenFiles {
 
     /// 選択されたファイルの ID
     #[getset(get = "pub", set = "pub")]
-    selected_id: Option<u64>,
+    selected_index: Option<usize>,
 
     /// ファイル情報
     #[getset(get = "pub")]
@@ -32,7 +32,7 @@ impl OpenFiles {
         Self {
             images: vec![],
             extensions: vec![],
-            selected_id: None,
+            selected_index: None,
             file_info: file::FileInfo::new(),
         }
     }
@@ -40,7 +40,7 @@ impl OpenFiles {
     /// パスをクリア
     pub fn clear(&mut self) {
         self.images.clear();
-        self.selected_id = None;
+        self.selected_index = None;
         self.file_info = file::FileInfo::new();
     }
 
@@ -52,14 +52,10 @@ impl OpenFiles {
         })
     }
 
-    /// 選択されたファイルのパスを取得
-    /// * `return` - 選択されたファイルのパス
-    pub fn selected_image_file(&self) -> Option<file::Image> {
-        if let Some(id) = self.selected_id() {
-            self.images.iter().find(|p| *p.id() == *id).cloned()
-        } else {
-            None
-        }
+    /// 選択されたファイルを取得
+    /// * `return` - 選択されたファイル
+    pub fn selected_image(&self) -> Option<&file::Image> {
+        self.selected_index.and_then(|index| self.images.get(index))
     }
 
     /// キャンセルされたファイルのステータスを更新
@@ -338,26 +334,23 @@ impl OpenFiles {
         })
     }
 
-    /// 最小の ID を取得
-    /// * `return` - 最小の ID
-    pub fn get_min_id(&self) -> u64 {
-        *self.images.iter().map(|f| f.id()).min().unwrap_or(&1)
+    /// 選択されたファイルのインデックスを1増やす
+    pub fn index_add(&mut self) {
+        let selected = self.selected_index.map(|i| {
+            let last = self.images.len().saturating_sub(1);
+            (i + 1).min(last)
+        });
+
+        self.selected_index = selected;
     }
 
-    /// 最大の ID を取得
-    /// * `return` - 最大の ID
-    pub fn get_max_id(&self) -> u64 {
-        *self.images.iter().map(|f| f.id()).max().unwrap_or(&1)
-    }
+    /// 選択されたファイルのインデックスを1減らす
+    pub fn index_sub(&mut self) {
+        let selected = self.selected_index.map(|i| {
+            i.saturating_sub(1)
+        });
 
-    /// 選択されたファイルのインデックスを取得
-    /// * `return` - 選択されたファイルのインデックス
-    pub fn get_selected_index(&self) -> Option<usize> {
-        if let Some(id) = self.selected_id() {
-            self.images.iter().position(|p| *p.id() == *id)
-        } else {
-            None
-        }
+        self.selected_index = selected;
     }
 
     /// パスを追加

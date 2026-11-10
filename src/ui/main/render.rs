@@ -229,7 +229,7 @@ impl eframe::App for Rendar {
 
             // リスト行以外をクリックしたら選択解除
             if ui.input(|i| i.pointer.primary_clicked()) && !row_clicked {
-                self.files.set_selected_id(None);
+                self.files.set_selected_index(None);
                 self.vertical_scroll_offset = None;
                 self.pending_scroll_y = None;
             }
@@ -303,12 +303,11 @@ impl Rendar {
     }
 
     /// 選択行が見える範囲の外なら、スクロール位置を調整
-    /// * `limit_id` - 制限 ID
     /// * `list_viewport_height` - 利用可能な高さ
     /// * `row_stride` - 行のストライド（行の高さ + 行の間隔）
     fn ensure_selected_row_visible(&mut self, list_viewport_height: f32, row_stride: f32, item_spacing: f32) {
         // 選択されている行のインデックスを取得
-        let Some(index) = self.files.get_selected_index() else {
+        let Some(index) = self.files.selected_index() else {
             return;
         };
 
@@ -322,10 +321,10 @@ impl Rendar {
         // println!("index: {}, range.start: {}, range.end: {}, end: {}", index, range.start, range.end, end);
 
         // 選択されている行が見える範囲の外なら、スクロール位置を調整
-        if index <= range.start {
-            self.pending_scroll_y = Some(index as f32 * row_stride);
-        } else if index >= end {
-            let content_height = (index + 1) as f32 * row_stride - item_spacing;
+        if *index <= range.start {
+            self.pending_scroll_y = Some(*index as f32 * row_stride);
+        } else if *index >= end {
+            let content_height = (*index + 1) as f32 * row_stride - item_spacing;
             if content_height > list_viewport_height {
                 self.pending_scroll_y = Some(content_height - list_viewport_height);
             }
@@ -386,8 +385,8 @@ impl Rendar {
         // クリックアクションを処理
         for action in pending_actions {
             match action {
-                event::EventAction::Click { id } => {
-                    self.files.set_selected_id(Some(*id));
+                event::EventAction::Click { index } => {
+                    click::click(&mut self.files, *index);
                 }
                 event::EventAction::DoubleClick { path } => {
                     if let Err(e) = click::double_click(path) {
@@ -396,14 +395,14 @@ impl Rendar {
                         self.error_token.value = Some(e);
                     }
                 }
-                event::EventAction::Up { id } => {
-                    key::up(&mut self.files, *id);
+                event::EventAction::Up => {
+                    key::up(&mut self.files);
 
                     // 選択されている行が見える範囲の外なら、スクロール位置を調整
                     self.ensure_selected_row_visible(list_viewport_height, row_stride, item_spacing);
                 }
-                event::EventAction::Down { id } => {
-                    key::down(&mut self.files, *id);
+                event::EventAction::Down => {
+                    key::down(&mut self.files);
 
                     // 選択されている行が見える範囲の外なら、スクロール位置を調整
                     self.ensure_selected_row_visible(list_viewport_height, row_stride, item_spacing);

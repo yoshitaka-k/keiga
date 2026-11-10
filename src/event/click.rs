@@ -1,5 +1,15 @@
 use std::path::Path;
-use crate::error;
+use crate::{error, file};
+
+/// クリックでファイルを選択する
+/// * `files` - 開いているファイルの一覧
+/// * `index` - 選択するファイルのインデックス
+pub(crate) fn click(
+    files: &mut file::OpenFiles,
+    index: usize,
+) {
+    files.set_selected_index(Some(index));
+}
 
 /// ダブルクリックで Finder でファイルを選択表示する
 /// * `path` - ファイルのパス

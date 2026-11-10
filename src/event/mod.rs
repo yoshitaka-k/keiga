@@ -7,10 +7,10 @@ pub(crate) mod input;
 
 /// ファイル一覧のアクション
 pub(crate) enum EventAction {
-    Click { id: u64 },
+    Click { index: usize },
     DoubleClick { path: std::path::PathBuf },
-    Up { id: u64 },
-    Down { id: u64 },
+    Up,
+    Down,
     Enter { path: std::path::PathBuf },
     Space { path: std::path::PathBuf },
     Backspace,
