@@ -1,5 +1,5 @@
 use crate::event::button;
-use crate::app;
+use crate::config;
 use crate::ui::{main, SettingToken, OpenDialogToken};
 use crate::ui::assets::{self, constants, svg};
 
@@ -9,7 +9,7 @@ use crate::ui::assets::{self, constants, svg};
 /// * `setting_token` - 設定モーダルを表示するためのトークン
 pub(crate) fn view(
     ui: &mut egui::Ui,
-    app: &app::App,
+    config: &config::Config,
     open_dialog_token: &mut OpenDialogToken,
     setting_token: &mut SettingToken,
 ) {
@@ -23,19 +23,19 @@ pub(crate) fn view(
             ui.label("Quality: ");
 
             ui.label("JPEG: ");
-            ui.label((if *app.jpeg_lossy() { "Lossy" } else { "Lossless" }).to_string());
-            if *app.jpeg_lossy() {
-                ui.label(format!("({}%)", app.jpeg_quality()));
+            ui.label((if *config.jpeg_lossy() { "Lossy" } else { "Lossless" }).to_string());
+            if *config.jpeg_lossy() {
+                ui.label(format!("({}%)", config.jpeg_quality()));
             }
 
             ui.label("|");
 
             ui.label("PNG: ");
-            ui.label((if *app.png_lossy() { "Lossy" } else { "Lossless" }).to_string());
-            if *app.png_lossy() {
-                ui.label(format!("({}%)", app.png_dithering()));
+            ui.label((if *config.png_lossy() { "Lossy" } else { "Lossless" }).to_string());
+            if *config.png_lossy() {
+                ui.label(format!("({}%)", config.png_dithering()));
             } else {
-                ui.label(format!("({})", app.png_preset()));
+                ui.label(format!("({})", config.png_preset()));
             }
         },
         |ui| {

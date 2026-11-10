@@ -1,13 +1,13 @@
-use crate::{app, error, file};
+use crate::{config, error, file};
 use eframe::egui::DroppedFileHandle;
 
 /// ドロップされたファイルを処理
 /// * `dropped_files` - ドロップされたファイル
-/// * `app` - アプリケーション
+/// * `config` - 設定
 /// * `files` - 開いているファイル
 pub(crate) fn drop_files(
     dropped_files: &[DroppedFileHandle],
-    app: &app::App,
+    config: &config::Config,
     files: &mut file::OpenFiles,
 ) -> error::Result<()> {
     if dropped_files.is_empty() {
@@ -15,7 +15,7 @@ pub(crate) fn drop_files(
     }
 
     for file in dropped_files {
-        files.add_path(app, file.path().to_path_buf())?;
+        files.add_path(config, file.path().to_path_buf())?;
     }
 
     Ok(())

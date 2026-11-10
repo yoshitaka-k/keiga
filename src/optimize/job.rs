@@ -4,7 +4,7 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::collections::HashSet;
 
-use crate::{app, error, file};
+use crate::{config, error, file};
 use super::OptimizeStatus;
 
 const RUNNING_COUNT_NUM: usize = 1;
@@ -49,18 +49,18 @@ impl OptimizeJob {
     }
 
     /// 最適化を実行
-    /// * `app` - アプリケーション
+    /// * `config` - 設定
     /// * `files` - ファイルリスト
-    pub fn run(&self, app: &app::App, files: &mut file::OpenFiles) {
+    pub fn run(&self, config: &config::Config, files: &mut file::OpenFiles) {
         // 待機中のファイルがある場合は最適化実行中フラグを立てる
         if files.has_standby() {
             self.start_running();
         }
 
         // 最適化実行の数が最大値に達していない場合はループを続ける
-        while self.is_running_count(app) {
+        while self.is_running_count(config) {
             // PNG 最適化実行可能かどうか
-            let allow_png = self.is_png_running_count(app);
+            let allow_png = self.is_png_running_count(config);
 
             // 待機中のファイルを1件取得、なければループを終了
             let Some(file) = files.get_standby_file(allow_png) else { break };
@@ -70,7 +70,7 @@ impl OptimizeJob {
             let mut file = file.clone();
 
             // クローンしておく
-            let app = app.clone();
+            let config = config.clone();
             let tx = self.result_tx.clone();
             let ctx = self.ctx.clone();
             let running = Arc::clone(&self.running);
@@ -91,7 +91,7 @@ impl OptimizeJob {
             std::thread::spawn(move || {
                 let result = catch_unwind(AssertUnwindSafe(|| {
                     // 最適化を実行
-                    file.optimize(&app, Arc::clone(&running), Arc::clone(&canceled))
+                    file.optimize(&config, Arc::clone(&running), Arc::clone(&canceled))
                 }));
 
                 let status = match result {
@@ -151,17 +151,17 @@ impl OptimizeJob {
     }
 
     /// 最適化実行可能かどうか
-    /// * `app` - アプリケーション
+    /// * `config` - 設定
     /// * `return` - 最適化実行可能かどうか
-    pub fn is_running_count(&self, app: &app::App) -> bool {
-        self.running_count.load(Ordering::Relaxed) < *app.optimization_num() as usize
+    pub fn is_running_count(&self, config: &config::Config) -> bool {
+        self.running_count.load(Ordering::Relaxed) < *config.optimization_num() as usize
     }
 
     /// PNG 最適化実行可能かどうか
-    /// * `app` - アプリケーション
+    /// * `config` - 設定
     /// * `return` - PNG 最適化実行可能かどうか
-    pub fn is_png_running_count(&self, app: &app::App) -> bool {
-        self.png_running_count.load(Ordering::Relaxed) < *app.png_optimization_num() as usize
+    pub fn is_png_running_count(&self, config: &config::Config) -> bool {
+        self.png_running_count.load(Ordering::Relaxed) < *config.png_optimization_num() as usize
     }
 
     /// 最適化をキャンセル

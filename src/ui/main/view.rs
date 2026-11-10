@@ -1,4 +1,4 @@
-use crate::{app, file, sounds};
+use crate::{config, file, sounds};
 use crate::event::{self, open, key, click, input};
 use crate::optimize::OptimizeJob;
 use crate::ui::{self, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken, OpenDialogToken};
@@ -10,7 +10,7 @@ use crate::update::{UpdateJob, UpdatedToken};
 
 /// レンダーを管理する構造体
 pub struct Rendar {
-    app: app::App,
+    config: config::Config,
     files: file::OpenFiles,
     status_color: StatusColor,
 
@@ -46,29 +46,29 @@ pub struct Rendar {
 impl Rendar {
     /// 新しい Rendar を作成
     /// * `cc` - 作成コンテキスト
-    /// * `app` - アプリケーション
+    /// * `config` - 設定
     /// * `return` - Rendar のインスタンス
-    pub fn new(cc: &eframe::CreationContext<'_>, app: app::App) -> Self {
+    pub fn new(cc: &eframe::CreationContext<'_>, config: config::Config) -> Self {
         // フォントと SVG ローダーを追加
         fonts::install(&cc.egui_ctx);
         svg::install(&cc.egui_ctx);
 
-        // 前回保存した App があれば復元（なければ引数の app を使う）
-        let mut app = cc.storage
+        // 前回保存した Config があれば復元（なければ引数の config を使う）
+        let mut config = cc.storage
             .and_then(|storage| eframe::get_value(storage, eframe::APP_KEY))
-            .unwrap_or(app);
+            .unwrap_or(config);
 
         // 範囲外の値をクランプ
-        app.clamp_values();
+        config.clamp_values();
 
         // 開くファイルのインスタンスを作成
         let mut files = file::OpenFiles::new();
 
         // 拡張子を設定
-        files.set_extensions(app.extensions_to_string());
+        files.set_extensions(config.extensions_to_string());
 
         Self {
-            app,
+            config,
             files,
             status_color: StatusColor::new(&cc.egui_ctx),
             vertical_scroll_offset: None,
@@ -99,10 +99,10 @@ impl Rendar {
 
 /// eframe::App の実装
 impl eframe::App for Rendar {
-    /// 終了前に App の状態を保存
+    /// 終了前に Config の状態を保存
     /// * `storage` - ストレージ
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, eframe::APP_KEY, &self.app);
+        eframe::set_value(storage, eframe::APP_KEY, &self.config);
     }
 
     /// ユーザーインターフェースを描画
@@ -173,7 +173,7 @@ impl eframe::App for Rendar {
         egui::Panel::top("top_taskbar").frame(top_panel_style).show(ui, |ui| {
             top::view(
                 ui,
-                &self.app,
+                &self.config,
                 &mut self.open_dialog_token,
                 &mut self.setting_token,
             );
@@ -256,7 +256,7 @@ impl eframe::App for Rendar {
         if self.setting_token.open {
             setting_window::view(
                 ui.ctx(),
-                &mut self.app,
+                &mut self.config,
                 &mut self.setting_token,
                 &mut self.update_job,
                 &mut self.updated_token,
@@ -277,7 +277,7 @@ impl eframe::App for Rendar {
 impl Rendar {
     /// ファイルを最適化実行
     fn optimize_run(&mut self) {
-        self.optimize_job.run(&self.app, &mut self.files);
+        self.optimize_job.run(&self.config, &mut self.files);
     }
 
     /// 最適化結果を反映する
@@ -292,9 +292,9 @@ impl Rendar {
         let now_idle = !self.files.has_standby() && !self.files.has_optimizing();
 
         // 効果音を再生
-        if *self.app.play_sound() && was_busy && now_idle {
+        if *self.config.play_sound() && was_busy && now_idle {
             // 効果音の音量を設定
-            self.sound.set_volume(*self.app.sound_volume());
+            self.sound.set_volume(*self.config.sound_volume());
 
             if self.files.has_error() {
                 self.sound.play_alert();
@@ -347,7 +347,7 @@ impl Rendar {
         if self.open_dialog_token.folder_dialog {
             self.open_dialog_token.folder_dialog = false;
             if let Err(e) = open::folder(
-                &self.app,
+                &self.config,
                 &mut self.files,
             ) {
                 eprintln!("Error opening folders: {}", e);
@@ -360,7 +360,7 @@ impl Rendar {
         if self.open_dialog_token.file_dialog {
             self.open_dialog_token.file_dialog = false;
             if let Err(e) = open::file(
-                &self.app,
+                &self.config,
                 &mut self.files,
             ) {
                 eprintln!("Error opening files: {}", e);
@@ -373,7 +373,7 @@ impl Rendar {
     /// ドラッグ&ドロップされたファイルを処理
     /// * `ui` - UI
     fn drop_files(&mut self, ui: &egui::Ui) {
-        if let Err(e) = input::drop(ui, &self.app, &mut self.files) {
+        if let Err(e) = input::drop(ui, &self.config, &mut self.files) {
             eprintln!("Error dropping files: {}", e);
             self.error_token.open = true;
             self.error_token.value = Some(e);

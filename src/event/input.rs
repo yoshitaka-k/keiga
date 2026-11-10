@@ -1,18 +1,18 @@
-use crate::{app, file, error};
+use crate::{config, file, error};
 use crate::event::{self, drop, button};
 use crate::ui::{OpenDialogToken, SettingToken};
 
 /// ドロップされたファイルを処理する
 /// * `ui` - ウィジェットのUI
-/// * `app` - アプリケーション
+/// * `config` - 設定
 /// * `open_files` - 開いているファイル
 /// * return: エラーが発生した場合はエラーを返す
-pub fn drop(ui: &egui::Ui, app: &app::App, open_files: &mut file::OpenFiles) -> error::Result<()> {
+pub fn drop(ui: &egui::Ui, config: &config::Config, open_files: &mut file::OpenFiles) -> error::Result<()> {
     ui.ctx().input(|input| {
         let files = input.raw.dropped_files.clone();
         drop::drop_files(
             &files,
-            app,
+            config,
             open_files,
         )
     })?;

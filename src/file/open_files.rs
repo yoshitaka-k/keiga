@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use getset::{Getters, Setters};
 
-use crate::{app, error, file};
+use crate::{config, error, file};
 use crate::optimize::OptimizeStatus;
 
 /// ドロップされたファイルを管理する構造体
@@ -328,24 +328,25 @@ impl OpenFiles {
     }
 
     /// パスを追加
-    /// * `app` - アプリケーション
+    /// * `config` - 設定
     /// * `path` - ドロップされたファイルのパス
     /// * `return` - 結果
-    pub fn add_path(&mut self, app: &app::App, path: PathBuf) -> error::Result<()> {
+    pub fn add_path(&mut self, config: &config::Config, path: PathBuf) -> error::Result<()> {
         // parent() は path を借りるので、先に PathBuf にして借用を終わらせる
         let base_dir = path.parent().unwrap_or(&path).to_path_buf();
 
-        self.find_file(app, path, &base_dir)?;
+        self.find_file(config, path, &base_dir)?;
 
         Ok(())
     }
 
     /// ファイルを検索
+    /// * `config` - 設定
     /// * `path` - ドロップされたファイルのパス
     /// * `base_dir` - ドロップされたパスの親（相対パスの基準）
     /// * `return` - ファイルのパス
     fn find_file(&mut self,
-        app: &app::App,
+        config: &config::Config,
         path: PathBuf,
         base_dir: &Path
     ) -> error::Result<()> {
@@ -376,8 +377,8 @@ impl OpenFiles {
                 }
 
                 // 同じ入力を同じ出力先へ書き済みなら、新規行をスキップで追加
-                if *app.skip_same_path()
-                    && self.is_input_output_path(image.path(), &image.make_output_path(app))
+                if *config.skip_same_path()
+                    && self.is_input_output_path(image.path(), &image.make_output_path(config))
                 {
                     image.set_status(OptimizeStatus::Skipped);
                     self.images.push(image);
@@ -389,7 +390,7 @@ impl OpenFiles {
         } else if metadata.is_dir() {
             for entry in fs::read_dir(&path).map_err(|e| error::KeigaError::file_error(e.to_string(), path.clone()))? {
                 let entry = entry.map_err(|e| error::KeigaError::file_error(e.to_string(), path.clone()))?;
-                self.find_file(app, entry.path(), base_dir)?;
+                self.find_file(config, entry.path(), base_dir)?;
             }
         }
 

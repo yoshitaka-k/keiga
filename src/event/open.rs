@@ -1,13 +1,13 @@
-use crate::{app, error, file};
+use crate::{config, error, file};
 
 /// ファイルオープンダイアログを開いて選択結果を追加する
-/// * `app` - アプリケーション
+/// * `config` - 設定
 /// * `files` - 開いているファイル
 pub(crate) fn folder(
-    app: &app::App,
+    config: &config::Config,
     files: &mut file::OpenFiles,
 ) -> error::Result<()> {
-    let extensions = &app.extensions_to_string();
+    let extensions = &config.extensions_to_string();
 
     // Macのみファイルとフォルダを同時選択できる
     #[cfg(target_os = "macos")]
@@ -24,7 +24,7 @@ pub(crate) fn folder(
     // ファイルを追加
     if let Some(paths) = paths {
         for path in paths {
-            files.add_path(app, path)?;
+            files.add_path(config, path)?;
         }
     }
 
@@ -32,13 +32,13 @@ pub(crate) fn folder(
 }
 
 /// ファイルオープンダイアログを開いて選択結果を追加する
-/// * `app` - アプリケーション
+/// * `config` - 設定
 /// * `files` - 開いているファイル
 pub(crate) fn file(
-    app: &app::App,
+    config: &config::Config,
     files: &mut file::OpenFiles,
 ) -> error::Result<()> {
-    let extensions = &app.extensions_to_string();
+    let extensions = &config.extensions_to_string();
 
     let paths = rfd::FileDialog::new()
         .add_filter("Images", extensions)
@@ -47,7 +47,7 @@ pub(crate) fn file(
     // ファイルを追加
     if let Some(paths) = paths {
         for path in paths {
-            files.add_path(app, path)?;
+            files.add_path(config, path)?;
         }
     }
 

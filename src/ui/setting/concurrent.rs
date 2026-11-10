@@ -1,11 +1,11 @@
-use crate::app;
+use crate::config;
 use crate::ui::{self, setting};
 use crate::ui::assets::svg;
 
 /// 並行処理数を表示
 /// * `ui` - UI
-/// * `app` - アプリ
-pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
+/// * `config` - 設定
+pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
     // ヘッダーパネルを表示
     setting::header_panel(ui, svg::CYCLE, "Concurrent", None);
 
@@ -21,7 +21,7 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
             ui::add_label(ui, "All files:", setting::CONCURRENT_LABEL_WIDTH);
             ui.scope(|ui| {
                 ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
-                ui.add(egui::Slider::new(app.optimization_num_mut(), app::OPTIMIZATION_NUM_MIN..=app::OPTIMIZATION_NUM_MAX));
+                ui.add(egui::Slider::new(config.optimization_num_mut(), config::OPTIMIZATION_NUM_MIN..=config::OPTIMIZATION_NUM_MAX));
             });
         });
 
@@ -32,11 +32,11 @@ pub(crate) fn view(ui: &mut egui::Ui, app: &mut app::App) {
             ui::add_label(ui, "PNG files:", setting::CONCURRENT_LABEL_WIDTH);
             ui.scope(|ui| {
                 ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
-                ui.add(egui::Slider::new(app.png_optimization_num_mut(), app::PNG_OPTIMIZATION_NUM_MIN..=app::PNG_OPTIMIZATION_NUM_MAX));
+                ui.add(egui::Slider::new(config.png_optimization_num_mut(), config::PNG_OPTIMIZATION_NUM_MIN..=config::PNG_OPTIMIZATION_NUM_MAX));
             });
         });
 
         // PNG の最適化数の注意書きを表示
-        setting::warning_note(ui, &format!("PNG is included in All. ({} / {})", app.png_optimization_num(), app.optimization_num()));
+        setting::warning_note(ui, &format!("PNG is included in All. ({} / {})", config.png_optimization_num(), config.optimization_num()));
     });
 }

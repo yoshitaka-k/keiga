@@ -1,4 +1,4 @@
-use crate::{app, ui};
+use crate::{config, ui};
 use crate::ui::{assets, setting, modal, SettingTab, SettingToken};
 use crate::ui::assets::{constants, svg};
 use crate::ui::setting::{general, concurrent, quality, about};
@@ -10,7 +10,7 @@ use crate::update::{UpdateJob, UpdatedToken};
 /// * `window_pos` - ウィンドウの表示位置
 pub(crate) fn view(
     ctx: &egui::Context,
-    app: &mut app::App,
+    config: &mut config::Config,
     setting_token: &mut SettingToken,
     update_job: &mut UpdateJob,
     updated_token: &mut UpdatedToken,
@@ -83,9 +83,9 @@ pub(crate) fn view(
         egui::CentralPanel::default().show(ui, |ui| {
             // タブに応じて表示内容を切り替え
             match setting_token.tab {
-                SettingTab::General => general::view(ui, app),
-                SettingTab::Quality => quality::view(ui, app),
-                SettingTab::Concurrent => concurrent::view(ui, app),
+                SettingTab::General => general::view(ui, config),
+                SettingTab::Quality => quality::view(ui, config),
+                SettingTab::Concurrent => concurrent::view(ui, config),
                 SettingTab::About => about::view(ui, update_job),
             }
         });

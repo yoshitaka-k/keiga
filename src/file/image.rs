@@ -4,7 +4,7 @@ use std::sync::atomic::{AtomicU64, Ordering, AtomicBool};
 use std::collections::HashSet;
 use getset::{Getters, Setters};
 
-use crate::{app, error, file};
+use crate::{config, error, file};
 use crate::optimize::{self, OptimToken, OptimizeStatus, Optimizer};
 
 /// Image の一意な ID を発行するカウンタ
@@ -180,13 +180,13 @@ impl Image {
     }
 
     /// 出力ファイルのパスを作成
-    /// * `app` - アプリケーションの設定
+    /// * `config` - 設定
     /// * `return` - 出力ファイルのパス
-    pub fn make_output_path(&self, app: &app::App) -> PathBuf {
-        if app.output_path().is_empty() {
+    pub fn make_output_path(&self, config: &config::Config) -> PathBuf {
+        if config.output_path().is_empty() {
             self.path.clone()
         } else {
-            PathBuf::from(app.output_path()).join(self.relative_path.clone())
+            PathBuf::from(config.output_path()).join(self.relative_path.clone())
         }
     }
 
@@ -200,11 +200,11 @@ impl Image {
     }
 
     /// 画像を最適化
-    /// * `app` - アプリケーションの設定
+    /// * `config` - 設定
     /// * `return` - 最適化の結果
     pub fn optimize(
         &mut self,
-        app: &app::App,
+        config: &config::Config,
         running: Arc<AtomicBool>,
         canceled: Arc<Mutex<HashSet<u64>>>
     ) -> error::Result<OptimizeStatus> {
@@ -227,7 +227,7 @@ impl Image {
         self.status = OptimizeStatus::Optimizing;
 
         // 出力ファイルのパスを作成
-        let output_path = self.make_output_path(app);
+        let output_path = self.make_output_path(config);
         self.output_path = Some(output_path.clone());
 
         // 最適化を実行
@@ -235,8 +235,8 @@ impl Image {
             // jpeg ファイルの最適化
             file::Extension::Jpeg => {
                 let options = optimize::JpegOptions {
-                    lossy: *app.jpeg_lossy(),
-                    quality: *app.jpeg_quality(),
+                    lossy: *config.jpeg_lossy(),
+                    quality: *config.jpeg_quality(),
                 };
                 optimize::Jpeg::optimize(&self.path, &output_path, options, token)
             }
@@ -244,9 +244,9 @@ impl Image {
             // png ファイルの最適化
             file::Extension::Png => {
                 let options = optimize::PngOptions {
-                    lossy: *app.png_lossy(),
-                    dithering: *app.png_dithering(),
-                    options: app.png_options(),
+                    lossy: *config.png_lossy(),
+                    dithering: *config.png_dithering(),
+                    options: config.png_options(),
                 };
                 optimize::Png::optimize(&self.path, &output_path, options, token)
             }

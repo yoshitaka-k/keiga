@@ -46,7 +46,7 @@ pub(crate) const SOUND_VOLUME_MAX: u8 = 10;
 #[derive(Clone, Getters, MutGetters)]
 #[derive(Serialize, Deserialize)]
 #[serde(default)]
-pub struct App {
+pub struct Config {
     /// 読み込める拡張子
     #[getset(get = "pub")]
     #[serde(skip)]
@@ -97,8 +97,8 @@ pub struct App {
     sound_volume: u8,
 }
 
-/// App のデフォルト値
-impl Default for App {
+/// Config のデフォルト値
+impl Default for Config {
     fn default() -> Self {
         Self {
             extensions: default_extensions(),
@@ -126,9 +126,9 @@ fn default_extensions() -> Vec<&'static str> {
     vec!["png", "jpg", "jpeg", "gif", "webp", "bmp", "tiff", "tif", "ico", "avif", "qoi", "exr", "tga", "dds", "pbm", "pgm", "ppm", "pam", "hdr", "ff"]
 }
 
-impl App {
-    /// 新しい App を作成
-    /// * `return` - App のインスタンス
+impl Config {
+    /// 新しい Config を作成
+    /// * `return` - Config のインスタンス
     pub fn new() -> Self {
         Self::default()
     }

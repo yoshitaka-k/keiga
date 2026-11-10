@@ -3,7 +3,7 @@
 #![warn(clippy::all, rust_2018_idioms)]
 
 use std::env;
-use keiga::{APP_NAME, App, Rendar};
+use keiga::{APP_NAME, Config, Rendar};
 
 /// バージョン
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -17,8 +17,8 @@ const MAX_WINDOW_HEIGHT: f32 = 1024.0;
 fn main() -> eframe::Result {
     env_logger::init();
 
-    // アプリケーションのインスタンスを作成
-    let app = App::new();
+    // 設定のインスタンスを作成
+    let config = Config::new();
 
     // アプリケーションアイコンを読み込む
     let icon = eframe::icon_data::from_png_bytes(include_bytes!(concat!(
@@ -43,6 +43,6 @@ fn main() -> eframe::Result {
     eframe::run_native(
         APP_NAME,
         options,
-        Box::new(|cc| Ok(Box::new(Rendar::new(cc, app))))
+        Box::new(|cc| Ok(Box::new(Rendar::new(cc, config))))
     )
 }
