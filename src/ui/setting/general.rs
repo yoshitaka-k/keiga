@@ -1,5 +1,5 @@
-use crate::config;
-use crate::ui::{self, setting};
+use crate::{config, ui};
+use crate::ui::setting;
 use crate::ui::assets::svg;
 
 /// 並行処理数を表示
@@ -9,9 +9,9 @@ pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
     // ヘッダーパネルを表示
     setting::header_panel(ui, svg::SETTINGS, "General", None);
 
-    ui.add_space(setting::HEADER_BOTTOM_SPACING);
+    ui.add_space(ui::HEADER_BOTTOM_SPACING);
     ui.separator();
-    ui.add_space(setting::SETTING_ADD_SPACING);
+    ui.add_space(ui::SETTING_ADD_SPACING);
 
     // グループヘッダーパネルを表示
     setting::group_header_panel(ui, "Output path");
@@ -21,7 +21,7 @@ pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
         ui.take_available_width();
 
         ui.horizontal(|ui| {
-            ui::add_label(ui, "Output path:", setting::GENERAL_LABEL_WIDTH);
+            ui::add_label(ui, "Output path:", ui::GENERAL_LABEL_WIDTH);
             ui.add(
                 egui::TextEdit::singleline(config.output_path_mut())
                     .desired_width(ui.available_width())
@@ -29,7 +29,7 @@ pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
             );
         });
         ui.horizontal(|ui| {
-            ui.add_space(setting::GENERAL_LABEL_WIDTH + ui.spacing().item_spacing.x);
+            ui.add_space(ui::GENERAL_LABEL_WIDTH + ui.spacing().item_spacing.x);
             if ui.button("Browse").clicked()
                 && let Some(path) = rfd::FileDialog::new().pick_folder() {
                     *config.output_path_mut() = path.to_string_lossy().into_owned();
@@ -42,13 +42,13 @@ pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
         // 出力パスの注意書きを表示
         setting::warning_note(ui, "Leave empty to overwrite the original files.");
 
-        ui.add_space(setting::SETTING_ADD_SPACING);
+        ui.add_space(ui::SETTING_ADD_SPACING);
         ui.separator();
-        ui.add_space(setting::SETTING_ADD_SPACING);
+        ui.add_space(ui::SETTING_ADD_SPACING);
 
         // 同じパスはスキップ
         ui.horizontal(|ui| {
-            ui::add_label(ui, "Skip same path:", setting::GENERAL_LABEL_WIDTH);
+            ui::add_label(ui, "Skip same path:", ui::GENERAL_LABEL_WIDTH);
             ui.radio_value(config.skip_same_path_mut(), true, "Skip same path");
             ui.radio_value(config.skip_same_path_mut(), false, "Don't skip same path");
         });
@@ -57,7 +57,7 @@ pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
         setting::warning_note(ui, "Skip if already completed. Retry canceled and errors.");
     });
 
-    ui.add_space(setting::SETTING_ADD_SPACING);
+    ui.add_space(ui::SETTING_ADD_SPACING);
 
     // グループヘッダーパネルを表示
     setting::group_header_panel(ui, "Sound effects");
@@ -68,15 +68,15 @@ pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
 
         // 効果音鳴らす？
         ui.horizontal(|ui| {
-            ui::add_label(ui, "Sound effects:", setting::GENERAL_LABEL_WIDTH);
+            ui::add_label(ui, "Sound effects:", ui::GENERAL_LABEL_WIDTH);
             ui.radio_value(config.play_sound_mut(), true, "Play sound");
             ui.radio_value(config.play_sound_mut(), false, "Don't play sound");
         });
 
-        ui.add_space(setting::SETTING_ADD_SPACING);
+        ui.add_space(ui::SETTING_ADD_SPACING);
 
         ui.horizontal(|ui| {
-            ui::add_label(ui, "Volume:", setting::GENERAL_LABEL_WIDTH);
+            ui::add_label(ui, "Volume:", ui::GENERAL_LABEL_WIDTH);
             ui.scope(|ui| {
                 ui.spacing_mut().slider_width = setting::remaining_slider_width(ui);
                 ui.add(egui::Slider::new(config.sound_volume_mut(), config::SOUND_VOLUME_MIN..=config::SOUND_VOLUME_MAX));

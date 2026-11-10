@@ -10,7 +10,7 @@ pub(crate) fn view(ui: &mut egui::Ui, update_job: &mut UpdateJob) {
     // ヘッダーパネルを表示
     setting::header_panel(ui, svg::INFO, "About", Some(update_job));
 
-    ui.add_space(setting::HEADER_BOTTOM_SPACING);
+    ui.add_space(ui::HEADER_BOTTOM_SPACING);
 
     ui.separator();
 

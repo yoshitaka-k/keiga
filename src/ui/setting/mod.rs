@@ -4,35 +4,8 @@ pub(crate) mod concurrent;
 pub(crate) mod quality;
 pub(crate) mod about;
 
-// ウィンドウのID
-pub(crate) const SETTING_WINDOW_ID: &str = "setting_window";
-
-/// ウィンドウのタイトル
-pub(crate) const WINDOW_TITLE: &str = "Keiga Settings";
-
-// ウィンドウのサイズ
-pub(crate) const WINDOW_WIDTH: f32 = 480.0;
-pub(crate) const WINDOW_HEIGHT: f32 = 340.0;
-
-// ヘッダーのスペースの幅
-pub(crate) const HEADER_ICON_SPACING: f32 = 4.0;
-pub(crate) const HEADER_BOTTOM_SPACING: f32 = 2.0;
-pub(crate) const WARNING_ICON_SPACING: f32 = 3.0;
-
-// ラベルの幅
-pub(crate) const GENERAL_LABEL_WIDTH: f32 = 90.0;
-pub(crate) const CONCURRENT_LABEL_WIDTH: f32 = 48.0;
-pub(crate) const QUALITY_LABEL_WIDTH: f32 = 78.0;
-
-// 追加のスペースの幅
-pub(crate) const SETTING_ADD_SPACING: f32 = 4.0;
-pub(crate) const SETTING_INDENT_SPACING: f32 = 10.0;
-
-// タブの選択時の背景色
-pub(crate) const DARK_TAB_SELECTED_COLOR: egui::Color32 = egui::Color32::from_rgb(20, 120, 130);
-pub(crate) const LIGHT_TAB_SELECTED_COLOR: egui::Color32 = egui::Color32::from_rgb(130, 220, 210);
-
 // インポート
+use crate::ui;
 use crate::event::button;
 use crate::ui::assets::{self, constants, svg};
 use crate::update::UpdateJob;
@@ -42,9 +15,9 @@ use crate::update::UpdateJob;
 /// * `return` - タブの選択時の背景色
 pub(crate) fn tab_selected_color(ui: &egui::Ui) -> egui::Color32 {
     if ui.ctx().global_style().visuals.dark_mode {
-        DARK_TAB_SELECTED_COLOR
+        ui::DARK_TAB_SELECTED_COLOR
     } else {
-        LIGHT_TAB_SELECTED_COLOR
+        ui::LIGHT_TAB_SELECTED_COLOR
     }
 }
 
@@ -71,7 +44,7 @@ pub(crate) fn header_panel(
     let icon_color = assets::icon_color(ui);
 
     ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = HEADER_ICON_SPACING;
+        ui.spacing_mut().item_spacing.x = ui::HEADER_ICON_SPACING;
         ui.add(egui::Image::new(icon).max_height(constants::SETTINGS_ICON_SIZE).tint(icon_color));
         ui.spacing_mut().item_spacing.x = spacing;
         ui.label(label);
@@ -91,7 +64,7 @@ pub(crate) fn header_panel(
 /// * `ui` - UI
 pub(crate) fn group_header_panel(ui: &mut egui::Ui, label: &str) {
     ui.horizontal(|ui| {
-        ui.add_space(SETTING_INDENT_SPACING);
+        ui.add_space(ui::SETTING_INDENT_SPACING);
         ui.label(label);
     });
 }
@@ -106,7 +79,7 @@ pub(crate) fn warning_note(ui: &mut egui::Ui, text: &str) {
 
     // 出力パスの注意書きを表示
     ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = WARNING_ICON_SPACING;
+        ui.spacing_mut().item_spacing.x = ui::WARNING_ICON_SPACING;
         ui.add(egui::Image::new(svg::WARNING).max_height(constants::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
         ui.spacing_mut().item_spacing.x = spacing;
         ui.add(egui::Label::new(

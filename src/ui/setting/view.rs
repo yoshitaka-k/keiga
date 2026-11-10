@@ -16,12 +16,12 @@ pub(crate) fn view(
     updated_token: &mut UpdatedToken,
 ) {
     // ウィンドウのIDを生成
-    let window_id = egui::ViewportId::from_hash_of(setting::SETTING_WINDOW_ID);
+    let window_id = egui::ViewportId::from_hash_of(ui::SETTING_WINDOW_ID);
 
     // 設定ウィンドウのオプションを設定
     let mut options = egui::ViewportBuilder::default()
-        .with_title(setting::WINDOW_TITLE)
-        .with_inner_size([setting::WINDOW_WIDTH, setting::WINDOW_HEIGHT])
+        .with_title(ui::WINDOW_TITLE)
+        .with_inner_size([ui::WINDOW_WIDTH, ui::WINDOW_HEIGHT])
         .with_maximize_button(false)
         .with_resizable(false);
 

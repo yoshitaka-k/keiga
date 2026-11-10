@@ -1,9 +1,7 @@
-use crate::ui::{self, ErrorToken};
+use crate::ui;
+use crate::ui::ErrorToken;
 use crate::ui::assets::{constants, svg};
 use crate::update::{UpdateCheck, UpdatedToken};
-
-// モーダルのラベルの幅
-pub(crate) const MODAL_LABEL_WIDTH: f32 = 130.0;
 
 /// エラーモーダルを表示
 /// * `show_modal` - モーダルを表示するかどうか
@@ -87,7 +85,7 @@ pub(crate) fn updated(ctx: &egui::Context, updated_token: &mut UpdatedToken) {
             // アップデートがある場合
             UpdateCheck::Available { version, url } => {
                 egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
-                    ui::add_label(ui, &format!("New version: {}", version), MODAL_LABEL_WIDTH);
+                    ui::add_label(ui, &format!("New version: {}", version), ui::MODAL_LABEL_WIDTH);
                     ui.add(egui::Label::new(
                         egui::RichText::new(format!("Current version: v{}", env!("CARGO_PKG_VERSION"))).weak(),
                     ));

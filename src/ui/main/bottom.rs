@@ -1,9 +1,8 @@
-use crate::{file, duration_format};
+use crate::{file, ui, duration_format};
 use crate::event::button;
 use crate::optimize::OptimizeJob;
-use crate::ui::{ErrorToken, StatusColor};
-use crate::ui::assets::{self, constants, fonts::text_color, svg};
-use crate::ui::main;
+use crate::ui::{main, assets, ErrorToken, StatusColor};
+use crate::ui::assets::{constants, fonts::text_color, svg};
 
 /// 下部パネルを表示
 /// * `ui` - UI
@@ -49,7 +48,7 @@ pub(crate) fn view(
         // 優先度: 最適化中 > エラー > 最適化済み・最適化不要 > 待機
         let response = if optimizing_len > 0 {
             main::add_padded_icon(ui,
-                main::spinner_widget(main::SPINNER_SIZE, *status_color.optimizing()),
+                main::spinner_widget(ui::SPINNER_SIZE, *status_color.optimizing()),
             3.0)
         } else if error_len > 0 {
             main::add_padded_icon(ui,

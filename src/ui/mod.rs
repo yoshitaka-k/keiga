@@ -5,31 +5,92 @@ mod modal;
 
 pub use main::render::Rendar;
 
-// モーダルウィンドウの幅
-pub(crate) const MODAL_WINDOW_WIDTH: f32 = 320.0;
-pub(crate) const MODAL_WINDOW_SPACING: f32 = 8.0;
+/// モーダルウィンドウの幅
+const MODAL_WINDOW_WIDTH: f32 = 320.0;
+/// モーダルウィンドウのスペーシング
+const MODAL_WINDOW_SPACING: f32 = 8.0;
 
-// パネルの背景色
-pub(crate) const DARK_MODE_PANEL_COLOR: egui::Color32 = egui::Color32::from_rgb(35, 35, 35);
-pub(crate) const LIGHT_MODE_PANEL_COLOR: egui::Color32 = egui::Color32::from_rgb(225, 225, 225);
+/// ダークモードパネルの背景色
+const DARK_MODE_PANEL_COLOR: egui::Color32 = egui::Color32::from_rgb(35, 35, 35);
+/// ライトモードパネルの背景色
+const LIGHT_MODE_PANEL_COLOR: egui::Color32 = egui::Color32::from_rgb(225, 225, 225);
 
-// パネルの内側のマージン
-pub(crate) const PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
+// メインウィンドウ
+
+/// セパレータの高さ
+const SEPARATOR_HEIGHT: f32 = 4.0;
+/// スピナーのサイズ
+const SPINNER_SIZE: f32 = 8.0;
+/// アイコンセルの左パディング
+const LIST_ICON_CELL_LEFT_PADDING: f32 = 2.0;
+/// スタンバイアイコンセルの左パディング
+const LIST_ICON_STANDBY_LEFT_PADDING: f32 = 1.0;
+/// ボトムアイコンセルの左パディング
+const BOTTOM_ICON_CELL_LEFT_PADDING: f32 = 4.0;
+/// リストのノートのサイズ
+const LIST_NOTE_SIZE: f32 = 11.0;
+/// リストの角丸
+const LIST_CORNER_RADIUS: f32 = 1.0;
+/// リストの最大幅の割り算
+const LIST_MAX_WIDTH_DIVIDER: f32 = 2.25;
+
+// 設定ウィンドウ
+
+/// ウィンドウのID
+const SETTING_WINDOW_ID: &str = "setting_window";
+/// ウィンドウのタイトル
+const WINDOW_TITLE: &str = "Keiga Settings";
+/// ウィンドウの幅
+const WINDOW_WIDTH: f32 = 480.0;
+/// ウィンドウの高さ
+const WINDOW_HEIGHT: f32 = 340.0;
+/// ヘッダーのスペースの幅
+const HEADER_ICON_SPACING: f32 = 4.0;
+/// ヘッダーの下のスペースの幅
+const HEADER_BOTTOM_SPACING: f32 = 2.0;
+/// 警告アイコンのスペースの幅
+const WARNING_ICON_SPACING: f32 = 3.0;
+/// ラベルの幅
+const GENERAL_LABEL_WIDTH: f32 = 90.0;
+/// 並行処理のラベルの幅
+const CONCURRENT_LABEL_WIDTH: f32 = 48.0;
+/// 品質のラベルの幅
+const QUALITY_LABEL_WIDTH: f32 = 78.0;
+/// 追加のスペースの幅
+const SETTING_ADD_SPACING: f32 = 4.0;
+/// 設定のインデントのスペースの幅
+const SETTING_INDENT_SPACING: f32 = 10.0;
+/// ダークモードタブの選択時の背景色
+const DARK_TAB_SELECTED_COLOR: egui::Color32 = egui::Color32::from_rgb(20, 120, 130);
+/// ライトモードタブの選択時の背景色
+const LIGHT_TAB_SELECTED_COLOR: egui::Color32 = egui::Color32::from_rgb(130, 220, 210);
+
+
+// モーダル
+
+/// モーダルのラベルの幅
+const MODAL_LABEL_WIDTH: f32 = 130.0;
+
+// パネル
+
+/// パネルの内側のマージン
+const PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
     left: 12,
     right: 12,
     top: 0,
     bottom: 0,
 };
 
-// パネルの内側のマージン
-pub(crate) const TOP_PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
+/// パネルの内側のマージン
+const TOP_PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
     left: 10,
     right: 10,
     top: 4,
     bottom: 4,
 };
 
-pub(crate) const BOTTOM_PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
+/// ボトムパネルの内側のマージン
+const BOTTOM_PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
     left: 10,
     right: 10,
     top: 4,

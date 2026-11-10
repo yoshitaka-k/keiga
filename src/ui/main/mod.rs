@@ -3,25 +3,7 @@ pub(crate) mod top;
 pub(crate) mod middle;
 pub(crate) mod bottom;
 
-// セパレータの高さ
-pub(crate) const SEPARATOR_HEIGHT: f32 = 4.0;
-
-// スピナーのサイズ
-pub(crate) const SPINNER_SIZE: f32 = 8.0;
-
-// アイコンセルの左パディング
-pub(crate) const LIST_ICON_CELL_LEFT_PADDING: f32 = 2.0;
-pub(crate) const LIST_ICON_STANDBY_LEFT_PADDING: f32 = 1.0;
-pub(crate) const BOTTOM_ICON_CELL_LEFT_PADDING: f32 = 4.0;
-
-// リストのノートのサイズ
-pub(crate) const LIST_NOTE_SIZE: f32 = 11.0;
-// リストの角丸
-pub(crate) const LIST_CORNER_RADIUS: f32 = 1.0;
-
-const LIST_MAX_WIDTH_DIVIDER: f32 = 2.25;
-
-use crate::{file, filesize_format};
+use crate::{file, ui, filesize_format};
 use crate::ui::assets::{constants, svg, icon_color};
 
 /// アイコンウィジェットを作成
@@ -71,10 +53,10 @@ pub(crate) fn add_icon_cell(
 ) -> egui::Response {
     // 間隔を保存
     let spacing = ui.spacing().item_spacing.x;
-    let pad = if is_standby { LIST_ICON_STANDBY_LEFT_PADDING } else { 0.0 };
+    let pad = if is_standby { ui::LIST_ICON_STANDBY_LEFT_PADDING } else { 0.0 };
 
     ui.scope(|ui| {
-        ui.add_space(LIST_ICON_CELL_LEFT_PADDING + pad);
+        ui.add_space(ui::LIST_ICON_CELL_LEFT_PADDING + pad);
         ui.spacing_mut().item_spacing.x = 0.0;
         ui.add(widget);
         ui.spacing_mut().item_spacing.x = spacing;
@@ -129,7 +111,7 @@ pub(crate) fn list_row_content(
     // ファイル名を表示
     ui.scope(|ui| {
         if !image.is_standby_or_optimizing() {
-            ui.set_max_width((ui.available_width() / LIST_MAX_WIDTH_DIVIDER).max(0.0));
+            ui.set_max_width((ui.available_width() / ui::LIST_MAX_WIDTH_DIVIDER).max(0.0));
         }
         ui.label(image.file_name());
     });
@@ -151,7 +133,7 @@ pub(crate) fn add_padded_icon(ui: &mut egui::Ui, widget: impl egui::Widget, pad:
     let spacing = ui.spacing().item_spacing.x;
 
     ui.scope(|ui| {
-        ui.add_space(BOTTOM_ICON_CELL_LEFT_PADDING + pad);
+        ui.add_space(ui::BOTTOM_ICON_CELL_LEFT_PADDING + pad);
         ui.spacing_mut().item_spacing.x = 0.0;
         ui.add(widget);
         ui.spacing_mut().item_spacing.x = spacing;

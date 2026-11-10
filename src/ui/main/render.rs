@@ -1,7 +1,7 @@
 use crate::{config, event, file, ui, sounds};
 use crate::event::{open, key, click, input};
 use crate::optimize::OptimizeJob;
-use crate::ui::{main, modal, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken, OpenDialogToken};
+use crate::ui::{modal, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken, OpenDialogToken};
 use crate::ui::assets::{constants, fonts, svg};
 use crate::ui::main::{top, middle, bottom};
 use crate::ui::setting::view as setting_window;
@@ -307,7 +307,7 @@ impl Rendar {
     /// * `ui` - UI
     /// * `return` - 行高
     fn row_height(&self, ui: &egui::Ui) -> f32 {
-        ui.text_style_height(&egui::TextStyle::Body).max(constants::CHECK_ICON_SIZE) + main::SEPARATOR_HEIGHT
+        ui.text_style_height(&egui::TextStyle::Body).max(constants::CHECK_ICON_SIZE) + ui::SEPARATOR_HEIGHT
     }
 
     /// 選択行が見える範囲の外なら、スクロール位置を調整
