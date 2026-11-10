@@ -5,7 +5,6 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::collections::HashSet;
 
 use crate::{config, error, file};
-use super::OptimizeStatus;
 
 const RUNNING_COUNT_NUM: usize = 1;
 
@@ -66,7 +65,7 @@ impl OptimizeJob {
             let Some(file) = files.get_standby_file(allow_png) else { break };
 
             // ステータスを最適化中にする
-            file.set_status(OptimizeStatus::Optimizing);
+            file.set_status(file::Status::Optimizing);
 
             // クローンして借用を解除しておく
             // files の可変借用を終わらせて、下の衝突チェックで files を読めるようにするため
@@ -105,12 +104,12 @@ impl OptimizeJob {
 
                 let status = match result {
                     Ok(Ok(status)) => status,
-                    Ok(Err(e)) => OptimizeStatus::Error(e.to_string()),
+                    Ok(Err(e)) => file::Status::Error(e.to_string()),
                     Err(payload) => {
                         let message = payload.downcast_ref::<&str>().map(|s| s.to_string())
                             .or_else(|| payload.downcast_ref::<String>().cloned())
                             .unwrap_or_else(|| "Unknown error".to_string());
-                        OptimizeStatus::Error(message)
+                        file::Status::Error(message)
                     }
                 };
 

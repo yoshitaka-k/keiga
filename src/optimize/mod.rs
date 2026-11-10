@@ -7,11 +7,7 @@ pub use jpeg::Jpeg;
 pub use png::Png;
 pub(crate) use job::OptimizeJob;
 use guard::OptimizeGuard;
-pub(crate) use options::{
-    OptimizeStatus,
-    JpegOptions,
-    PngOptions,
-};
+pub(crate) use options::{JpegOptions, PngOptions};
 
 /// 一時ファイルの拡張子
 pub const TEMP_EXTENSION: &str = "keiga.temp";
@@ -21,7 +17,7 @@ use std::collections::HashSet;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 use std::path::Path;
-use crate::error;
+use crate::{error, file};
 
 /// 最適化トークン
 #[derive(Clone)]
@@ -83,15 +79,15 @@ pub trait Optimizer {
         output_path: &Path,
         options: Self::Options,
         token: OptimToken
-    ) -> error::Result<OptimizeStatus> {
+    ) -> error::Result<file::Status> {
         // 最適化中止された場合は処理を中断
-        if token.is_canceled()? { return Ok(OptimizeStatus::Canceled); }
+        if token.is_canceled()? { return Ok(file::Status::Canceled); }
 
         // ファイルを種類に応じてエンコードする
         let (original_size, byte_data) = Self::encode(path, options)?;
 
         // 最適化中止された場合は処理を中断
-        if token.is_canceled()? { return Ok(OptimizeStatus::Canceled); }
+        if token.is_canceled()? { return Ok(file::Status::Canceled); }
 
         // 最適化後のサイズが元のサイズより大きい場合は最適化しない
         let new_size = byte_data.len();
@@ -115,7 +111,7 @@ pub trait Optimizer {
                 }
             }
 
-            return Ok(OptimizeStatus::Unchanged);
+            return Ok(file::Status::Unchanged);
         }
 
         // 出力ファイルのパスを作成
@@ -133,7 +129,7 @@ pub trait Optimizer {
         })?;
 
         // 最適化中止された場合は処理を中断
-        if token.is_canceled()? { return Ok(OptimizeStatus::Canceled); }
+        if token.is_canceled()? { return Ok(file::Status::Canceled); }
 
         // 一時ファイルを元のファイルに上書き
         replace_file(&temp_path, output_path)?;
@@ -141,7 +137,7 @@ pub trait Optimizer {
         // 削除しない
         guard.keep();
 
-        Ok(OptimizeStatus::Optimized)
+        Ok(file::Status::Optimized)
 
     }
 }

@@ -99,7 +99,7 @@ const BOTTOM_PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
 
 use getset::Getters;
 use crate::error;
-use crate::optimize::OptimizeStatus;
+use crate::file;
 
 /// ステータスアイコンの色
 #[derive(Getters)]
@@ -126,13 +126,13 @@ impl StatusColor {
     /// * `return` - ステータスアイコンの色
     pub fn new(ctx: &egui::Context) -> Self {
         Self {
-            standby: assets::status_icon_color(ctx, OptimizeStatus::Standby),
-            optimizing: assets::status_icon_color(ctx, OptimizeStatus::Optimizing),
-            optimized: assets::status_icon_color(ctx, OptimizeStatus::Optimized),
-            unchanged: assets::status_icon_color(ctx, OptimizeStatus::Unchanged),
-            skipped: assets::status_icon_color(ctx, OptimizeStatus::Skipped),
-            canceled: assets::status_icon_color(ctx, OptimizeStatus::Canceled),
-            error: assets::status_icon_color(ctx, OptimizeStatus::Error(String::new())),
+            standby: assets::status_icon_color(ctx, file::Status::Standby),
+            optimizing: assets::status_icon_color(ctx, file::Status::Optimizing),
+            optimized: assets::status_icon_color(ctx, file::Status::Optimized),
+            unchanged: assets::status_icon_color(ctx, file::Status::Unchanged),
+            skipped: assets::status_icon_color(ctx, file::Status::Skipped),
+            canceled: assets::status_icon_color(ctx, file::Status::Canceled),
+            error: assets::status_icon_color(ctx, file::Status::Error(String::new())),
         }
     }
 }

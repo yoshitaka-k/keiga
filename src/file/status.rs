@@ -1,8 +1,8 @@
 use std::fmt;
 
-/// 最適化ステータス
+/// ファイルステータス
 #[derive(Clone)]
-pub enum OptimizeStatus {
+pub enum Status {
     /// 最適化未実行
     Standby,
     /// 最適化中
@@ -19,18 +19,18 @@ pub enum OptimizeStatus {
     Error(String),
 }
 
-impl fmt::Display for OptimizeStatus {
+impl fmt::Display for Status {
     /// 最適化ステータスを文字列に変換
     /// * `return` - 最適化ステータスを文字列に変換
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            OptimizeStatus::Standby => write!(f, "Standby"),
-            OptimizeStatus::Optimizing => write!(f, "Optimizing"),
-            OptimizeStatus::Optimized => write!(f, "Optimized"),
-            OptimizeStatus::Unchanged => write!(f, "Unchanged"),
-            OptimizeStatus::Skipped => write!(f, "Skipped"),
-            OptimizeStatus::Canceled => write!(f, "Canceled"),
-            OptimizeStatus::Error(message) => write!(f, "Error: {}", message),
+            Status::Standby => write!(f, "Standby"),
+            Status::Optimizing => write!(f, "Optimizing"),
+            Status::Optimized => write!(f, "Optimized"),
+            Status::Unchanged => write!(f, "Unchanged"),
+            Status::Skipped => write!(f, "Skipped"),
+            Status::Canceled => write!(f, "Canceled"),
+            Status::Error(message) => write!(f, "Error: {}", message),
         }
     }
 }

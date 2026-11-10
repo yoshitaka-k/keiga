@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use getset::{Getters, Setters};
 
 use crate::{config, error, file};
-use crate::optimize::{self, OptimToken, OptimizeStatus, Optimizer};
+use crate::optimize::{self, OptimToken, Optimizer};
 
 /// Image の一意な ID を発行するカウンタ
 static NEXT_ID: AtomicU64 = AtomicU64::new(1);
@@ -43,7 +43,7 @@ pub(crate) struct Image {
 
     /// ファイルの最適化ステータス
     #[getset(get = "pub", set = "pub")]
-    status: OptimizeStatus,
+    status: file::Status,
 
     /// ファイルのサイズ
     #[getset(get = "pub")]
@@ -111,7 +111,7 @@ impl Image {
             is_relative_path,
             file_name,
             extension,
-            status: OptimizeStatus::Standby,
+            status: file::Status::Standby,
             size,
             new_size: 0,
             saved_rate: 0.00f32,
@@ -134,49 +134,49 @@ impl Image {
     /// ファイルが待機中かどうか
     /// * `return` - ファイルが待機中かどうか
     pub fn is_standby(&self) -> bool {
-        matches!(self.status, OptimizeStatus::Standby)
+        matches!(self.status, file::Status::Standby)
     }
 
     /// ファイルが最適化中かどうか
     /// * `return` - ファイルが最適化中かどうか
     pub fn is_optimizing(&self) -> bool {
-        matches!(self.status, OptimizeStatus::Optimizing)
+        matches!(self.status, file::Status::Optimizing)
     }
 
     /// ファイルが最適化済みかどうか
     /// * `return` - ファイルが最適化済みかどうか
     pub fn is_optimized(&self) -> bool {
-        matches!(self.status, OptimizeStatus::Optimized)
+        matches!(self.status, file::Status::Optimized)
     }
 
     /// ファイルが最適化不要かどうか
     /// * `return` - ファイルが最適化不要かどうか
     pub fn is_unchanged(&self) -> bool {
-        matches!(self.status, OptimizeStatus::Unchanged)
+        matches!(self.status, file::Status::Unchanged)
     }
 
     /// ファイルがスキップされているかどうか
     /// * `return` - ファイルがスキップされているかどうか
     pub fn is_skipped(&self) -> bool {
-        matches!(self.status, OptimizeStatus::Skipped)
+        matches!(self.status, file::Status::Skipped)
     }
 
     /// ファイルがキャンセルされているかどうか
     /// * `return` - ファイルがキャンセルされているかどうか
     pub fn is_canceled(&self) -> bool {
-        matches!(self.status, OptimizeStatus::Canceled)
+        matches!(self.status, file::Status::Canceled)
     }
 
     /// ファイルがエラーかどうか
     /// * `return` - ファイルがエラーかどうか
     pub fn is_error(&self) -> bool {
-        matches!(self.status, OptimizeStatus::Error(_))
+        matches!(self.status, file::Status::Error(_))
     }
 
     /// ファイルが待機中・最適化中かどうか
     /// * `return` - ファイルが待機中・最適化中かどうか
     pub fn is_standby_or_optimizing(&self) -> bool {
-        matches!(self.status, OptimizeStatus::Standby | OptimizeStatus::Optimizing)
+        matches!(self.status, file::Status::Standby | file::Status::Optimizing)
     }
 
     /// 出力ファイルのパスを作成
@@ -207,7 +207,7 @@ impl Image {
         config: &config::Config,
         running: Arc<AtomicBool>,
         canceled: Arc<Mutex<HashSet<u64>>>
-    ) -> error::Result<OptimizeStatus> {
+    ) -> error::Result<file::Status> {
         // 待機中・最適化中以外は再実行しない
         if !self.is_standby_or_optimizing() {
             return Ok(self.status.clone());
@@ -224,7 +224,7 @@ impl Image {
         };
 
         // 最適化中にする
-        self.status = OptimizeStatus::Optimizing;
+        self.status = file::Status::Optimizing;
 
         // 出力ファイルのパスを作成
         let output_path = self.make_output_path(config);
@@ -259,7 +259,7 @@ impl Image {
         match result {
             Ok(status) => {
                 match status {
-                    OptimizeStatus::Optimized => {
+                    file::Status::Optimized => {
                         // 最適化終了時間を取得
                         let end_time = std::time::Instant::now();
                         // 最適化時間を計算
@@ -276,16 +276,16 @@ impl Image {
                         // 最適化済みに設定
                         Ok(status)
                     }
-                    OptimizeStatus::Error(e) => {
+                    file::Status::Error(e) => {
                         // 最適化エラーに設定
-                        Ok(OptimizeStatus::Error(e.clone()))
+                        Ok(file::Status::Error(e.clone()))
                     }
                     _ => Ok(status)
                 }
             }
             Err(e) => {
                 // 最適化エラーに設定
-                Ok(OptimizeStatus::Error(e.to_string()))
+                Ok(file::Status::Error(e.to_string()))
             }
         }
     }

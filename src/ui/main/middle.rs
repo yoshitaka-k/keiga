@@ -1,7 +1,6 @@
 use egui::Sense;
 
 use crate::{event, file, ui, duration_format};
-use crate::optimize::OptimizeStatus;
 use crate::ui::{main, assets, ListRowToken, StatusColor};
 use crate::ui::assets::{constants, fonts::text_color, svg};
 
@@ -80,13 +79,13 @@ pub(crate) fn view(
 
             // 最適化ステータスに応じて表示
             match image_file.status() {
-                OptimizeStatus::Standby => {
+                file::Status::Standby => {
                     main::list_row_content(ui, image_file, svg::CIRCLE, constants::CIRCLE_ICON_SIZE, *status_color.standby());
                 }
-                OptimizeStatus::Optimizing => {
+                file::Status::Optimizing => {
                     main::list_row_content(ui, image_file, svg::AUTORENEW, constants::AUTORENEW_ICON_SIZE, *status_color.optimizing());
                 }
-                OptimizeStatus::Optimized => {
+                file::Status::Optimized => {
                     main::list_row_content(ui, image_file, svg::CHECK, constants::CHECK_ICON_SIZE, *status_color.optimized());
 
                     ui.separator();
@@ -94,25 +93,25 @@ pub(crate) fn view(
                     ui.separator();
                     ui.label(duration.to_string());
                 }
-                OptimizeStatus::Unchanged => {
+                file::Status::Unchanged => {
                     main::list_row_content(ui, image_file, svg::CHECK, constants::CHECK_ICON_SIZE, *status_color.unchanged());
 
                     ui.separator();
                     ui.label(text_color("No savings", *status_color.unchanged(), Some(ui::LIST_NOTE_SIZE)));
                 }
-                OptimizeStatus::Skipped => {
+                file::Status::Skipped => {
                     main::list_row_content(ui, image_file, svg::CHECK, constants::CHECK_ICON_SIZE, *status_color.skipped());
 
                     ui.separator();
                     ui.label(text_color("Skipped", *status_color.skipped(), Some(ui::LIST_NOTE_SIZE)));
                 }
-                OptimizeStatus::Canceled => {
+                file::Status::Canceled => {
                     main::list_row_content(ui, image_file, svg::CANCEL, constants::CANCEL_ICON_SIZE, *status_color.canceled());
 
                     ui.separator();
                     ui.label(text_color("Canceled", *status_color.canceled(), Some(ui::LIST_NOTE_SIZE)));
                 }
-                OptimizeStatus::Error(e) => {
+                file::Status::Error(e) => {
                     main::list_row_content(ui, image_file, svg::ERROR, constants::ERROR_ICON_SIZE, *status_color.error());
 
                     ui.separator();

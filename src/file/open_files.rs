@@ -3,7 +3,6 @@ use std::path::{Path, PathBuf};
 use getset::{Getters, Setters};
 
 use crate::{config, error, file};
-use crate::optimize::OptimizeStatus;
 
 /// ドロップされたファイルを管理する構造体
 #[derive(Clone, Getters, Setters)]
@@ -64,7 +63,7 @@ impl OpenFiles {
         if let Some(file) = self.images.iter_mut().find(|f| *f.id() == id) {
             // 最適化済み・最適化不要・スキップ・エラーはキャンセルできない
             if !file.is_optimized() && !file.is_unchanged() && !file.is_skipped() && !file.is_error() {
-                file.set_status(OptimizeStatus::Canceled);
+                file.set_status(file::Status::Canceled);
             }
         }
     }
@@ -74,7 +73,7 @@ impl OpenFiles {
     /// * `error` - エラー内容
     pub fn set_status_error(&mut self, id: u64, error: &str) {
         if let Some(file) = self.images.iter_mut().find(|f| *f.id() == id) {
-            file.set_status(OptimizeStatus::Error(error.to_string()));
+            file.set_status(file::Status::Error(error.to_string()));
         }
     }
 
@@ -95,9 +94,9 @@ impl OpenFiles {
         // 各ファイルの情報を集計
         for file in &self.images {
             match file.status() {
-                OptimizeStatus::Standby => standby_len += 1,
-                OptimizeStatus::Optimizing => optimizing_len += 1,
-                OptimizeStatus::Optimized => {
+                file::Status::Standby => standby_len += 1,
+                file::Status::Optimizing => optimizing_len += 1,
+                file::Status::Optimized => {
                     if file.is_jpeg() {
                         optimized_len.jpeg += 1;
                         total_duration.jpeg += file.duration();
@@ -109,10 +108,10 @@ impl OpenFiles {
                     total_size += file.size();
                     total_new_size += file.new_size();
                 }
-                OptimizeStatus::Unchanged => unchanged_len += 1,
-                OptimizeStatus::Skipped => skipped_len += 1,
-                OptimizeStatus::Canceled => canceled_len += 1,
-                OptimizeStatus::Error(_) => error_len += 1,
+                file::Status::Unchanged => unchanged_len += 1,
+                file::Status::Skipped => skipped_len += 1,
+                file::Status::Canceled => canceled_len += 1,
+                file::Status::Error(_) => error_len += 1,
             }
         }
 
@@ -397,7 +396,7 @@ impl OpenFiles {
 
                 // 同じパスが待機中か最適化中なら、新規行をエラーで追加
                 if self.is_standby_or_optimizing(image.path()) {
-                    image.set_status(OptimizeStatus::Error("Already in progress".to_string()));
+                    image.set_status(file::Status::Error("Already in progress".to_string()));
                     self.images.push(image);
                     return Ok(());
                 }
@@ -406,7 +405,7 @@ impl OpenFiles {
                 if *config.skip_same_path()
                     && self.is_input_output_path(image.path(), &image.make_output_path(config))
                 {
-                    image.set_status(OptimizeStatus::Skipped);
+                    image.set_status(file::Status::Skipped);
                     self.images.push(image);
                     return Ok(());
                 }

@@ -1,6 +1,4 @@
-mod status;
 mod png_preset;
-pub(crate) use status::OptimizeStatus;
 pub(crate) use png_preset::PngPreset;
 
 /// JPEG オプション

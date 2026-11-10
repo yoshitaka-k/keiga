@@ -1,8 +1,10 @@
 mod open_files;
 mod image;
+mod status;
 
 pub(crate) use open_files::OpenFiles;
 pub(crate) use image::Image;
+pub(crate) use status::Status;
 
 /// ファイルの拡張子を管理する列挙型
 #[derive(Clone)]
