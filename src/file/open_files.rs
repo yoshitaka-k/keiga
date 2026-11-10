@@ -37,6 +37,13 @@ impl OpenFiles {
         }
     }
 
+    /// パスをクリア
+    pub fn clear(&mut self) {
+        self.images.clear();
+        self.selected_id = None;
+        self.file_info = file::FileInfo::new();
+    }
+
     /// 待機中のファイルを1件取得
     /// * `return` - 待機中のファイル1件
     pub fn get_standby_file(&mut self, allow_png: bool) -> Option<&mut file::Image> {
@@ -223,13 +230,6 @@ impl OpenFiles {
     /// * `return` - ファイルの PNG 平均最適化時間
     pub fn png_average_duration(&self) -> u64 {
         self.file_info.png_average_duration
-    }
-
-    /// パスをクリア
-    pub fn clear(&mut self) {
-        self.images.clear();
-        self.selected_id = None;
-        self.file_info = file::FileInfo::new();
     }
 
     /// JPEG ファイルがあるかどうか
