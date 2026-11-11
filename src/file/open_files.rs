@@ -365,6 +365,29 @@ impl OpenFiles {
         Ok(())
     }
 
+    /// ファイルをエラーで追加
+    /// * `path` - ファイルのパス
+    /// * `base_dir` - ドロップされたパスの親（相対パスの基準）
+    /// * `error` - エラー内容
+    fn error_file(&mut self,
+        path: &Path,
+        base_dir: &Path,
+        error: String,
+    ) -> error::Result<()> {
+        let relative_path = path.strip_prefix(base_dir);
+        let relative_path = relative_path.unwrap_or(path).to_path_buf().to_string_lossy().into_owned();
+
+        let mut image = match file::Image::new(path.to_path_buf(), relative_path) {
+            Ok(image) => image,
+            Err(e) => return Err(error::KeigaError::file_error(e.to_string(), path.to_path_buf())),
+        };
+
+        image.set_status(file::Status::Error(error));
+        self.images.push(image);
+
+        Ok(())
+    }
+
     /// ファイルを検索
     /// * `config` - 設定
     /// * `path` - ドロップされたファイルのパス
@@ -392,22 +415,18 @@ impl OpenFiles {
                     .into_owned();
 
                 // ファイルを作成
-                let mut image = file::Image::new(path, relative_path)?;
+                let image = file::Image::new(path, relative_path)?;
 
                 // 同じパスが待機中か最適化中なら、新規行をエラーで追加
                 if self.is_standby_or_optimizing(image.path()) {
-                    image.set_status(file::Status::Error("Already in progress".to_string()));
-                    self.images.push(image);
-                    return Ok(());
+                    self.error_file(image.path(), base_dir, "Already in progress".to_string())?;
                 }
 
                 // 同じ入力を同じ出力先へ書き済みなら、新規行をスキップで追加
                 if *config.skip_same_path()
                     && self.is_input_output_path(image.path(), &image.make_output_path(config))
                 {
-                    image.set_status(file::Status::Skipped);
-                    self.images.push(image);
-                    return Ok(());
+                    self.error_file(image.path(), base_dir, "Already processed".to_string())?;
                 }
 
                 self.images.push(image);
