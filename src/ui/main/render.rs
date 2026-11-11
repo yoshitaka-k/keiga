@@ -11,7 +11,6 @@ use crate::update::{UpdateJob, UpdatedToken};
 pub struct Rendar {
     config: config::Config,
     files: file::OpenFiles,
-    status_color: StatusColor,
 
     // スクロールしている描画範囲
     vertical_scroll_offset: Option<std::ops::Range<usize>>,
@@ -69,7 +68,6 @@ impl Rendar {
         Self {
             config,
             files,
-            status_color: StatusColor::new(&cc.egui_ctx),
             vertical_scroll_offset: None,
             pending_scroll_y: None,
             open_dialog_token: OpenDialogToken {
@@ -153,6 +151,9 @@ impl eframe::App for Rendar {
         // ファイル追加時に最適化を実行
         self.optimize_run();
 
+        // 状態カラーを作成
+        let status_color = ui::StatusColor::new(ui.ctx());
+
         // リスト行の高さと行数を取得
         let row_height = self.row_height(ui);
         let total_rows = self.files.len();
@@ -175,7 +176,7 @@ impl eframe::App for Rendar {
         // 状態とかボタンを表示するタスクバーを表示
         bottom::view(
             ui,
-            &self.status_color,
+            &status_color,
             &mut self.files,
             &mut self.optimize_job,
             &mut self.error_token,
@@ -220,7 +221,7 @@ impl eframe::App for Rendar {
                 // ファイル一覧を表示
                 middle::view(
                     ui,
-                    &self.status_color,
+                    &status_color,
                     &self.files,
                     list_row_token,
                     &mut pending_actions,
