@@ -1,11 +1,9 @@
-use crate::{config, event, file, ui, sounds};
+use crate::{config, event, file, optimize, update, ui, sounds};
 use crate::event::{open, key, click, input};
-use crate::optimize::OptimizeJob;
-use crate::ui::{modal, StatusColor, SettingTab, ListRowToken, ErrorToken, SettingToken, OpenDialogToken};
+use crate::ui::modal;
 use crate::ui::assets::{constants, fonts, svg};
 use crate::ui::main::{top, middle, bottom};
 use crate::ui::setting::view as setting_window;
-use crate::update::{UpdateJob, UpdatedToken};
 
 /// レンダーを管理する構造体
 pub struct Rendar {
@@ -19,22 +17,22 @@ pub struct Rendar {
     pending_scroll_y: Option<f32>,
 
     // ファイルダイアログを開くタイミング
-    open_dialog_token: OpenDialogToken,
+    open_dialog_token: ui::OpenDialogToken,
 
     // 設定ウィンドウのトークン
-    setting_token: SettingToken,
+    setting_token: ui::SettingToken,
 
     // エラーモーダルを表示するためのトークン
-    error_token: ErrorToken,
+    error_token: ui::ErrorToken,
 
     // 更新モーダルを表示するためのトークン
-    updated_token: UpdatedToken,
+    updated_token: update::UpdatedToken,
 
     // 最適化ジョブ
-    optimize_job: OptimizeJob,
+    optimize_job: optimize::OptimizeJob,
 
     // 更新ジョブ
-    update_job: UpdateJob,
+    update_job: update::UpdateJob,
 
     // 効果音プレイヤー
     sound: sounds::SoundPlayer,
@@ -70,25 +68,25 @@ impl Rendar {
             files,
             vertical_scroll_offset: None,
             pending_scroll_y: None,
-            open_dialog_token: OpenDialogToken {
+            open_dialog_token: ui::OpenDialogToken {
                 file_dialog: false,
                 folder_dialog: false,
             },
-            setting_token: SettingToken {
+            setting_token: ui::SettingToken {
                 open: false,
                 pos: None,
-                tab: SettingTab::Concurrent,
+                tab: ui::SettingTab::Concurrent,
             },
-            error_token: ErrorToken {
+            error_token: ui::ErrorToken {
                 open: false,
                 value: None,
             },
-            updated_token: UpdatedToken {
+            updated_token: update::UpdatedToken {
                 open: false,
                 check: None,
             },
-            optimize_job: OptimizeJob::new(cc.egui_ctx.clone()),
-            update_job: UpdateJob::new(cc.egui_ctx.clone()),
+            optimize_job: optimize::OptimizeJob::new(cc.egui_ctx.clone()),
+            update_job: update::UpdateJob::new(cc.egui_ctx.clone()),
             sound: sounds::SoundPlayer::new(),
         }
     }
@@ -213,7 +211,7 @@ impl eframe::App for Rendar {
                 self.vertical_scroll_offset = Some(row_range.clone());
 
                 // 表示する行の情報
-                let list_row_token = ListRowToken {
+                let list_row_token = ui::ListRowToken {
                     range: row_range,
                     height: row_height,
                 };
