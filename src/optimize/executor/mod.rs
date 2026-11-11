@@ -1,3 +1,9 @@
+mod jpeg;
+mod png;
+
+pub(crate) use jpeg::Jpeg;
+pub(crate) use png::Png;
+
 use std::path::Path;
 use crate::{error, file};
 use crate::optimize;

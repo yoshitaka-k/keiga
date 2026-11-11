@@ -1,10 +1,9 @@
-use std::sync::Arc;
-use std::sync::{mpsc, Mutex};
+use std::sync::{mpsc, Arc, Mutex};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::collections::HashSet;
-
-use crate::{config, error, file};
+use crate::{config, error, file, optimize};
+use crate::optimize::Optimizer as _;
 
 const RUNNING_COUNT_NUM: usize = 1;
 
@@ -30,6 +29,7 @@ pub struct OptimizeJob {
     canceled: Arc<Mutex<HashSet<u64>>>,
 }
 
+/// public methods
 impl OptimizeJob {
     /// 新しい最適化ジョブを作成
     /// * `ctx` - UI コンテキスト
@@ -99,7 +99,7 @@ impl OptimizeJob {
             std::thread::spawn(move || {
                 let result = catch_unwind(AssertUnwindSafe(|| {
                     // 最適化を実行
-                    file.optimize(&config, Arc::clone(&running), Arc::clone(&canceled))
+                    Self::optimize(&mut file, &config, Arc::clone(&running), Arc::clone(&canceled))
                 }));
 
                 let status = match result {
@@ -192,5 +192,99 @@ impl OptimizeJob {
     pub fn remove_canceled_id(&self, id: u64) -> error::Result<()> {
         self.canceled.lock().map_err(|_| error::KeigaError::lock_poisoned())?.remove(&id);
         Ok(())
+    }
+}
+
+/// private methods
+impl OptimizeJob {
+    /// 画像を最適化
+    /// * `config` - 設定
+    /// * `return` - 最適化の結果
+    pub fn optimize(
+        image: &mut file::Image,
+        config: &config::Config,
+        running: Arc<AtomicBool>,
+        canceled: Arc<Mutex<HashSet<u64>>>
+    ) -> error::Result<file::Status> {
+        // 待機中・最適化中以外は再実行しない
+        if !image.is_standby_or_optimizing() {
+            return Ok(image.status().clone());
+        }
+
+        // 最適化開始時間を取得
+        let start_time = std::time::Instant::now();
+
+        // 最適化トークンを作成
+        let token = optimize::OptimToken {
+            id: *image.id(),
+            running: Arc::clone(&running),
+            canceled: Arc::clone(&canceled),
+        };
+
+        // 最適化中にする
+        image.set_status(file::Status::Optimizing);
+
+        // 出力ファイルのパスを作成
+        let output_path = image.make_output_path(config);
+        image.set_output_path(Some(output_path.clone()));
+
+        // 最適化を実行
+        let result = match image.extension() {
+            // jpeg ファイルの最適化
+            file::Extension::Jpeg => {
+                let options = optimize::JpegOptions {
+                    lossy: *config.jpeg_lossy(),
+                    quality: *config.jpeg_quality(),
+                };
+                optimize::Jpeg::execute(&image.path(), &output_path, options, token)
+            }
+
+            // png ファイルの最適化
+            file::Extension::Png => {
+                let options = optimize::PngOptions {
+                    lossy: *config.png_lossy(),
+                    dithering: *config.png_dithering(),
+                    options: config.png_options(),
+                };
+                optimize::Png::execute(&image.path(), &output_path, options, token)
+            }
+
+            // サポートしていないファイル形式
+            _ => Err(error::KeigaError::unsupported_extension(image.path().clone())),
+        };
+
+        // 最適化結果を処理
+        match result {
+            Ok(status) => {
+                match status {
+                    file::Status::Optimized => {
+                        // 最適化終了時間を取得
+                        let end_time = std::time::Instant::now();
+                        // 最適化時間を計算
+                        let duration = end_time.duration_since(start_time).as_millis();
+                        image.set_duration(duration as u64);
+
+                        // 最適化後のファイルサイズと節約率を更新
+                        let metadata = output_path.metadata().map_err(|e| {
+                            error::KeigaError::file_error(e.to_string(), output_path.clone())
+                        })?;
+                        image.set_new_size(metadata.len());
+                        image.set_saved_rate(file::calc_saved_rate(*image.size(), *image.new_size()));
+
+                        // 最適化済みに設定
+                        Ok(status)
+                    }
+                    file::Status::Error(e) => {
+                        // 最適化エラーに設定
+                        Ok(file::Status::Error(e.clone()))
+                    }
+                    _ => Ok(status)
+                }
+            }
+            Err(e) => {
+                // 最適化エラーに設定
+                Ok(file::Status::Error(e.to_string()))
+            }
+        }
     }
 }

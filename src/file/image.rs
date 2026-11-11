@@ -1,11 +1,8 @@
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
-use std::sync::atomic::{AtomicU64, Ordering, AtomicBool};
-use std::collections::HashSet;
+use std::sync::atomic::{AtomicU64, Ordering};
 use getset::{Getters, Setters};
 
 use crate::{config, error, file};
-use crate::optimize::{self, OptimToken, Optimizer};
 
 /// Image の一意な ID を発行するカウンタ
 static NEXT_ID: AtomicU64 = AtomicU64::new(1);
@@ -26,7 +23,7 @@ pub(crate) struct Image {
     relative_path: String,
 
     /// 出力したファイルのパス
-    #[getset(get = "pub")]
+    #[getset(get = "pub", set = "pub")]
     output_path: Option<PathBuf>,
 
     /// 相対パスかどうか
@@ -50,11 +47,11 @@ pub(crate) struct Image {
     size: u64,
 
     /// ファイルの最適化後のサイズ
-    #[getset(get = "pub")]
+    #[getset(get = "pub", set = "pub")]
     new_size: u64,
 
     /// ファイルの最適化での節約率
-    #[getset(get = "pub")]
+    #[getset(get = "pub", set = "pub")]
     saved_rate: f32,
 
     /// 最適化時間（ミリ秒）
@@ -196,97 +193,6 @@ impl Image {
         match self.output_path {
             Some(ref path) if path.exists() => path,
             _ => &self.path,
-        }
-    }
-
-    /// 画像を最適化
-    /// * `config` - 設定
-    /// * `return` - 最適化の結果
-    pub fn optimize(
-        &mut self,
-        config: &config::Config,
-        running: Arc<AtomicBool>,
-        canceled: Arc<Mutex<HashSet<u64>>>
-    ) -> error::Result<file::Status> {
-        // 待機中・最適化中以外は再実行しない
-        if !self.is_standby_or_optimizing() {
-            return Ok(self.status.clone());
-        }
-
-        // 最適化開始時間を取得
-        let start_time = std::time::Instant::now();
-
-        // 最適化トークンを作成
-        let token = OptimToken {
-            id: self.id,
-            running: Arc::clone(&running),
-            canceled: Arc::clone(&canceled),
-        };
-
-        // 最適化中にする
-        self.status = file::Status::Optimizing;
-
-        // 出力ファイルのパスを作成
-        let output_path = self.make_output_path(config);
-        self.output_path = Some(output_path.clone());
-
-        // 最適化を実行
-        let result = match self.extension {
-            // jpeg ファイルの最適化
-            file::Extension::Jpeg => {
-                let options = optimize::JpegOptions {
-                    lossy: *config.jpeg_lossy(),
-                    quality: *config.jpeg_quality(),
-                };
-                optimize::Jpeg::execute(&self.path, &output_path, options, token)
-            }
-
-            // png ファイルの最適化
-            file::Extension::Png => {
-                let options = optimize::PngOptions {
-                    lossy: *config.png_lossy(),
-                    dithering: *config.png_dithering(),
-                    options: config.png_options(),
-                };
-                optimize::Png::execute(&self.path, &output_path, options, token)
-            }
-
-            // サポートしていないファイル形式
-            _ => Err(error::KeigaError::unsupported_extension(self.path.clone())),
-        };
-
-        // 最適化結果を処理
-        match result {
-            Ok(status) => {
-                match status {
-                    file::Status::Optimized => {
-                        // 最適化終了時間を取得
-                        let end_time = std::time::Instant::now();
-                        // 最適化時間を計算
-                        let duration = end_time.duration_since(start_time).as_millis();
-                        self.duration = duration as u64;
-
-                        // 最適化後のファイルサイズと節約率を更新
-                        let metadata = output_path.metadata().map_err(|e| {
-                            error::KeigaError::file_error(e.to_string(), output_path.clone())
-                        })?;
-                        self.new_size = metadata.len();
-                        self.saved_rate = file::calc_saved_rate(self.size, self.new_size);
-
-                        // 最適化済みに設定
-                        Ok(status)
-                    }
-                    file::Status::Error(e) => {
-                        // 最適化エラーに設定
-                        Ok(file::Status::Error(e.clone()))
-                    }
-                    _ => Ok(status)
-                }
-            }
-            Err(e) => {
-                // 最適化エラーに設定
-                Ok(file::Status::Error(e.to_string()))
-            }
         }
     }
 }

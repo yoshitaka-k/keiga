@@ -1,13 +1,10 @@
 use std::path::Path;
 use std::panic;
-use image::{
-    codecs::jpeg::JpegEncoder,
-};
+use image::codecs::jpeg::JpegEncoder;
 use crate::{error, optimize};
 
 /// JPEG 最適化を行う構造体
 pub struct Jpeg;
-
 impl optimize::Optimizer for Jpeg {
     type Options = optimize::JpegOptions;
 

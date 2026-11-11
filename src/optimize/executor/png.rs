@@ -1,10 +1,9 @@
 use std::path::Path;
-use crate::{error, optimize};
 use image::GenericImageView;
+use crate::{error, optimize};
 
 /// PNG 最適化を行う構造体
 pub struct Png;
-
 impl optimize::Optimizer for Png {
     type Options = optimize::PngOptions;
 
