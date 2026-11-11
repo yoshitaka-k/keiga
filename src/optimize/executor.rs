@@ -40,7 +40,7 @@ pub trait Optimizer {
     /// * `options` - 最適化オプション
     /// * `token` - 最適化トークン
     /// * `return` - 最適化の結果
-    fn optimize(
+    fn execute(
         path: &Path,
         output_path: &Path,
         options: Self::Options,

@@ -238,7 +238,7 @@ impl Image {
                     lossy: *config.jpeg_lossy(),
                     quality: *config.jpeg_quality(),
                 };
-                optimize::Jpeg::optimize(&self.path, &output_path, options, token)
+                optimize::Jpeg::execute(&self.path, &output_path, options, token)
             }
 
             // png ファイルの最適化
@@ -248,7 +248,7 @@ impl Image {
                     dithering: *config.png_dithering(),
                     options: config.png_options(),
                 };
-                optimize::Png::optimize(&self.path, &output_path, options, token)
+                optimize::Png::execute(&self.path, &output_path, options, token)
             }
 
             // サポートしていないファイル形式
