@@ -1,6 +1,6 @@
 use std::path::Path;
 use std::panic;
-use image::{self, ImageDecoder, DynamicImage};
+use image::{ImageEncoder, DynamicImage};
 use image::codecs::jpeg::JpegEncoder;
 use crate::{error, optimize};
 
@@ -37,44 +37,7 @@ impl optimize::Optimizer for Jpeg {
         let mut buffer = Vec::new();
         {
             // 画像を読み込む
-            let reader = image::ImageReader::open(path)
-                .and_then(|r| r.with_guessed_format())
-                .map_err(|e| error::KeigaError::optimized_error(e.to_string(), path.to_path_buf()))?;
-
-            // 画像のフォーマットを取得
-            // let format = reader.format().ok_or_else(|| {
-            //     error::KeigaError::optimized_error("Unknown image format".to_string(), path.to_path_buf())
-            // })?;
-
-            // リーダーをデコーダーに変換
-            let mut decoder = reader.into_decoder().map_err(|e| {
-                error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
-            })?;
-
-            // 情報を取得
-            // 向きのメタデータを取得
-            let orientation = decoder.orientation().map_err(|e| {
-                error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
-            })?;
-            // EXIF メタデータを取得
-            let exif = decoder.exif_metadata().map_err(|e| {
-                error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
-            })?;
-
-            // ICC プロファイルを取得
-            // image は CMYK を RGB に変換してデコードするため、CMYK 用の ICC は付けない
-            let icc = decoder.icc_profile().map_err(|e| {
-                error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
-            })?.filter(|icc| icc.get(16..20) != Some(b"CMYK"));
-
-
-            // 画像をデコードからピクセルデータへ変換
-            let mut image = DynamicImage::from_decoder(decoder).map_err(|e| {
-                error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
-            })?;
-
-            // 画像の向きを適用
-            image.apply_orientation(orientation);
+            let optimize::OpenImageResult { image, exif, icc } = Self::open_image(path)?;
 
             // JPEG エンコーダーを作成して最適化
             Self::write(&image, JpegEncoder::new_with_quality(&mut buffer, options.quality), exif, icc, path)?;
@@ -167,6 +130,34 @@ impl optimize::Optimizer for Jpeg {
 }
 
 impl Jpeg {
+    /// 画像をエンコード
+    /// * `image` - 画像
+    /// * `encoder` - エンコーダー
+    /// * `exif` - EXIF 情報
+    /// * `icc` - ICC プロファイル
+    /// * `return` - 画像をエンコードしたかどうか
+    fn write<E: ImageEncoder>(
+        image: &DynamicImage,
+        mut encoder: E,
+        exif: Option<Vec<u8>>,
+        icc: Option<Vec<u8>>,
+        path: &Path,
+    ) -> error::Result<()> {
+        // EXIF メタデータを設定
+        if let Some(exif) = exif {
+            let _ = encoder.set_exif_metadata(exif);
+        }
+
+        // ICC プロファイルを設定
+        if let Some(icc) = icc {
+            let _ = encoder.set_icc_profile(icc);
+        }
+
+        image.write_with_encoder(encoder).map_err(|e| {
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
+        })
+    }
+
     /// libjpeg が変換できる色空間へ揃える
     /// * `color_space` - 変換する色空間
     /// * `return` - 変換後の色空間

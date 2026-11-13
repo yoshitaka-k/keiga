@@ -5,10 +5,20 @@ pub(crate) use jpeg::Jpeg;
 pub(crate) use png::Png;
 
 use std::path::Path;
-use image::{DynamicImage, ImageEncoder};
+use image::{self, ImageDecoder, DynamicImage};
 use crate::{error, file};
 use crate::optimize;
 use crate::optimize::guard;
+
+/// 画像を読み込んだ結果
+/// * `image` - 読み込んだ画像
+/// * `exif` - EXIF メタデータ（ Orientation をリセットしたもの）
+/// * `icc` - ICC プロファイル
+pub(crate) struct OpenImageResult {
+    pub image: DynamicImage,
+    pub exif: Option<Vec<u8>>,
+    pub icc: Option<Vec<u8>>,
+}
 
 /// 最適化を行うトレイト
 pub trait Optimizer {
@@ -41,31 +51,54 @@ pub trait Optimizer {
         options: Self::Options
     ) -> error::Result<(usize, Vec<u8>)>;
 
-    /// 画像をエンコード
-    /// * `image` - 画像
-    /// * `encoder` - エンコーダー
-    /// * `exif` - EXIF 情報
-    /// * `icc` - ICC プロファイル
-    /// * `return` - 画像をエンコードしたかどうか
-    fn write<E: ImageEncoder>(
-        image: &DynamicImage,
-        mut encoder: E,
-        exif: Option<Vec<u8>>,
-        icc: Option<Vec<u8>>,
-        path: &Path,
-    ) -> error::Result<()> {
+    /// 画像を読み込む
+    /// * `path` - 読み込む画像のパス
+    /// * `return` - 読み込んだ画像
+    fn open_image(path: &Path) -> error::Result<OpenImageResult> {
+        // 画像を読み込む
+        let reader = image::ImageReader::open(path)
+            .and_then(|r| r.with_guessed_format())
+            .map_err(|e| error::KeigaError::optimized_error(e.to_string(), path.to_path_buf()))?;
+
+        // リーダーをデコーダーに変換
+        let mut decoder = reader.into_decoder().map_err(|e| {
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
+        })?;
+
+        // 情報を取得
+        // 向きのメタデータを取得
+        let orientation = decoder.orientation().map_err(|e| {
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
+        })?;
+
+        // EXIF メタデータを取得
+        let mut exif = decoder.exif_metadata().map_err(|e| {
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
+        })?;
+
         // EXIF の Orientation をリセット
-        if let Some(mut exif) = exif {
-            let _ = image::metadata::Orientation::remove_from_exif_chunk(&mut exif);
-            let _ = encoder.set_exif_metadata(exif);
-        }
-        // ICC プロファイルを設定
-        if let Some(icc) = icc {
-            let _ = encoder.set_icc_profile(icc);
+        if let Some(exif) = exif.as_mut() {
+            let _ = image::metadata::Orientation::remove_from_exif_chunk(exif);
         }
 
-        image.write_with_encoder(encoder).map_err(|e| {
+        // ICC プロファイルを取得
+        // image は CMYK を RGB に変換してデコードするため、CMYK 用の ICC は付けない
+        let icc = decoder.icc_profile().map_err(|e| {
             error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
+        })?.filter(|icc| icc.get(16..20) != Some(b"CMYK"));
+
+        // 画像をデコードからピクセルデータへ変換
+        let mut image = DynamicImage::from_decoder(decoder).map_err(|e| {
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
+        })?;
+
+        // 画像の向きを適用
+        image.apply_orientation(orientation);
+
+        Ok(OpenImageResult {
+            image,
+            exif,
+            icc,
         })
     }
 

@@ -3,13 +3,12 @@ mod guard;
 pub(crate) mod executor;
 pub(crate) mod options;
 pub(crate) use job::OptimizeJob;
-pub(crate) use executor::{Optimizer, Jpeg, Png};
+pub(crate) use executor::{Optimizer, OpenImageResult, Jpeg, Png};
 pub(crate) use options::{JpegOptions, PngOptions};
 
 /// 一時ファイルの拡張子
 const TEMP_EXTENSION: &str = "keiga.temp";
 
-use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::collections::HashSet;
@@ -31,19 +30,4 @@ impl OptimToken {
             error::KeigaError::lock_poisoned()
         })?.contains(&self.id))
     }
-}
-
-/// 画像を読み込む
-/// * `path` - 読み込む画像のパス
-/// * `return` - 読み込んだ画像
-fn open_image(path: &Path) -> error::Result<image::DynamicImage> {
-    image::ImageReader::open(path)
-        .and_then(|reader| reader.with_guessed_format())
-        .map_err(|e| {
-            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
-        })?
-        .decode()
-        .map_err(|e| {
-            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
-        })
 }
