@@ -70,13 +70,22 @@ impl optimize::Optimizer for Jpeg {
         // mozjpegの処理全体を catch_unwind 内に閉じ込める
         let result = panic::catch_unwind(|| -> std::io::Result<Vec<u8>> {
             // 画像を読み込む
-            let d = mozjpeg::Decompress::new_mem(&input)?;
+            // EXIF, XMP, ICC を保持するため APP1, APP2 を指定
+            let d = mozjpeg::Decompress::builder()
+                 .with_markers(&[mozjpeg::Marker::APP(1), mozjpeg::Marker::APP(2)])
+                 .from_mem(&input)?;
+
+            // EXIF, XMP, ICC を取り出して保持
+            let markers: Vec<(mozjpeg::Marker, Vec<u8>)> = d.markers()
+                .map(|m| (m.marker, m.data.to_owned()))
+                .collect();
+
             let (width, height) = d.size();
             let color_space = Self::colorspace(d.color_space());
             let mut image = d.to_colorspace(color_space)?;
             let pixels = image.read_scanlines::<u8>()?;
 
-            // mozjpeg のコンパレッサーを作成
+            // mozjpeg のコンプレッサーを作成
             let mut comp = mozjpeg::Compress::new(color_space);
             comp.set_size(width, height);
             // 擬似可逆圧縮を使用
@@ -87,8 +96,14 @@ impl optimize::Optimizer for Jpeg {
                 comp.set_chroma_sampling_pixel_sizes((1, 1), (1, 1));
             }
 
-            // コンパレッサーを開始
+            // コンプレッサーを開始
             let mut comp_start = comp.start_compress(Vec::new())?;
+
+            // 保持している EXIF, XMP, ICC を書き込む
+            for (marker, data) in &markers {
+                comp_start.write_marker(*marker, data);
+            }
+
             comp_start.write_scanlines(&pixels)?;
             let output = comp_start.finish()?;
 
