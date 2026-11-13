@@ -5,6 +5,7 @@ pub(crate) use jpeg::Jpeg;
 pub(crate) use png::Png;
 
 use std::path::Path;
+use image::{DynamicImage, ImageEncoder};
 use crate::{error, file};
 use crate::optimize;
 use crate::optimize::guard;
@@ -39,6 +40,34 @@ pub trait Optimizer {
         path: &Path,
         options: Self::Options
     ) -> error::Result<(usize, Vec<u8>)>;
+
+    /// 画像をエンコード
+    /// * `image` - 画像
+    /// * `encoder` - エンコーダー
+    /// * `exif` - EXIF 情報
+    /// * `icc` - ICC プロファイル
+    /// * `return` - 画像をエンコードしたかどうか
+    fn write<E: ImageEncoder>(
+        image: &DynamicImage,
+        mut encoder: E,
+        exif: Option<Vec<u8>>,
+        icc: Option<Vec<u8>>,
+        path: &Path,
+    ) -> error::Result<()> {
+        // EXIF の Orientation をリセット
+        if let Some(mut exif) = exif {
+            let _ = image::metadata::Orientation::remove_from_exif_chunk(&mut exif);
+            let _ = encoder.set_exif_metadata(exif);
+        }
+        // ICC プロファイルを設定
+        if let Some(icc) = icc {
+            let _ = encoder.set_icc_profile(icc);
+        }
+
+        image.write_with_encoder(encoder).map_err(|e| {
+            error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
+        })
+    }
 
     /// 最適化を行う
     /// * `path` - 最適化するファイルのパス
@@ -110,7 +139,6 @@ pub trait Optimizer {
         guard.keep();
 
         Ok(file::Status::Optimized)
-
     }
 }
 

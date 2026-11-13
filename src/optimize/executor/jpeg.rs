@@ -1,5 +1,6 @@
 use std::path::Path;
 use std::panic;
+use image::{self, ImageDecoder, DynamicImage};
 use image::codecs::jpeg::JpegEncoder;
 use crate::{error, optimize};
 
@@ -36,13 +37,47 @@ impl optimize::Optimizer for Jpeg {
         let mut buffer = Vec::new();
         {
             // 画像を読み込む
-            let image = optimize::open_image(path)?;
+            let reader = image::ImageReader::open(path)
+                .and_then(|r| r.with_guessed_format())
+                .map_err(|e| error::KeigaError::optimized_error(e.to_string(), path.to_path_buf()))?;
 
-            // JPEG エンコーダーを作成して最適化
-            let mut encoder = JpegEncoder::new_with_quality(&mut buffer, options.quality);
-            encoder.encode_image(&image).map_err(|e| {
+            // 画像のフォーマットを取得
+            // let format = reader.format().ok_or_else(|| {
+            //     error::KeigaError::optimized_error("Unknown image format".to_string(), path.to_path_buf())
+            // })?;
+
+            // リーダーをデコーダーに変換
+            let mut decoder = reader.into_decoder().map_err(|e| {
                 error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
             })?;
+
+            // 情報を取得
+            // 向きのメタデータを取得
+            let orientation = decoder.orientation().map_err(|e| {
+                error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
+            })?;
+            // EXIF メタデータを取得
+            let exif = decoder.exif_metadata().map_err(|e| {
+                error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
+            })?;
+
+            // ICC プロファイルを取得
+            // image は CMYK を RGB に変換してデコードするため、CMYK 用の ICC は付けない
+            let icc = decoder.icc_profile().map_err(|e| {
+                error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
+            })?.filter(|icc| icc.get(16..20) != Some(b"CMYK"));
+
+
+            // 画像をデコードからピクセルデータへ変換
+            let mut image = DynamicImage::from_decoder(decoder).map_err(|e| {
+                error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
+            })?;
+
+            // 画像の向きを適用
+            image.apply_orientation(orientation);
+
+            // JPEG エンコーダーを作成して最適化
+            Self::write(&image, JpegEncoder::new_with_quality(&mut buffer, options.quality), exif, icc, path)?;
         }
 
         // ファイルサイズを取得
