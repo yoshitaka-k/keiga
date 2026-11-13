@@ -142,8 +142,27 @@ impl Config {
     /// PNG 最適化オプションを作成
     /// * `return` - 最適化オプション
     pub fn png_options(&self) -> Options {
+        let mut chunks = oxipng::IndexSet::new();
+
+        // Safe に含まれるチャンクを保持
+        chunks.insert(*b"cICP");
+        chunks.insert(*b"iCCP");
+        chunks.insert(*b"sRGB");
+        chunks.insert(*b"pHYs");
+        chunks.insert(*b"acTL");
+        chunks.insert(*b"fcTL");
+        chunks.insert(*b"fdAT");
+
+        // exif メタデータを保持
+        chunks.insert(*b"eXIf");
+
+        // テキストチャンクを保持
+        chunks.insert(*b"tEXt");
+        chunks.insert(*b"zTXt");
+        chunks.insert(*b"iTXt");
+
         let mut options = self.png_preset().to_options();
-        options.strip = StripChunks::Safe;
+        options.strip = StripChunks::Keep(chunks);
         options
     }
 
