@@ -339,7 +339,7 @@ impl Rendar {
                 &self.config,
                 &mut self.files,
             ) {
-                eprintln!("Error opening folders: {}", e);
+                log::error!("Error opening folders: {}", e);
                 self.error_token.open = true;
                 self.error_token.value = Some(e);
             }
@@ -352,7 +352,7 @@ impl Rendar {
                 &self.config,
                 &mut self.files,
             ) {
-                eprintln!("Error opening files: {}", e);
+                log::error!("Error opening files: {}", e);
                 self.error_token.open = true;
                 self.error_token.value = Some(e);
             }
@@ -363,7 +363,7 @@ impl Rendar {
     /// * `ui` - UI
     fn drop_files(&mut self, ui: &egui::Ui) {
         if let Err(e) = input::drop(ui, &self.config, &mut self.files) {
-            eprintln!("Error dropping files: {}", e);
+            log::error!("Error dropping files: {}", e);
             self.error_token.open = true;
             self.error_token.value = Some(e);
         }
@@ -389,7 +389,7 @@ impl Rendar {
                 }
                 event::EventAction::DoubleClick { path } => {
                     if let Err(e) = click::double_click(path) {
-                        eprintln!("Error revealing file: {}", e);
+                        log::error!("Error revealing file: {}", e);
                         self.error_token.open = true;
                         self.error_token.value = Some(e);
                     }
@@ -408,21 +408,21 @@ impl Rendar {
                 }
                 event::EventAction::Enter { path } => {
                     if let Err(e) = click::double_click(path) {
-                        eprintln!("Error revealing file: {}", e);
+                        log::error!("Error revealing file: {}", e);
                         self.error_token.open = true;
                         self.error_token.value = Some(e);
                     }
                 }
                 event::EventAction::Space { path } => {
                     if let Err(e) = key::space(path) {
-                        eprintln!("Error revealing file: {}", e);
+                        log::error!("Error revealing file: {}", e);
                         self.error_token.open = true;
                         self.error_token.value = Some(e);
                     }
                 }
                 event::EventAction::Backspace => {
                     if let Err(e) = key::backspace(&mut self.files, &mut self.optimize_job) {
-                        eprintln!("Error canceling file: {}", e);
+                        log::error!("Error canceling file: {}", e);
                         self.error_token.open = true;
                         self.error_token.value = Some(e);
                     }

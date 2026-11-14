@@ -87,7 +87,9 @@ impl UpdateJob {
             }
 
             // 更新モーダルを表示するためのトークンを送信
-            let _ = tx.send(token.clone());
+            tx.send(token.clone()).unwrap_or_else(|e| {
+                log::warn!("Failed to send update token: {}", e);
+            });
 
             // 再描画を要求
             ctx.request_repaint();

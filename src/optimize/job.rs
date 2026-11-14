@@ -116,7 +116,9 @@ impl OptimizeJob {
                 file.set_status(status);
 
                 // 最適化結果を送信
-                let _ = tx.send(file);
+                tx.send(file).unwrap_or_else(|e| {
+                    log::warn!("Failed to send optimize result: {}", e);
+                });
 
                 // この最適化のスレッドが終わってからカウントを減らす
                 running_count.fetch_sub(RUNNING_COUNT_NUM, Ordering::Relaxed);
@@ -144,7 +146,9 @@ impl OptimizeJob {
             files.apply_result(result);
 
             // ファイル ID を削除
-            let _ = self.remove_canceled_id(id);
+            self.remove_canceled_id(id).unwrap_or_else(|e| {
+                log::error!("Failed to remove canceled ID: {}", e);
+            });
         }
     }
 

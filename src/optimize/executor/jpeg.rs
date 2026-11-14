@@ -145,12 +145,16 @@ impl Jpeg {
     ) -> error::Result<()> {
         // EXIF メタデータを設定
         if let Some(exif) = exif {
-            let _ = encoder.set_exif_metadata(exif);
+            encoder.set_exif_metadata(exif).unwrap_or_else(|e| {
+                log::warn!("Failed to set EXIF metadata: {}", e);
+            });
         }
 
         // ICC プロファイルを設定
         if let Some(icc) = icc {
-            let _ = encoder.set_icc_profile(icc);
+            encoder.set_icc_profile(icc).unwrap_or_else(|e| {
+                log::warn!("Failed to set ICC profile: {}", e);
+            });
         }
 
         image.write_with_encoder(encoder).map_err(|e| {
