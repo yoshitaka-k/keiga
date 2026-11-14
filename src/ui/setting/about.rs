@@ -11,8 +11,8 @@ pub(crate) fn view(ui: &mut egui::Ui, update_job: &mut UpdateJob) {
     setting::header_panel(ui, svg::INFO, "About", Some(update_job));
 
     ui.add_space(ui::HEADER_BOTTOM_SPACING);
-
     ui.separator();
+    ui.add_space(ui::HEADER_BOTTOM_SPACING);
 
     egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
         // アプリのアイコンを表示

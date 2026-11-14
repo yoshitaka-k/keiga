@@ -10,9 +10,7 @@ pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
     setting::header_panel(ui, svg::CYCLE, "Concurrent", None);
 
     ui.add_space(ui::HEADER_BOTTOM_SPACING);
-
     ui.separator();
-
     ui.add_space(ui::SETTING_ADD_SPACING);
 
     egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
