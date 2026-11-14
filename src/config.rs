@@ -45,55 +45,38 @@ pub(crate) const SOUND_VOLUME_MAX: u8 = 10;
 /// アプリケーションを管理する構造体
 #[derive(Clone, Getters, MutGetters)]
 #[derive(Serialize, Deserialize)]
+#[getset(get = "pub", get_mut = "pub")]
 #[serde(default)]
 pub struct Config {
     /// 読み込める拡張子
-    #[getset(get = "pub")]
     #[serde(skip)]
     extensions: Vec<&'static str>,
 
     /// 実行する最適化数
-    #[getset(get = "pub", get_mut = "pub")]
     optimization_num: u8,
-
     /// 実行する最適化数 内の PNG 最適化数
-    #[getset(get = "pub", get_mut = "pub")]
     png_optimization_num: u8,
 
     /// JPEG Lossy 最適化
-    #[getset(get = "pub", get_mut = "pub")]
     jpeg_lossy: bool,
-
     /// JPEG 品質
-    #[getset(get = "pub", get_mut = "pub")]
     jpeg_quality: u8,
 
     /// PNG Lossy 最適化
-    #[getset(get = "pub", get_mut = "pub")]
     png_lossy: bool,
-
     /// PNG 最適化プリセット
-    #[getset(get = "pub", get_mut = "pub")]
     png_preset: PngPreset,
-
     /// PNG ディザリング
-    #[getset(get = "pub", get_mut = "pub")]
     png_dithering: u8,
 
+    /// 出力パス
+    output_path: String,
     /// 同じパスはスキップ
-    #[getset(get = "pub", get_mut = "pub")]
     skip_same_path: bool,
 
-    /// 出力パス
-    #[getset(get = "pub", get_mut = "pub")]
-    output_path: String,
-
     /// 効果音鳴らすかどうか
-    #[getset(get = "pub", get_mut = "pub")]
     play_sound: bool,
-
     /// 効果音の音量
-    #[getset(get = "pub", get_mut = "pub")]
     sound_volume: u8,
 }
 
@@ -123,7 +106,11 @@ impl Default for Config {
 /// Unsupported メッセージを出す用にも利用するため
 /// * `return` - 読み込める拡張子
 fn default_extensions() -> Vec<&'static str> {
-    vec!["png", "jpg", "jpeg", "gif", "webp", "bmp", "tiff", "tif", "ico", "avif", "qoi", "exr", "tga", "dds", "pbm", "pgm", "ppm", "pam", "hdr", "ff"]
+    vec![
+        "png", "jpg", "jpeg", "gif", "webp", "bmp",
+        "tiff", "tif", "ico", "avif", "qoi", "exr",
+        "tga", "dds", "pbm", "pgm", "ppm", "pam", "hdr", "ff",
+    ]
 }
 
 impl Config {
