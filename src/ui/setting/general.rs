@@ -6,61 +6,18 @@ use crate::ui::assets::svg;
 /// * `ui` - UI
 /// * `config` - 設定
 pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
-    // ヘッダーパネルを表示
-    setting::header_panel(ui, svg::SETTINGS, "General", None);
-
-    ui.add_space(ui::HEADER_BOTTOM_SPACING);
-    ui.separator();
-    ui.add_space(ui::SETTING_ADD_SPACING);
-
-    // グループヘッダーパネルを表示
-    setting::group_header_panel(ui, "Output path");
-
-    // フレームを表示
-    egui::Frame::group(ui.style()).show(ui, |ui| {
-        ui.take_available_width();
-
-        ui.horizontal(|ui| {
-            ui::add_label(ui, "Output path:", ui::GENERAL_LABEL_WIDTH);
-            ui.add(
-                egui::TextEdit::singleline(config.output_path_mut())
-                    .desired_width(ui.available_width())
-                    .interactive(false),
-            );
-        });
-        ui.horizontal(|ui| {
-            ui.add_space(ui::GENERAL_LABEL_WIDTH + ui.spacing().item_spacing.x);
-            if ui.button("Browse").clicked()
-                && let Some(path) = rfd::FileDialog::new().pick_folder() {
-                    *config.output_path_mut() = path.to_string_lossy().into_owned();
-                }
-            if ui.button("Clear").clicked() {
-                config.output_path_mut().clear();
-            }
-        });
-
-        // 出力パスの注意書きを表示
-        setting::warning_note(ui, "Leave empty to overwrite the original files.");
-
-        ui.add_space(ui::SETTING_ADD_SPACING);
-        ui.separator();
-        ui.add_space(ui::SETTING_ADD_SPACING);
-
-        // 同じパスはスキップ
-        ui.horizontal(|ui| {
-            ui::add_label(ui, "Skip same path:", ui::GENERAL_LABEL_WIDTH);
-            ui.radio_value(config.skip_same_path_mut(), true, "Skip same path");
-            ui.radio_value(config.skip_same_path_mut(), false, "Don't skip same path");
-        });
-
-        // 同じパスはスキップの注意書きを表示
-        setting::warning_note(ui, "Skip if already completed. Retry canceled and errors.");
-    });
-
-    ui.add_space(ui::SETTING_ADD_SPACING);
+    let volume_icon = if *config.play_sound() {
+        if *config.sound_volume() > config::SOUND_VOLUME_MAX / 2 - 1 {
+            svg::VOLUME_UP
+        } else {
+            svg::VOLUME_DOWN
+        }
+    } else {
+        svg::VOLUME_OFF
+    };
 
     // グループヘッダーパネルを表示
-    setting::group_header_panel(ui, "Sound effects");
+    setting::header_panel(ui, volume_icon, "Sound", None);
 
     // フレームを表示
     egui::Frame::group(ui.style()).show(ui, |ui| {

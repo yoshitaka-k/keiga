@@ -1,7 +1,7 @@
 use crate::{config, ui};
 use crate::ui::{assets, setting, modal, SettingTab, SettingToken};
 use crate::ui::assets::{constants, svg};
-use crate::ui::setting::{general, concurrent, quality, about};
+use crate::ui::setting::{general, optimize, output, concurrent, about};
 use crate::update::{UpdateJob, UpdatedToken};
 
 /// 設定ウィンドウを表示
@@ -71,7 +71,8 @@ pub(crate) fn view(
 
                 // タブを表示
                 ui.selectable_value(&mut setting_token.tab, SettingTab::General, SettingTab::General.to_string());
-                ui.selectable_value(&mut setting_token.tab, SettingTab::Quality, SettingTab::Quality.to_string());
+                ui.selectable_value(&mut setting_token.tab, SettingTab::Optimize, SettingTab::Optimize.to_string());
+                ui.selectable_value(&mut setting_token.tab, SettingTab::Output, SettingTab::Output.to_string());
                 ui.selectable_value(&mut setting_token.tab, SettingTab::Concurrent, SettingTab::Concurrent.to_string());
                 ui.selectable_value(&mut setting_token.tab, SettingTab::About, SettingTab::About.to_string());
 
@@ -84,7 +85,8 @@ pub(crate) fn view(
             // タブに応じて表示内容を切り替え
             match setting_token.tab {
                 SettingTab::General => general::view(ui, config),
-                SettingTab::Quality => quality::view(ui, config),
+                SettingTab::Optimize => optimize::view(ui, config),
+                SettingTab::Output => output::view(ui, config),
                 SettingTab::Concurrent => concurrent::view(ui, config),
                 SettingTab::About => about::view(ui, update_job),
             }

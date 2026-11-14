@@ -1,7 +1,8 @@
 pub(crate) mod view;
 pub(crate) mod general;
+pub(crate) mod optimize;
+pub(crate) mod output;
 pub(crate) mod concurrent;
-pub(crate) mod quality;
 pub(crate) mod about;
 
 // インポート
@@ -44,6 +45,7 @@ pub(crate) fn header_panel(
     let icon_color = assets::icon_color(ui);
 
     ui.horizontal(|ui| {
+        ui.add_space(ui::SETTING_INDENT_SPACING);
         ui.spacing_mut().item_spacing.x = ui::HEADER_ICON_SPACING;
         ui.add(egui::Image::new(icon).max_height(constants::SETTINGS_ICON_SIZE).tint(icon_color));
         ui.spacing_mut().item_spacing.x = spacing;
@@ -57,15 +59,6 @@ pub(crate) fn header_panel(
                 }
             });
         }
-    });
-}
-
-/// グループヘッダーパネルを表示
-/// * `ui` - UI
-pub(crate) fn group_header_panel(ui: &mut egui::Ui, label: &str) {
-    ui.horizontal(|ui| {
-        ui.add_space(ui::SETTING_INDENT_SPACING);
-        ui.label(label);
     });
 }
 

@@ -6,14 +6,10 @@ use crate::ui::assets::svg;
 /// * `ui` - UI
 /// * `config` - 設定
 pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
-    // ヘッダーパネルを表示
+    // グループヘッダーパネルを表示
     setting::header_panel(ui, svg::CYCLE, "Concurrent", None);
 
-    ui.add_space(ui::HEADER_BOTTOM_SPACING);
-    ui.separator();
-    ui.add_space(ui::SETTING_ADD_SPACING);
-
-    egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
+    egui::Frame::group(ui.style()).show(ui, |ui| {
         // 全ファイルの最適化数
         ui.horizontal(|ui| {
             ui::add_label(ui, "All files:", ui::CONCURRENT_LABEL_WIDTH);

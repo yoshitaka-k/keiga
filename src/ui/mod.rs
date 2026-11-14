@@ -43,7 +43,7 @@ const WINDOW_TITLE: &str = "Keiga Settings";
 /// ウィンドウの幅
 const WINDOW_WIDTH: f32 = 480.0;
 /// ウィンドウの高さ
-const WINDOW_HEIGHT: f32 = 340.0;
+const WINDOW_HEIGHT: f32 = 260.0;
 /// ヘッダーのスペースの幅
 const HEADER_ICON_SPACING: f32 = 4.0;
 /// ヘッダーの下のスペースの幅
@@ -52,14 +52,16 @@ const HEADER_BOTTOM_SPACING: f32 = 2.0;
 const WARNING_ICON_SPACING: f32 = 3.0;
 /// ラベルの幅
 const GENERAL_LABEL_WIDTH: f32 = 90.0;
-/// 並行処理のラベルの幅
-const CONCURRENT_LABEL_WIDTH: f32 = 48.0;
 /// 品質のラベルの幅
 const QUALITY_LABEL_WIDTH: f32 = 78.0;
+/// 出力のラベルの幅
+const OUTPUT_LABEL_WIDTH: f32 = 34.0;
+/// 並行処理のラベルの幅
+const CONCURRENT_LABEL_WIDTH: f32 = 48.0;
 /// 追加のスペースの幅
 const SETTING_ADD_SPACING: f32 = 4.0;
 /// 設定のインデントのスペースの幅
-const SETTING_INDENT_SPACING: f32 = 10.0;
+const SETTING_INDENT_SPACING: f32 = 4.0;
 /// ダークモードタブの選択時の背景色
 const DARK_TAB_SELECTED_COLOR: egui::Color32 = egui::Color32::from_rgb(20, 120, 130);
 /// ライトモードタブの選択時の背景色
@@ -141,7 +143,8 @@ impl StatusColor {
 #[derive(PartialEq)]
 pub enum SettingTab {
     General,
-    Quality,
+    Optimize,
+    Output,
     Concurrent,
     About,
 }
@@ -150,7 +153,8 @@ impl SettingTab {
     fn to_string(&self) -> &str {
         match self {
             SettingTab::General => "General",
-            SettingTab::Quality => "Quality",
+            SettingTab::Optimize => "Optimize",
+            SettingTab::Output => "Output",
             SettingTab::Concurrent => "Concurrent",
             SettingTab::About => "About",
         }

@@ -7,16 +7,7 @@ use crate::ui::assets::svg;
 /// * `ui` - UI
 /// * `config` - 設定
 pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
-    // ヘッダーパネルを表示
-    setting::header_panel(ui, svg::COMPRESS, "Quality", None);
-
-    ui.add_space(ui::HEADER_BOTTOM_SPACING);
-
-    ui.separator();
-
-    ui.add_space(ui::SETTING_ADD_SPACING);
-
-    setting::header_panel(ui, svg::IMAGE, "JPEG", None);
+    setting::header_panel(ui, svg::IMAGE, "Jpeg", None);
 
     egui::Frame::group(ui.style()).show(ui, |ui| {
         // JPEG の圧縮方法を表示
@@ -50,7 +41,7 @@ pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
 
     ui.add_space(ui::SETTING_ADD_SPACING);
 
-    setting::header_panel(ui, svg::IMAGE, "PNG", None);
+    setting::header_panel(ui, svg::IMAGE, "Png", None);
 
     egui::Frame::group(ui.style()).show(ui, |ui| {
         // PNG の圧縮方法を表示
