@@ -169,5 +169,5 @@ impl Png {
 // tests ディレクトリ直下は別クレートになって、非公開関数が呼べないので、
 // 子モジュールとして読むためのパスを指定する
 #[cfg(test)]
-#[path = "../../tests/unit/optimize.rs"]
+#[path = "../../../tests/unit/optimize.rs"]
 mod tests;

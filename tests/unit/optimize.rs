@@ -4,7 +4,7 @@ use std::path::Path;
 
 #[test]
 fn lossy_decodes_png_with_jpg_extension() {
-    let path = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/assets/sample/png.jpg"));
+    let path = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/sample/png.jpg"));
     let options = optimize::PngOptions {
         lossy: true,
         dithering: 0,
