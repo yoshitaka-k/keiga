@@ -218,7 +218,7 @@ impl eframe::App for Rendar {
         });
 
         // ファイル一覧のアクションを処理
-        self.pending_actions_process(
+        self.process_pending_actions(
             list_viewport_height,
             row_stride,
             item_spacing,
@@ -380,7 +380,7 @@ impl Rendar {
     /// * `list_viewport_height` - 利用可能な高さ
     /// * `row_stride` - 行のストライド（行の高さ + 行の間隔）
     /// * `item_spacing` - 行の間隔
-    fn pending_actions_process(
+    fn process_pending_actions(
         &mut self,
         list_viewport_height: f32,
         row_stride: f32,
