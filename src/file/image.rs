@@ -23,7 +23,7 @@ pub(crate) struct Image {
     relative_path: String,
 
     /// 出力したファイルのパス
-    #[getset(get = "pub", set = "pub")]
+    #[getset(set = "pub")]
     output_path: Option<PathBuf>,
 
     /// 相対パスかどうか
@@ -114,6 +114,12 @@ impl Image {
             saved_rate: 0.00f32,
             duration: 0,
         })
+    }
+
+    /// 出力ファイルのパスを取得
+    /// * `return` - 出力ファイルのパス
+    pub fn output_path(&self) -> &PathBuf {
+        self.output_path.as_ref().unwrap_or(&self.path)
     }
 
     /// ファイルが JPEG かどうか

@@ -72,7 +72,7 @@ impl OptimizeJob {
             let mut file = file.clone();
 
             // 入力が違くて、出力先パスが同じファイルが処理中、処理済みの状態である場合はエラーを返す
-            if files.has_output_conflict(file.path(), file.output_path().as_deref()) {
+            if files.has_output_conflict(file.path(), file.output_path()) {
                 files.set_status_error(*file.id(), "Output path conflicts");
                 continue;
             }
@@ -228,9 +228,8 @@ impl OptimizeJob {
         // 最適化中にする
         image.set_status(file::Status::Optimizing);
 
-        // 出力ファイルのパスを作成
-        let output_path = image.make_output_path(config);
-        image.set_output_path(Some(output_path.clone()));
+        // 出力ファイルのパスを取得
+        let output_path = image.output_path().clone();
 
         // 最適化を実行
         let result = match image.extension() {

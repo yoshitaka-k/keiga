@@ -263,22 +263,18 @@ impl OpenFiles {
     /// * `return` - 入力が違くて、出力パスが一致するファイルが処理中、処理済みの状態であるかどうか
     pub fn has_output_conflict(&self,
         path: &Path,
-        output_path: Option<&Path>,
+        output_path: &Path,
     ) -> bool {
-        if let Some(output_path) = output_path {
-            // 出力パスが一致するファイルでリサイズ中、リサイズ済み、変更なしの状態
-            self.images.iter().any(|f| {
-                f.path() != path
-                    && f.output_path().as_deref() == Some(output_path)
-                    && (
-                        f.is_optimizing()
-                        || f.is_optimized()
-                        || f.is_unchanged()
-                    )
-            })
-        } else {
-            false
-        }
+        // 出力パスが一致するファイルで最適化中、最適化済み、変更なしの状態
+        self.images.iter().any(|f| {
+            f.path() != path
+                && f.output_path() == output_path
+                && (
+                    f.is_optimizing()
+                    || f.is_optimized()
+                    || f.is_unchanged()
+            )
+        })
     }
 
     /// 最適化結果を既存の一覧へ反映
@@ -328,7 +324,7 @@ impl OpenFiles {
     fn is_input_output_path(&self, path: &Path, output_path: &Path) -> bool {
         self.images.iter().any(|f| {
             f.path() == path
-                && f.output_path().as_deref() == Some(output_path)
+                && f.output_path() == output_path
                 && (f.is_optimized() || f.is_unchanged())
         })
     }
@@ -373,19 +369,20 @@ impl OpenFiles {
         path: &Path,
         base_dir: &Path,
         error: String,
-    ) -> error::Result<()> {
+    ) {
         let relative_path = path.strip_prefix(base_dir);
         let relative_path = relative_path.unwrap_or(path).to_path_buf().to_string_lossy().into_owned();
 
         let mut image = match file::Image::new(path.to_path_buf(), relative_path) {
             Ok(image) => image,
-            Err(e) => return Err(error::KeigaError::file_error(e.to_string(), path.to_path_buf())),
+            Err(e) => {
+                log::error!("Error: {}", e);
+                return;
+            }
         };
 
         image.set_status(file::Status::Error(error));
         self.images.push(image);
-
-        Ok(())
     }
 
     /// ファイルを検索
@@ -402,7 +399,10 @@ impl OpenFiles {
         // シンボリックリンクは無視する
         let metadata = match path.symlink_metadata() {
             Ok(metadata) => metadata,
-            Err(e) => return Err(error::KeigaError::file_error(e.to_string(), path.clone())),
+            Err(e) => {
+                self.error_file(&path, base_dir, e.to_string());
+                return Ok(());
+            }
         };
 
         if metadata.is_file() {
@@ -415,26 +415,45 @@ impl OpenFiles {
                     .into_owned();
 
                 // ファイルを作成
-                let image = file::Image::new(path, relative_path)?;
+                let mut image = match file::Image::new(path.clone(), relative_path) {
+                    Ok(image) => image,
+                    Err(e) => {
+                        log::error!("Error: {}", e);
+                        return Ok(());
+                    }
+                };
+
+                // 出力ファイルのパスを作成
+                let output_path = image.make_output_path(config);
+                image.set_output_path(Some(output_path.clone()));
 
                 // 同じパスが待機中か最適化中なら、新規行をエラーで追加
                 if self.is_standby_or_optimizing(image.path()) {
-                    self.error_file(image.path(), base_dir, "Already in progress".to_string())?;
+                    image.set_status(file::Status::Error("Already in progress".to_string()));
                 }
-
                 // 同じ入力を同じ出力先へ書き済みなら、新規行をスキップで追加
-                if *config.skip_same_path()
-                    && self.is_input_output_path(image.path(), &image.make_output_path(config))
+                else if *config.skip_same_path()
+                    && self.is_input_output_path(image.path(), &image.output_path())
                 {
-                    self.error_file(image.path(), base_dir, "Already processed".to_string())?;
+                    image.set_status(file::Status::Skipped);
                 }
 
                 self.images.push(image);
             }
         } else if metadata.is_dir() {
-            for entry in fs::read_dir(&path).map_err(|e| error::KeigaError::file_error(e.to_string(), path.clone()))? {
-                let entry = entry.map_err(|e| error::KeigaError::file_error(e.to_string(), path.clone()))?;
-                self.find_file(config, entry.path(), base_dir)?;
+            let entries = match fs::read_dir(&path) {
+                Ok(entries) => entries,
+                Err(e) => {
+                    self.error_file(&path, base_dir, e.to_string());
+                    return Ok(());
+                }
+            };
+
+            for entry in entries {
+                match entry {
+                    Ok(entry) => self.find_file(config, entry.path(), base_dir)?,
+                    Err(e) => self.error_file(&path, base_dir, e.to_string()),
+                }
             }
         }
 
