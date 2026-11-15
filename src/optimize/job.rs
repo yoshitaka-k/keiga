@@ -240,7 +240,7 @@ impl OptimizeJob {
                     lossy: *config.jpeg_lossy(),
                     quality: *config.jpeg_quality(),
                 };
-                optimize::Jpeg::execute(&image.path(), &output_path, options, token)
+                optimize::Jpeg::execute(image.path(), &output_path, options, token)
             }
 
             // png ファイルの最適化
@@ -250,7 +250,7 @@ impl OptimizeJob {
                     dithering: *config.png_dithering(),
                     options: config.png_options(),
                 };
-                optimize::Png::execute(&image.path(), &output_path, options, token)
+                optimize::Png::execute(image.path(), &output_path, options, token)
             }
 
             // サポートしていないファイル形式

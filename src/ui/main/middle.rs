@@ -131,7 +131,7 @@ pub(crate) fn view(
 
         // クリックアクションを処理予約
         if response.clicked() {
-            pending_actions.push(event::EventAction::Click { index: index });
+            pending_actions.push(event::EventAction::Click { index });
             row_clicked = true;
         }
 
