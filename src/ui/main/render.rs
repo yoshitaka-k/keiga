@@ -52,6 +52,12 @@ impl Rendar {
         fonts::install(&cc.egui_ctx);
         svg::install(&cc.egui_ctx);
 
+        // スタイルを設定
+        cc.egui_ctx.global_style_mut(|style| {
+            // ラベルを選択できないようにする
+            style.interaction.selectable_labels = false;
+        });
+
         // 前回保存した Config があれば復元（なければ引数の config を使う）
         let mut config = cc.storage
             .and_then(|storage| eframe::get_value(storage, eframe::APP_KEY))
@@ -108,32 +114,8 @@ impl eframe::App for Rendar {
     /// * `ui` - ユーザーインターフェース
     /// * `frame` - フレーム
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        // スタイルを設定
-        ui.ctx().global_style_mut(|style| {
-            // ラベルを選択できないようにする
-            style.interaction.selectable_labels = false;
-        });
-
-        // Command + O キーが押されたらファイルダイアログを開く
-        input::command_open(ui, &mut self.open_dialog_token);
-
-        // Command + Comma キーが押されたら設定ウィンドウを開く
-        input::command_comma(ui, &mut self.setting_token);
-
-        // 上キーが押されたら処理予約
-        input::arrow_up(ui, &mut self.files, &mut self.pending_actions);
-
-        // 下キーが押されたら処理予約
-        input::arrow_down(ui, &mut self.files, &mut self.pending_actions);
-
-        // エンターキーが押されたら処理予約
-        input::enter(ui, &mut self.files, &mut self.pending_actions);
-
-        // スペースキーが押されたら処理予約
-        input::space(ui, &mut self.files, &mut self.pending_actions);
-
-        // 削除キーが押されたら処理予約
-        input::backspace(ui, &mut self.files, &mut self.pending_actions);
+        // 入力イベントを処理
+        self.input_events(ui);
 
         // 最適化結果を反映
         self.optimize_result();
@@ -265,9 +247,29 @@ impl eframe::App for Rendar {
 
 /// ファイル一覧のアクションを処理
 impl Rendar {
-    /// ファイルを最適化実行
-    fn optimize_run(&mut self) {
-        self.optimize_job.run(&self.config, &mut self.files);
+    /// 入力イベントを処理
+    /// * `ui` - UI
+    fn input_events(&mut self, ui: &mut egui::Ui) {
+        // Command + O キーが押されたらファイルダイアログを開く
+        input::command_open(ui, &mut self.open_dialog_token);
+
+        // Command + Comma キーが押されたら設定ウィンドウを開く
+        input::command_comma(ui, &mut self.setting_token);
+
+        // 上キーが押されたら処理予約
+        input::arrow_up(ui, &mut self.files, &mut self.pending_actions);
+
+        // 下キーが押されたら処理予約
+        input::arrow_down(ui, &mut self.files, &mut self.pending_actions);
+
+        // エンターキーが押されたら処理予約
+        input::enter(ui, &mut self.files, &mut self.pending_actions);
+
+        // スペースキーが押されたら処理予約
+        input::space(ui, &mut self.files, &mut self.pending_actions);
+
+        // 削除キーが押されたら処理予約
+        input::backspace(ui, &mut self.files, &mut self.pending_actions);
     }
 
     /// 最適化結果を反映する
@@ -292,6 +294,11 @@ impl Rendar {
                 self.sound.play_completed();
             }
         }
+    }
+
+    /// ファイルを最適化実行
+    fn optimize_run(&mut self) {
+        self.optimize_job.run(&self.config, &mut self.files);
     }
 
     /// リスト行の高さを取得
