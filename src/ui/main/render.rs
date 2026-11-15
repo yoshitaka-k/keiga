@@ -10,6 +10,9 @@ pub struct Rendar {
     config: config::Config,
     files: file::OpenFiles,
 
+    // 処理予約されたアクション
+    pending_actions: Vec<event::EventAction>,
+
     // スクロールしている描画範囲
     vertical_scroll_offset: Option<std::ops::Range<usize>>,
 
@@ -66,6 +69,7 @@ impl Rendar {
         Self {
             config,
             files,
+            pending_actions: Vec::new(),
             vertical_scroll_offset: None,
             pending_scroll_y: None,
             open_dialog_token: ui::OpenDialogToken {
@@ -110,9 +114,6 @@ impl eframe::App for Rendar {
             style.interaction.selectable_labels = false;
         });
 
-        // イベント処理のためのアクションを保持
-        let mut pending_actions: Vec<event::EventAction> = Vec::new();
-
         // Command + O キーが押されたらファイルダイアログを開く
         input::command_open(ui, &mut self.open_dialog_token);
 
@@ -120,19 +121,19 @@ impl eframe::App for Rendar {
         input::command_comma(ui, &mut self.setting_token);
 
         // 上キーが押されたら処理予約
-        input::arrow_up(ui, &mut self.files, &mut pending_actions);
+        input::arrow_up(ui, &mut self.files, &mut self.pending_actions);
 
         // 下キーが押されたら処理予約
-        input::arrow_down(ui, &mut self.files, &mut pending_actions);
+        input::arrow_down(ui, &mut self.files, &mut self.pending_actions);
 
         // エンターキーが押されたら処理予約
-        input::enter(ui, &mut self.files, &mut pending_actions);
+        input::enter(ui, &mut self.files, &mut self.pending_actions);
 
         // スペースキーが押されたら処理予約
-        input::space(ui, &mut self.files, &mut pending_actions);
+        input::space(ui, &mut self.files, &mut self.pending_actions);
 
         // 削除キーが押されたら処理予約
-        input::backspace(ui, &mut self.files, &mut pending_actions);
+        input::backspace(ui, &mut self.files, &mut self.pending_actions);
 
         // 最適化結果を反映
         self.optimize_result();
@@ -222,7 +223,7 @@ impl eframe::App for Rendar {
                     &status_color,
                     &self.files,
                     list_row_token,
-                    &mut pending_actions,
+                    &mut self.pending_actions,
                 )
             }).inner;
 
@@ -236,7 +237,6 @@ impl eframe::App for Rendar {
 
         // ファイル一覧のアクションを処理
         self.pending_actions_process(
-            &mut pending_actions,
             list_viewport_height,
             row_stride,
             item_spacing,
@@ -370,25 +370,26 @@ impl Rendar {
     }
 
     /// 処理予約されたアクションを処理
-    /// * `pending_actions` - 処理予約
     /// * `list_viewport_height` - 利用可能な高さ
     /// * `row_stride` - 行のストライド（行の高さ + 行の間隔）
     /// * `item_spacing` - 行の間隔
     fn pending_actions_process(
         &mut self,
-        pending_actions: &mut Vec<event::EventAction>,
         list_viewport_height: f32,
         row_stride: f32,
         item_spacing: f32,
     ) {
-        // クリックアクションを処理
-        for action in pending_actions {
+        // 処理予約されたアクションを取り出して空にする
+        let mut pending_actions = std::mem::take(&mut self.pending_actions);
+
+        // 取り出されたアクションを処理
+        for action in pending_actions.drain(..) {
             match action {
                 event::EventAction::Click { index } => {
-                    click::click(&mut self.files, *index);
+                    click::click(&mut self.files, index);
                 }
                 event::EventAction::DoubleClick { path } => {
-                    if let Err(e) = click::double_click(path) {
+                    if let Err(e) = click::double_click(&path) {
                         log::error!("Error revealing file: {}", e);
                         self.error_token.open = true;
                         self.error_token.value = Some(e);
@@ -407,14 +408,14 @@ impl Rendar {
                     self.ensure_selected_row_visible(list_viewport_height, row_stride, item_spacing);
                 }
                 event::EventAction::Enter { path } => {
-                    if let Err(e) = click::double_click(path) {
+                    if let Err(e) = click::double_click(&path) {
                         log::error!("Error revealing file: {}", e);
                         self.error_token.open = true;
                         self.error_token.value = Some(e);
                     }
                 }
                 event::EventAction::Space { path } => {
-                    if let Err(e) = key::space(path) {
+                    if let Err(e) = key::space(&path) {
                         log::error!("Error revealing file: {}", e);
                         self.error_token.open = true;
                         self.error_token.value = Some(e);
