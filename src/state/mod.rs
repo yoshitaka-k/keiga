@@ -1,7 +1,6 @@
 mod token;
 
 pub(crate) use token::ListRowToken;
-pub(crate) use token::OpenDialogToken;
 pub(crate) use token::SettingToken;
 pub(crate) use token::ErrorToken;
 
@@ -11,7 +10,6 @@ use crate::{config, file, optimize, update};
 pub(crate) struct State {
     pub config: config::Config,
     pub files: file::OpenFiles,
-    pub open_dialog_token: OpenDialogToken,
     pub setting_token: SettingToken,
     pub updated_token: update::UpdatedToken,
     pub error_token: ErrorToken,

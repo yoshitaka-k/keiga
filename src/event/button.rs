@@ -1,43 +1,21 @@
 use crate::{file, error, update, state};
 use crate::optimize::OptimizeJob;
 
-/// フォルダダイアログを開く
-/// * `ui` - UI
-/// * `open_dialog_token` - フォルダダイアログを開くためのトークン
-pub(crate) fn folder_open(ui: &mut egui::Ui, open_dialog_token: &mut state::OpenDialogToken) {
-    // フォルダダイアログを開くタイミングをずらす
-    open_dialog_token.folder_dialog = true;
-
-    // 再描画を要求
-    ui.ctx().request_repaint();
-}
-
-/// ファイルダイアログを開く
-/// * `ui` - UI
-/// * `open_dialog_token` - ファイルダイアログを開くためのトークン
-#[cfg(not(target_os = "macos"))]
-pub(crate) fn file_open(ui: &mut egui::Ui, open_dialog_token: &mut state::OpenDialogToken) {
-    // ファイルダイアログを開くタイミングをずらす
-    open_dialog_token.file_dialog = true;
-
-    // 再描画を要求
-    ui.ctx().request_repaint();
-}
-
 /// 設定ダイアログを開く
-/// * `ui` - UI
 /// * `setting_token` - 設定ダイアログを開くためのトークン
-pub(crate) fn setting_open(ui: &mut egui::Ui, setting_token: &mut state::SettingToken) {
-    // 設定ダイアログを開く
+/// * `pos` - 設定ウィンドウの表示位置
+pub(crate) fn setting_open(
+    setting_token: &mut state::SettingToken,
+    pos: Option<egui::Pos2>,
+) {
+    // タブを初期化
+    setting_token.tab = state::SettingTab::General;
+
+    // 設定ウィンドウの表示位置を設定
+    setting_token.pos = pos;
+
+    // 設定ウィンドウを開く
     setting_token.open = true;
-
-    // 設定ダイアログの表示位置を設定
-    setting_token.pos = ui.ctx().input(|input| {
-        input.viewport().outer_rect.map(|rect| rect.min)
-    });
-
-    // 再描画を要求
-    ui.ctx().request_repaint();
 }
 
 /// 最適化を停止（キャンセル）してファイル一覧をクリアする

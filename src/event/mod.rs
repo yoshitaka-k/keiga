@@ -1,4 +1,3 @@
-pub(crate) mod drop;
 pub(crate) mod open;
 pub(crate) mod button;
 pub(crate) mod key;
@@ -7,6 +6,11 @@ pub(crate) mod input;
 
 /// ファイル一覧のアクション
 pub(crate) enum EventAction {
+    #[allow(dead_code)]
+    FileOpen,
+    FolderOpen,
+    DropOpen(Vec<std::path::PathBuf>),
+    SettingOpen(Option<egui::Pos2>),
     Click { index: usize },
     DoubleClick { path: std::path::PathBuf },
     Up,

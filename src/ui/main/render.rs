@@ -1,5 +1,5 @@
 use crate::{config, event, file, optimize, update, ui, sounds, state};
-use crate::event::{open, key, click, input};
+use crate::event::{open, key, click, input, button};
 use crate::ui::modal;
 use crate::ui::assets::{constants, fonts, svg};
 use crate::ui::main::{top, middle, bottom};
@@ -55,23 +55,9 @@ impl Rendar {
         let state = state::State {
             config,
             files: file::OpenFiles::new(),
-            open_dialog_token: state::OpenDialogToken {
-                file_dialog: false,
-                folder_dialog: false,
-            },
-            setting_token: state::SettingToken {
-                open: false,
-                pos: None,
-                tab: state::SettingTab::Concurrent,
-            },
-            error_token: state::ErrorToken {
-                open: false,
-                value: None,
-            },
-            updated_token: update::UpdatedToken {
-                open: false,
-                check: None,
-            },
+            setting_token: state::SettingToken::new(),
+            error_token: state::ErrorToken::new(),
+            updated_token: update::UpdatedToken::new(),
         };
 
         // ジョブを作成
@@ -113,12 +99,6 @@ impl eframe::App for Rendar {
         // 結果を反映後、まだ未処理があれば最適化を実行
         self.optimize_run();
 
-        // ダイアログを開く
-        self.open_dialog();
-
-        // ドラッグ&ドロップされたファイルを処理
-        self.drop_files(ui);
-
         // ファイル追加時に最適化を実行
         self.optimize_run();
 
@@ -140,8 +120,7 @@ impl eframe::App for Rendar {
         top::view(
             ui,
             &self.state.config,
-            &mut self.state.open_dialog_token,
-            &mut self.state.setting_token,
+            &mut self.pending_actions,
         );
 
         // 状態とかボタンを表示するタスクバーを表示
@@ -209,6 +188,7 @@ impl eframe::App for Rendar {
 
         // ファイル一覧のアクションを処理
         self.process_pending_actions(
+            ui,
             list_viewport_height,
             row_stride,
             item_spacing,
@@ -240,11 +220,14 @@ impl Rendar {
     /// 入力イベントを処理
     /// * `ui` - UI
     fn input_events(&mut self, ui: &mut egui::Ui) {
+        // ドラッグ&ドロップされたファイルを処理
+        input::drop(ui, &mut self.pending_actions);
+
         // Command + O キーが押されたらファイルダイアログを開く
-        input::command_open(ui, &mut self.state.open_dialog_token);
+        input::command_open(ui, &mut self.pending_actions);
 
         // Command + Comma キーが押されたら設定ウィンドウを開く
-        input::command_comma(ui, &mut self.state.setting_token);
+        input::command_comma(ui, &mut self.pending_actions);
 
         // 上キーが押されたら処理予約
         input::arrow_up(ui, &mut self.state.files, &mut self.pending_actions);
@@ -327,51 +310,13 @@ impl Rendar {
         }
     }
 
-    /// ダイアログを開く
-    fn open_dialog(&mut self) {
-        // フォルダダイアログを開くボタンが押されてたらフォルダダイアログを開く
-        if self.state.open_dialog_token.folder_dialog {
-            self.state.open_dialog_token.folder_dialog = false;
-            if let Err(e) = open::folder(
-                &self.state.config,
-                &mut self.state.files,
-            ) {
-                log::error!("Error opening folders: {}", e);
-                self.state.error_token.open = true;
-                self.state.error_token.value = Some(e);
-            }
-        }
-
-        // ファイルダイアログを開くボタンが押されてたらファイルダイアログを開く
-        if self.state.open_dialog_token.file_dialog {
-            self.state.open_dialog_token.file_dialog = false;
-            if let Err(e) = open::file(
-                &self.state.config,
-                &mut self.state.files,
-            ) {
-                log::error!("Error opening files: {}", e);
-                self.state.error_token.open = true;
-                self.state.error_token.value = Some(e);
-            }
-        }
-    }
-
-    /// ドラッグ&ドロップされたファイルを処理
-    /// * `ui` - UI
-    fn drop_files(&mut self, ui: &egui::Ui) {
-        if let Err(e) = input::drop(ui, &self.state.config, &mut self.state.files) {
-            log::error!("Error dropping files: {}", e);
-            self.state.error_token.open = true;
-            self.state.error_token.value = Some(e);
-        }
-    }
-
     /// 処理予約されたアクションを処理
     /// * `list_viewport_height` - 利用可能な高さ
     /// * `row_stride` - 行のストライド（行の高さ + 行の間隔）
     /// * `item_spacing` - 行の間隔
     fn process_pending_actions(
         &mut self,
+        ui: &egui::Ui,
         list_viewport_height: f32,
         row_stride: f32,
         item_spacing: f32,
@@ -381,51 +326,67 @@ impl Rendar {
 
         // 取り出されたアクションを処理
         for action in pending_actions.drain(..) {
-            match action {
+            let result = match action {
+                event::EventAction::FileOpen => {
+                    open::file(&self.state.config, &mut self.state.files)
+                }
+                event::EventAction::FolderOpen => {
+                    open::folder(&self.state.config, &mut self.state.files)
+                }
+                event::EventAction::DropOpen(files) => {
+                    open::drop(
+                        ui.ctx(),
+                        &files,
+                        &self.state.config,
+                        &mut self.state.files,
+                    )
+                }
+                event::EventAction::SettingOpen(pos) => {
+                    button::setting_open(&mut self.state.setting_token, pos);
+                    Ok(())
+                }
                 event::EventAction::Click { index } => {
                     click::click(&mut self.state.files, index);
+                    Ok(())
                 }
                 event::EventAction::DoubleClick { path } => {
-                    if let Err(e) = click::double_click(&path) {
-                        log::error!("Error revealing file: {}", e);
-                        self.state.error_token.open = true;
-                        self.state.error_token.value = Some(e);
-                    }
+                    click::double_click(&path)
                 }
                 event::EventAction::Up => {
                     key::up(&mut self.state.files);
 
                     // 選択されている行が見える範囲の外なら、スクロール位置を調整
                     self.ensure_selected_row_visible(list_viewport_height, row_stride, item_spacing);
+
+                    Ok(())
                 }
                 event::EventAction::Down => {
                     key::down(&mut self.state.files);
 
                     // 選択されている行が見える範囲の外なら、スクロール位置を調整
                     self.ensure_selected_row_visible(list_viewport_height, row_stride, item_spacing);
+
+                    Ok(())
                 }
                 event::EventAction::Enter { path } => {
-                    if let Err(e) = click::double_click(&path) {
-                        log::error!("Error revealing file: {}", e);
-                        self.state.error_token.open = true;
-                        self.state.error_token.value = Some(e);
-                    }
+                    click::double_click(&path)
                 }
                 event::EventAction::Space { path } => {
-                    if let Err(e) = key::space(&path) {
-                        log::error!("Error revealing file: {}", e);
-                        self.state.error_token.open = true;
-                        self.state.error_token.value = Some(e);
-                    }
+                    key::space(&path)
                 }
                 event::EventAction::Backspace => {
-                    if let Err(e) = key::backspace(&mut self.state.files, &mut self.jobs.optimize_job) {
-                        log::error!("Error canceling file: {}", e);
-                        self.state.error_token.open = true;
-                        self.state.error_token.value = Some(e);
-                    }
+                    key::backspace(&mut self.state.files, &mut self.jobs.optimize_job)
                 }
+            };
+
+            if let Err(e) = result {
+                log::error!("Error processing action: {}", e);
+                self.state.error_token.open = true;
+                self.state.error_token.value = Some(e);
             }
+
+            // 再描画を要求
+            ui.ctx().request_repaint();
         }
     }
 }

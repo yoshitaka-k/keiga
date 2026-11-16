@@ -53,3 +53,26 @@ pub(crate) fn folder(
 
     Ok(())
 }
+
+/// ドロップされたファイルを処理
+/// * `dropped_files` - ドロップされたファイル
+/// * `config` - 設定
+/// * `files` - 開いているファイル
+pub(crate) fn drop(
+    ctx: &egui::Context,
+    dropped_files: &Vec<std::path::PathBuf>,
+    config: &config::Config,
+    files: &mut file::OpenFiles,
+) -> error::Result<()> {
+    for file in dropped_files {
+        files.add_path(config, file.to_path_buf())?;
+    }
+
+    // ウィンドウを前面に持ってくる
+    ctx.send_viewport_cmd_to(
+        egui::ViewportId::ROOT,
+        egui::ViewportCommand::Focus,
+    );
+
+    Ok(())
+}
