@@ -7,7 +7,7 @@ pub(crate) fn folder(
     config: &config::Config,
     files: &mut file::OpenFiles,
 ) -> error::Result<()> {
-    let extensions = &config.extensions_to_string();
+    let extensions = file::allowed_extensions();
 
     // Macのみファイルとフォルダを同時選択できる
     #[cfg(target_os = "macos")]
@@ -38,7 +38,7 @@ pub(crate) fn file(
     config: &config::Config,
     files: &mut file::OpenFiles,
 ) -> error::Result<()> {
-    let extensions = &config.extensions_to_string();
+    let extensions = file::allowed_extensions();
 
     let paths = rfd::FileDialog::new()
         .add_filter("Images", extensions)

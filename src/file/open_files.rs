@@ -11,10 +11,6 @@ pub(crate) struct OpenFiles {
     #[getset(get = "pub")]
     images: Vec<file::Image>,
 
-    /// 許可されたファイル拡張子
-    #[getset(set = "pub")]
-    extensions: Vec<String>,
-
     /// 選択されたファイルの ID
     #[getset(get = "pub", set = "pub")]
     selected_index: Option<usize>,
@@ -30,7 +26,6 @@ impl OpenFiles {
     pub fn new() -> Self {
         Self {
             images: vec![],
-            extensions: vec![],
             selected_index: None,
             file_info: file::FileInfo::new(),
         }
@@ -298,18 +293,6 @@ impl OpenFiles {
         }
     }
 
-    /// ファイルの拡張子が許可されているかどうかを確認
-    /// * `path` - ファイルのパス
-    /// * `return` - 許可されているかどうか
-    fn is_allowed_extension(&self, path: &Path) -> bool {
-        if let Some(ext) = path.extension()
-            && let Some(ext) = ext.to_str()
-                && self.extensions.iter().any(|e| e.eq_ignore_ascii_case(ext)) {
-                    return true;
-                }
-        false
-    }
-
     /// ファイルが待機中か最適化中かどうかを確認
     /// * `path` - ファイルのパス
     /// * `return` - 待機中か最適化中かどうか
@@ -406,7 +389,7 @@ impl OpenFiles {
         };
 
         if metadata.is_file() {
-            if self.is_allowed_extension(&path) {
+            if file::is_allowed_extension(&path) {
                 // strip_prefix は path を借りるので、
                 // 先に String にして into_owned()で所有権を移す
                 let relative_path = path.strip_prefix(base_dir)

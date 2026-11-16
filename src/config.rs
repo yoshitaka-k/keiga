@@ -48,10 +48,6 @@ pub(crate) const SOUND_VOLUME_MAX: u8 = 10;
 #[getset(get = "pub", get_mut = "pub")]
 #[serde(default)]
 pub struct Config {
-    /// 読み込める拡張子
-    #[serde(skip)]
-    extensions: Vec<&'static str>,
-
     /// 実行する最適化数
     optimization_num: u8,
     /// 実行する最適化数 内の PNG 最適化数
@@ -84,7 +80,6 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            extensions: default_extensions(),
             optimization_num: DEFAULT_OPTIMIZATION_NUM,
             png_optimization_num: DEFAULT_PNG_OPTIMIZATION_NUM,
             jpeg_lossy: false,
@@ -100,30 +95,11 @@ impl Default for Config {
     }
 }
 
-/// 読み込める拡張子
-/// image crate でサポートされている拡張子
-/// これらの拡張子は読み込めるが、全て最適化可能ではない
-/// Unsupported メッセージを出す用にも利用するため
-/// * `return` - 読み込める拡張子
-fn default_extensions() -> Vec<&'static str> {
-    vec![
-        "png", "jpg", "jpeg", "gif", "webp", "bmp",
-        "tiff", "tif", "ico", "avif", "qoi", "exr",
-        "tga", "dds", "pbm", "pgm", "ppm", "pam", "hdr", "ff",
-    ]
-}
-
 impl Config {
     /// 新しい Config を作成
     /// * `return` - Config のインスタンス
     pub fn new() -> Self {
         Self::default()
-    }
-
-    /// 拡張子を文字列に変換
-    /// * `return` - 拡張子のベクタ
-    pub fn extensions_to_string(&self) -> Vec<String> {
-        self.extensions.iter().map(|ext| ext.to_string()).collect()
     }
 
     /// PNG 最適化オプションを作成

@@ -67,10 +67,7 @@ impl Rendar {
         config.clamp_values();
 
         // 開くファイルのインスタンスを作成
-        let mut files = file::OpenFiles::new();
-
-        // 拡張子を設定
-        files.set_extensions(config.extensions_to_string());
+        let files = file::OpenFiles::new();
 
         Self {
             config,

@@ -6,12 +6,34 @@ pub(crate) use open_files::OpenFiles;
 pub(crate) use image::Image;
 pub(crate) use status::Status;
 
+use std::path::Path;
+
 /// ファイルの拡張子を管理する列挙型
 #[derive(Clone)]
 pub(crate) enum Extension {
     Jpeg,
     Png,
     None,
+}
+
+/// 読み込める拡張子
+/// * `return` - 読み込める拡張子
+pub(crate) fn allowed_extensions() -> &'static [&'static str] {
+    &["png", "jpg", "jpeg"]
+}
+
+/// ファイルの拡張子が許可されているかどうかを確認
+/// * `path` - ファイルのパス
+/// * `return` - 許可されているかどうか
+fn is_allowed_extension(path: &Path) -> bool {
+    let extensions = allowed_extensions();
+    if let Some(ext) = path.extension()
+        && let Some(ext) = ext.to_str()
+        && extensions.iter().any(|e| e.eq_ignore_ascii_case(ext))
+    {
+        return true;
+    }
+    false
 }
 
 /// 最適化済みのファイル数を管理する構造体
