@@ -3,6 +3,29 @@ use crate::{config, error, file};
 /// ファイルオープンダイアログを開いて選択結果を追加する
 /// * `config` - 設定
 /// * `files` - 開いているファイル
+pub(crate) fn file(
+    config: &config::Config,
+    files: &mut file::OpenFiles,
+) -> error::Result<()> {
+    let extensions = file::allowed_extensions();
+
+    let paths = rfd::FileDialog::new()
+        .add_filter("Images", extensions)
+        .pick_files();
+
+    // ファイルを追加
+    if let Some(paths) = paths {
+        for path in paths {
+            files.add_path(config, path)?;
+        }
+    }
+
+    Ok(())
+}
+
+/// ファイルオープンダイアログを開いて選択結果を追加する
+/// * `config` - 設定
+/// * `files` - 開いているファイル
 pub(crate) fn folder(
     config: &config::Config,
     files: &mut file::OpenFiles,
@@ -20,29 +43,6 @@ pub(crate) fn folder(
     let paths = rfd::FileDialog::new()
         .add_filter("Images", extensions)
         .pick_folders();
-
-    // ファイルを追加
-    if let Some(paths) = paths {
-        for path in paths {
-            files.add_path(config, path)?;
-        }
-    }
-
-    Ok(())
-}
-
-/// ファイルオープンダイアログを開いて選択結果を追加する
-/// * `config` - 設定
-/// * `files` - 開いているファイル
-pub(crate) fn file(
-    config: &config::Config,
-    files: &mut file::OpenFiles,
-) -> error::Result<()> {
-    let extensions = file::allowed_extensions();
-
-    let paths = rfd::FileDialog::new()
-        .add_filter("Images", extensions)
-        .pick_files();
 
     // ファイルを追加
     if let Some(paths) = paths {
