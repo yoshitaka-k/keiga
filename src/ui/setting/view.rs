@@ -1,8 +1,7 @@
-use crate::{config, ui};
-use crate::ui::{assets, setting, modal, SettingTab, SettingToken};
+use crate::{config, ui, state, update};
+use crate::ui::{assets, setting, modal};
 use crate::ui::assets::{constants, svg};
 use crate::ui::setting::{general, optimize, output, concurrent, about};
-use crate::update::{UpdateJob, UpdatedToken};
 
 /// 設定ウィンドウを表示
 /// * `ctx` - コンテキスト
@@ -11,9 +10,9 @@ use crate::update::{UpdateJob, UpdatedToken};
 pub(crate) fn view(
     ctx: &egui::Context,
     config: &mut config::Config,
-    setting_token: &mut SettingToken,
-    update_job: &mut UpdateJob,
-    updated_token: &mut UpdatedToken,
+    setting_token: &mut state::SettingToken,
+    update_job: &mut update::UpdateJob,
+    updated_token: &mut update::UpdatedToken,
 ) {
     // ウィンドウのIDを生成
     let window_id = egui::ViewportId::from_hash_of(ui::SETTING_WINDOW_ID);
@@ -32,7 +31,7 @@ pub(crate) fn view(
         options = options.with_position(pos);
 
         // タブを初期化
-        setting_token.tab = SettingTab::General;
+        setting_token.tab = state::SettingTab::General;
 
         // 表示していたら、ウィンドウの位置を更新して前面に出す
         ctx.send_viewport_cmd_to(window_id, egui::ViewportCommand::OuterPosition(pos));
@@ -70,11 +69,11 @@ pub(crate) fn view(
                 ui.style_mut().visuals.selection.bg_fill = setting::tab_selected_color(ui);
 
                 // タブを表示
-                ui.selectable_value(&mut setting_token.tab, SettingTab::General, SettingTab::General.to_string());
-                ui.selectable_value(&mut setting_token.tab, SettingTab::Optimize, SettingTab::Optimize.to_string());
-                ui.selectable_value(&mut setting_token.tab, SettingTab::Output, SettingTab::Output.to_string());
-                ui.selectable_value(&mut setting_token.tab, SettingTab::Concurrent, SettingTab::Concurrent.to_string());
-                ui.selectable_value(&mut setting_token.tab, SettingTab::About, SettingTab::About.to_string());
+                ui.selectable_value(&mut setting_token.tab, state::SettingTab::General, state::SettingTab::General.to_string());
+                ui.selectable_value(&mut setting_token.tab, state::SettingTab::Optimize, state::SettingTab::Optimize.to_string());
+                ui.selectable_value(&mut setting_token.tab, state::SettingTab::Output, state::SettingTab::Output.to_string());
+                ui.selectable_value(&mut setting_token.tab, state::SettingTab::Concurrent, state::SettingTab::Concurrent.to_string());
+                ui.selectable_value(&mut setting_token.tab, state::SettingTab::About, state::SettingTab::About.to_string());
 
                 // タブの選択時の背景色をリセット
                 ui.style_mut().visuals.selection.bg_fill = selection_bg_fill;
@@ -84,11 +83,11 @@ pub(crate) fn view(
         egui::CentralPanel::default().show(ui, |ui| {
             // タブに応じて表示内容を切り替え
             match setting_token.tab {
-                SettingTab::General => general::view(ui, config),
-                SettingTab::Optimize => optimize::view(ui, config),
-                SettingTab::Output => output::view(ui, config),
-                SettingTab::Concurrent => concurrent::view(ui, config),
-                SettingTab::About => about::view(ui, update_job),
+                state::SettingTab::General => general::view(ui, config),
+                state::SettingTab::Optimize => optimize::view(ui, config),
+                state::SettingTab::Output => output::view(ui, config),
+                state::SettingTab::Concurrent => concurrent::view(ui, config),
+                state::SettingTab::About => about::view(ui, update_job),
             }
         });
 

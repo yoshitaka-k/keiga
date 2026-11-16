@@ -1,4 +1,4 @@
-use crate::{config, event, file, optimize, update, ui, sounds};
+use crate::{config, event, file, optimize, update, ui, sounds, state};
 use crate::event::{open, key, click, input};
 use crate::ui::modal;
 use crate::ui::assets::{constants, fonts, svg};
@@ -7,8 +7,11 @@ use crate::ui::setting::view as setting_window;
 
 /// レンダーを管理する構造体
 pub struct Rendar {
-    config: config::Config,
-    files: file::OpenFiles,
+    /// アプリケーションの状態
+    state: state::State,
+
+    /// ジョブ
+    jobs: state::Jobs,
 
     // 処理予約されたアクション
     pending_actions: Vec<event::EventAction>,
@@ -18,24 +21,6 @@ pub struct Rendar {
 
     // キーイベント時のスクロール位置
     pending_scroll_y: Option<f32>,
-
-    // ファイルダイアログを開くタイミング
-    open_dialog_token: ui::OpenDialogToken,
-
-    // 設定ウィンドウのトークン
-    setting_token: ui::SettingToken,
-
-    // エラーモーダルを表示するためのトークン
-    error_token: ui::ErrorToken,
-
-    // 更新モーダルを表示するためのトークン
-    updated_token: update::UpdatedToken,
-
-    // 最適化ジョブ
-    optimize_job: optimize::OptimizeJob,
-
-    // 更新ジョブ
-    update_job: update::UpdateJob,
 
     // 効果音プレイヤー
     sound: sounds::SoundPlayer,
@@ -66,25 +51,20 @@ impl Rendar {
         // 範囲外の値をクランプ
         config.clamp_values();
 
-        // 開くファイルのインスタンスを作成
-        let files = file::OpenFiles::new();
-
-        Self {
+        // アプリケーションの状態を作成
+        let state = state::State {
             config,
-            files,
-            pending_actions: Vec::new(),
-            vertical_scroll_offset: None,
-            pending_scroll_y: None,
-            open_dialog_token: ui::OpenDialogToken {
+            files: file::OpenFiles::new(),
+            open_dialog_token: state::OpenDialogToken {
                 file_dialog: false,
                 folder_dialog: false,
             },
-            setting_token: ui::SettingToken {
+            setting_token: state::SettingToken {
                 open: false,
                 pos: None,
-                tab: ui::SettingTab::Concurrent,
+                tab: state::SettingTab::Concurrent,
             },
-            error_token: ui::ErrorToken {
+            error_token: state::ErrorToken {
                 open: false,
                 value: None,
             },
@@ -92,8 +72,21 @@ impl Rendar {
                 open: false,
                 check: None,
             },
+        };
+
+        // ジョブを作成
+        let jobs = state::Jobs {
             optimize_job: optimize::OptimizeJob::new(cc.egui_ctx.clone()),
             update_job: update::UpdateJob::new(cc.egui_ctx.clone()),
+        };
+
+        // Rendar のインスタンスを作成
+        Self {
+            state,
+            jobs,
+            pending_actions: Vec::new(),
+            vertical_scroll_offset: None,
+            pending_scroll_y: None,
             sound: sounds::SoundPlayer::new(),
         }
     }
@@ -104,7 +97,7 @@ impl eframe::App for Rendar {
     /// 終了前に Config の状態を保存
     /// * `storage` - ストレージ
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, eframe::APP_KEY, &self.config);
+        eframe::set_value(storage, eframe::APP_KEY, &self.state.config);
     }
 
     /// ユーザーインターフェースを描画
@@ -134,7 +127,7 @@ impl eframe::App for Rendar {
 
         // リスト行の高さと行数を取得
         let row_height = self.row_height(ui);
-        let total_rows = self.files.len();
+        let total_rows = self.state.files.len();
 
         // 利用可能な高さを設定
         let mut list_viewport_height: f32 = 0.0;
@@ -146,18 +139,18 @@ impl eframe::App for Rendar {
         // 上部ボタンを表示
         top::view(
             ui,
-            &self.config,
-            &mut self.open_dialog_token,
-            &mut self.setting_token,
+            &self.state.config,
+            &mut self.state.open_dialog_token,
+            &mut self.state.setting_token,
         );
 
         // 状態とかボタンを表示するタスクバーを表示
         bottom::view(
             ui,
             &status_color,
-            &mut self.files,
-            &mut self.optimize_job,
-            &mut self.error_token,
+            &mut self.state.files,
+            &mut self.jobs.optimize_job,
+            &mut self.state.error_token,
         );
 
         // 中央パネルを表示
@@ -191,7 +184,7 @@ impl eframe::App for Rendar {
                 self.vertical_scroll_offset = Some(row_range.clone());
 
                 // 表示する行の情報
-                let list_row_token = ui::ListRowToken {
+                let list_row_token = state::ListRowToken {
                     range: row_range,
                     height: row_height,
                 };
@@ -200,7 +193,7 @@ impl eframe::App for Rendar {
                 middle::view(
                     ui,
                     &status_color,
-                    &self.files,
+                    &self.state.files,
                     list_row_token,
                     &mut self.pending_actions,
                 )
@@ -208,7 +201,7 @@ impl eframe::App for Rendar {
 
             // リスト行以外をクリックしたら選択解除
             if ui.input(|i| i.pointer.primary_clicked()) && !row_clicked {
-                self.files.set_selected_index(None);
+                self.state.files.set_selected_index(None);
                 self.vertical_scroll_offset = None;
                 self.pending_scroll_y = None;
             }
@@ -222,21 +215,21 @@ impl eframe::App for Rendar {
         );
 
         // 設定ウィンドウを表示
-        if self.setting_token.open {
+        if self.state.setting_token.open {
             setting_window::view(
                 ui.ctx(),
-                &mut self.config,
-                &mut self.setting_token,
-                &mut self.update_job,
-                &mut self.updated_token,
+                &mut self.state.config,
+                &mut self.state.setting_token,
+                &mut self.jobs.update_job,
+                &mut self.state.updated_token,
             );
         }
 
         // エラーモーダルを表示
-        if self.error_token.open {
+        if self.state.error_token.open {
             modal::error(
                 ui.ctx(),
-                &mut self.error_token,
+                &mut self.state.error_token,
             );
         }
     }
@@ -248,44 +241,44 @@ impl Rendar {
     /// * `ui` - UI
     fn input_events(&mut self, ui: &mut egui::Ui) {
         // Command + O キーが押されたらファイルダイアログを開く
-        input::command_open(ui, &mut self.open_dialog_token);
+        input::command_open(ui, &mut self.state.open_dialog_token);
 
         // Command + Comma キーが押されたら設定ウィンドウを開く
-        input::command_comma(ui, &mut self.setting_token);
+        input::command_comma(ui, &mut self.state.setting_token);
 
         // 上キーが押されたら処理予約
-        input::arrow_up(ui, &mut self.files, &mut self.pending_actions);
+        input::arrow_up(ui, &mut self.state.files, &mut self.pending_actions);
 
         // 下キーが押されたら処理予約
-        input::arrow_down(ui, &mut self.files, &mut self.pending_actions);
+        input::arrow_down(ui, &mut self.state.files, &mut self.pending_actions);
 
         // エンターキーが押されたら処理予約
-        input::enter(ui, &mut self.files, &mut self.pending_actions);
+        input::enter(ui, &mut self.state.files, &mut self.pending_actions);
 
         // スペースキーが押されたら処理予約
-        input::space(ui, &mut self.files, &mut self.pending_actions);
+        input::space(ui, &mut self.state.files, &mut self.pending_actions);
 
         // 削除キーが押されたら処理予約
-        input::backspace(ui, &mut self.files, &mut self.pending_actions);
+        input::backspace(ui, &mut self.state.files, &mut self.pending_actions);
     }
 
     /// 最適化結果を反映する
     fn optimize_result(&mut self) {
         // 最適化前か最適化中かどうかをチェック
-        let was_busy = self.files.has_standby() || self.files.has_optimizing();
+        let was_busy = self.state.files.has_standby() || self.state.files.has_optimizing();
 
         // 最適化結果を反映
-        self.optimize_job.result(&mut self.files);
+        self.jobs.optimize_job.result(&mut self.state.files);
 
         // 最適化後か最適化中が終わっているかどうかをチェック
-        let now_idle = !self.files.has_standby() && !self.files.has_optimizing();
+        let now_idle = !self.state.files.has_standby() && !self.state.files.has_optimizing();
 
         // 効果音を再生
-        if *self.config.play_sound() && was_busy && now_idle {
+        if *self.state.config.play_sound() && was_busy && now_idle {
             // 効果音の音量を設定
-            self.sound.set_volume(*self.config.sound_volume());
+            self.sound.set_volume(*self.state.config.sound_volume());
 
-            if self.files.has_error() {
+            if self.state.files.has_error() {
                 self.sound.play_alert();
             } else {
                 self.sound.play_completed();
@@ -295,7 +288,7 @@ impl Rendar {
 
     /// ファイルを最適化実行
     fn optimize_run(&mut self) {
-        self.optimize_job.run(&self.config, &mut self.files);
+        self.jobs.optimize_job.run(&self.state.config, &mut self.state.files);
     }
 
     /// リスト行の高さを取得
@@ -310,7 +303,7 @@ impl Rendar {
     /// * `row_stride` - 行のストライド（行の高さ + 行の間隔）
     fn ensure_selected_row_visible(&mut self, list_viewport_height: f32, row_stride: f32, item_spacing: f32) {
         // 選択されている行のインデックスを取得
-        let Some(index) = self.files.selected_index() else {
+        let Some(index) = self.state.files.selected_index() else {
             return;
         };
 
@@ -337,28 +330,28 @@ impl Rendar {
     /// ダイアログを開く
     fn open_dialog(&mut self) {
         // フォルダダイアログを開くボタンが押されてたらフォルダダイアログを開く
-        if self.open_dialog_token.folder_dialog {
-            self.open_dialog_token.folder_dialog = false;
+        if self.state.open_dialog_token.folder_dialog {
+            self.state.open_dialog_token.folder_dialog = false;
             if let Err(e) = open::folder(
-                &self.config,
-                &mut self.files,
+                &self.state.config,
+                &mut self.state.files,
             ) {
                 log::error!("Error opening folders: {}", e);
-                self.error_token.open = true;
-                self.error_token.value = Some(e);
+                self.state.error_token.open = true;
+                self.state.error_token.value = Some(e);
             }
         }
 
         // ファイルダイアログを開くボタンが押されてたらファイルダイアログを開く
-        if self.open_dialog_token.file_dialog {
-            self.open_dialog_token.file_dialog = false;
+        if self.state.open_dialog_token.file_dialog {
+            self.state.open_dialog_token.file_dialog = false;
             if let Err(e) = open::file(
-                &self.config,
-                &mut self.files,
+                &self.state.config,
+                &mut self.state.files,
             ) {
                 log::error!("Error opening files: {}", e);
-                self.error_token.open = true;
-                self.error_token.value = Some(e);
+                self.state.error_token.open = true;
+                self.state.error_token.value = Some(e);
             }
         }
     }
@@ -366,10 +359,10 @@ impl Rendar {
     /// ドラッグ&ドロップされたファイルを処理
     /// * `ui` - UI
     fn drop_files(&mut self, ui: &egui::Ui) {
-        if let Err(e) = input::drop(ui, &self.config, &mut self.files) {
+        if let Err(e) = input::drop(ui, &self.state.config, &mut self.state.files) {
             log::error!("Error dropping files: {}", e);
-            self.error_token.open = true;
-            self.error_token.value = Some(e);
+            self.state.error_token.open = true;
+            self.state.error_token.value = Some(e);
         }
     }
 
@@ -390,23 +383,23 @@ impl Rendar {
         for action in pending_actions.drain(..) {
             match action {
                 event::EventAction::Click { index } => {
-                    click::click(&mut self.files, index);
+                    click::click(&mut self.state.files, index);
                 }
                 event::EventAction::DoubleClick { path } => {
                     if let Err(e) = click::double_click(&path) {
                         log::error!("Error revealing file: {}", e);
-                        self.error_token.open = true;
-                        self.error_token.value = Some(e);
+                        self.state.error_token.open = true;
+                        self.state.error_token.value = Some(e);
                     }
                 }
                 event::EventAction::Up => {
-                    key::up(&mut self.files);
+                    key::up(&mut self.state.files);
 
                     // 選択されている行が見える範囲の外なら、スクロール位置を調整
                     self.ensure_selected_row_visible(list_viewport_height, row_stride, item_spacing);
                 }
                 event::EventAction::Down => {
-                    key::down(&mut self.files);
+                    key::down(&mut self.state.files);
 
                     // 選択されている行が見える範囲の外なら、スクロール位置を調整
                     self.ensure_selected_row_visible(list_viewport_height, row_stride, item_spacing);
@@ -414,22 +407,22 @@ impl Rendar {
                 event::EventAction::Enter { path } => {
                     if let Err(e) = click::double_click(&path) {
                         log::error!("Error revealing file: {}", e);
-                        self.error_token.open = true;
-                        self.error_token.value = Some(e);
+                        self.state.error_token.open = true;
+                        self.state.error_token.value = Some(e);
                     }
                 }
                 event::EventAction::Space { path } => {
                     if let Err(e) = key::space(&path) {
                         log::error!("Error revealing file: {}", e);
-                        self.error_token.open = true;
-                        self.error_token.value = Some(e);
+                        self.state.error_token.open = true;
+                        self.state.error_token.value = Some(e);
                     }
                 }
                 event::EventAction::Backspace => {
-                    if let Err(e) = key::backspace(&mut self.files, &mut self.optimize_job) {
+                    if let Err(e) = key::backspace(&mut self.state.files, &mut self.jobs.optimize_job) {
                         log::error!("Error canceling file: {}", e);
-                        self.error_token.open = true;
-                        self.error_token.value = Some(e);
+                        self.state.error_token.open = true;
+                        self.state.error_token.value = Some(e);
                     }
                 }
             }

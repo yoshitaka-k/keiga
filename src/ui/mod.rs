@@ -5,6 +5,9 @@ mod modal;
 
 pub use main::render::Rendar;
 
+use getset::Getters;
+use crate::file;
+
 /// モーダルウィンドウの幅
 const MODAL_WINDOW_WIDTH: f32 = 320.0;
 /// モーダルウィンドウのスペーシング
@@ -99,10 +102,6 @@ const BOTTOM_PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
     bottom: 6,
 };
 
-use getset::Getters;
-use crate::error;
-use crate::file;
-
 /// ステータスアイコンの色
 #[derive(Getters)]
 pub(crate) struct StatusColor {
@@ -137,53 +136,6 @@ impl StatusColor {
             error: assets::status_icon_color(ctx, file::Status::Error(String::new())),
         }
     }
-}
-
-/// 設定タブ
-#[derive(PartialEq)]
-pub enum SettingTab {
-    General,
-    Optimize,
-    Output,
-    Concurrent,
-    About,
-}
-
-impl SettingTab {
-    fn to_string(&self) -> &str {
-        match self {
-            SettingTab::General => "General",
-            SettingTab::Optimize => "Optimize",
-            SettingTab::Output => "Output",
-            SettingTab::Concurrent => "Concurrent",
-            SettingTab::About => "About",
-        }
-    }
-}
-
-/// ファイル一覧を表示するためのトークン
-pub struct ListRowToken {
-    pub range: std::ops::Range<usize>,
-    pub height: f32,
-}
-
-/// ファイルダイアログを表示するためのトークン
-pub struct OpenDialogToken {
-    pub file_dialog: bool,
-    pub folder_dialog: bool,
-}
-
-/// 設定ウィンドウを表示するためのトークン
-pub struct SettingToken {
-    pub open: bool,
-    pub pos: Option<egui::Pos2>,
-    pub tab: SettingTab,
-}
-
-/// エラーモーダルを表示するためのトークン
-pub struct ErrorToken {
-    pub open: bool,
-    pub value: Option<error::KeigaError>,
 }
 
 /// パネルの背景色

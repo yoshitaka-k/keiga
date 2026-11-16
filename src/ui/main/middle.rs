@@ -1,7 +1,7 @@
 use egui::Sense;
 
-use crate::{event, file, ui, duration_format};
-use crate::ui::{main, assets, ListRowToken, StatusColor};
+use crate::{event, file, ui, state, duration_format};
+use crate::ui::{main, assets, StatusColor};
 use crate::ui::assets::{constants, fonts::text_color, svg};
 
 /// ファイル一覧を表示
@@ -15,7 +15,7 @@ pub(crate) fn view(
     ui: &mut egui::Ui,
     status_color: &StatusColor,
     files: &file::OpenFiles,
-    list_row: ListRowToken,
+    list_row: state::ListRowToken,
     pending_actions: &mut Vec<event::EventAction>,
 ) -> bool {
     // UIの幅と行間隔

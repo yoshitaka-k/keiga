@@ -2,6 +2,7 @@
 
 mod config;
 mod file;
+mod state;
 mod ui;
 mod optimize;
 mod event;

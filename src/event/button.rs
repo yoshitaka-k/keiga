@@ -1,11 +1,10 @@
-use crate::{file, error, update};
+use crate::{file, error, update, state};
 use crate::optimize::OptimizeJob;
-use crate::ui::{SettingToken, OpenDialogToken};
 
 /// フォルダダイアログを開く
 /// * `ui` - UI
 /// * `open_dialog_token` - フォルダダイアログを開くためのトークン
-pub(crate) fn folder_open(ui: &mut egui::Ui, open_dialog_token: &mut OpenDialogToken) {
+pub(crate) fn folder_open(ui: &mut egui::Ui, open_dialog_token: &mut state::OpenDialogToken) {
     // フォルダダイアログを開くタイミングをずらす
     open_dialog_token.folder_dialog = true;
 
@@ -17,7 +16,7 @@ pub(crate) fn folder_open(ui: &mut egui::Ui, open_dialog_token: &mut OpenDialogT
 /// * `ui` - UI
 /// * `open_dialog_token` - ファイルダイアログを開くためのトークン
 #[cfg(not(target_os = "macos"))]
-pub(crate) fn file_open(ui: &mut egui::Ui, open_dialog_token: &mut OpenDialogToken) {
+pub(crate) fn file_open(ui: &mut egui::Ui, open_dialog_token: &mut state::OpenDialogToken) {
     // ファイルダイアログを開くタイミングをずらす
     open_dialog_token.file_dialog = true;
 
@@ -28,7 +27,7 @@ pub(crate) fn file_open(ui: &mut egui::Ui, open_dialog_token: &mut OpenDialogTok
 /// 設定ダイアログを開く
 /// * `ui` - UI
 /// * `setting_token` - 設定ダイアログを開くためのトークン
-pub(crate) fn setting_open(ui: &mut egui::Ui, setting_token: &mut SettingToken) {
+pub(crate) fn setting_open(ui: &mut egui::Ui, setting_token: &mut state::SettingToken) {
     // 設定ダイアログを開く
     setting_token.open = true;
 

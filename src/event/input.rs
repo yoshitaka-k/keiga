@@ -1,6 +1,5 @@
-use crate::{config, file, error};
+use crate::{config, file, error, state};
 use crate::event::{self, drop, button};
-use crate::ui::{OpenDialogToken, SettingToken};
 
 /// ドロップされたファイルを処理する
 /// * `ui` - ウィジェットのUI
@@ -23,7 +22,7 @@ pub fn drop(ui: &egui::Ui, config: &config::Config, open_files: &mut file::OpenF
 /// Command + O キーが押されたらファイルダイアログを開く
 /// * `ui` - ウィジェットのUI
 /// * `open_dialog_token` - ダイアログトークン
-pub fn command_open(ui: &mut egui::Ui, open_dialog_token: &mut OpenDialogToken) {
+pub fn command_open(ui: &mut egui::Ui, open_dialog_token: &mut state::OpenDialogToken) {
     #[cfg(target_os = "macos")]
     {
         // Command + O キーが押されたらフォルダダイアログを開く
@@ -58,7 +57,7 @@ pub fn command_open(ui: &mut egui::Ui, open_dialog_token: &mut OpenDialogToken) 
 /// Command + Comma キーが押されたら設定ウィンドウを開く
 /// * `ui` - ウィジェットのUI
 /// * `setting_token` - 設定ウィンドウトークン
-pub fn command_comma(ui: &mut egui::Ui, setting_token: &mut SettingToken) {
+pub fn command_comma(ui: &mut egui::Ui, setting_token: &mut state::SettingToken) {
     if ui.input(|input| {
         input.modifiers.matches_exact(egui::Modifiers::COMMAND)
         && input.key_pressed(egui::Key::Comma)

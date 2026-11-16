@@ -1,7 +1,7 @@
-use crate::{file, ui, duration_format};
+use crate::{file, ui, state, duration_format};
 use crate::event::button;
 use crate::optimize::OptimizeJob;
-use crate::ui::{main, assets, ErrorToken, StatusColor};
+use crate::ui::{main, assets, StatusColor};
 use crate::ui::assets::{constants, fonts::text_color, svg};
 
 /// 下部パネルを表示
@@ -14,7 +14,7 @@ pub(crate) fn view(
     status_color: &StatusColor,
     files: &mut file::OpenFiles,
     optimize_job: &mut OptimizeJob,
-    error_token: &mut ErrorToken
+    error_token: &mut state::ErrorToken
 ) {
     // ファイル情報を更新
     files.update_file_info();

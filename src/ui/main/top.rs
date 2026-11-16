@@ -1,6 +1,6 @@
-use crate::{config, ui};
+use crate::{config, ui, state};
 use crate::event::button;
-use crate::ui::{main, assets, SettingToken, OpenDialogToken};
+use crate::ui::{main, assets};
 use crate::ui::assets::{constants, svg};
 
 /// 上部ボタンを表示
@@ -10,8 +10,8 @@ use crate::ui::assets::{constants, svg};
 pub(crate) fn view(
     ui: &mut egui::Ui,
     config: &config::Config,
-    open_dialog_token: &mut OpenDialogToken,
-    setting_token: &mut SettingToken,
+    open_dialog_token: &mut state::OpenDialogToken,
+    setting_token: &mut state::SettingToken,
 ) {
     // パネルのスタイルを設定
     let top_panel_style = ui::panel_style(ui, ui::TOP_PANEL_INNER_MARGIN);
