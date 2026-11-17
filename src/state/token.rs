@@ -1,9 +1,15 @@
 use crate::{error, state};
 
-/// ファイル一覧を表示するためのトークン
-pub(crate) struct ListRowToken {
-    pub range: std::ops::Range<usize>,
-    pub height: f32,
+/// スクロールエリアを表示するためのトークン
+pub(crate) struct ScrollToken {
+    pub selected: bool,
+}
+impl ScrollToken {
+    pub fn new() -> Self {
+        Self {
+            selected: false,
+        }
+    }
 }
 
 /// 設定ウィンドウを表示するためのトークン

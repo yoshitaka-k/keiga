@@ -6,9 +6,9 @@ use crate::{error, file};
 /// * `index` - 選択するファイルのインデックス
 pub(crate) fn click(
     files: &mut file::OpenFiles,
-    index: usize,
+    index: Option<usize>,
 ) {
-    files.set_selected_index(Some(index));
+    files.set_selected_index(index);
 }
 
 /// ダブルクリックで Finder でファイルを選択表示する

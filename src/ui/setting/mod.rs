@@ -5,6 +5,8 @@ pub(crate) mod output;
 pub(crate) mod concurrent;
 pub(crate) mod about;
 
+pub(crate) use view::view;
+
 // インポート
 use crate::ui;
 use crate::event::button;

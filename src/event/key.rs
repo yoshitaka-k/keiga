@@ -1,17 +1,27 @@
 use std::path::Path;
-use crate::{file, error};
+use crate::{file, error, state};
 use crate::optimize::OptimizeJob;
 
 /// 上キーが押されたら選択を上に移動する
 /// * `files` - ファイル一覧
-pub(crate) fn up(files: &mut file::OpenFiles) {
+/// * `scroll_token` - スクロールトークン
+pub(crate) fn up(
+    files: &mut file::OpenFiles,
+    scroll_token: &mut state::ScrollToken
+) {
     files.index_sub();
+    scroll_token.selected = true;
 }
 
 /// 下キーが押されたら選択を下に移動する
 /// * `files` - ファイル一覧
-pub(crate) fn down(files: &mut file::OpenFiles) {
+/// * `scroll_token` - スクロールトークン
+pub(crate) fn down(
+    files: &mut file::OpenFiles,
+    scroll_token: &mut state::ScrollToken
+) {
     files.index_add();
+    scroll_token.selected = true;
 }
 
 /// バックスペースキーが押されたらファイルをキャンセルする
