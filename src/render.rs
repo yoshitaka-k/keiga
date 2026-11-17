@@ -14,6 +14,9 @@ pub struct Render {
 
     // 効果音プレイヤー
     sound: sounds::SoundPlayer,
+
+    /// 最適化中か待機中かどうか
+    was_busy: bool,
 }
 
 /// Render の実装
@@ -62,6 +65,7 @@ impl Render {
             jobs,
             pending_actions: Vec::new(),
             sound: sounds::SoundPlayer::new(),
+            was_busy: false,
         }
     }
 }
@@ -82,7 +86,7 @@ impl eframe::App for Render {
         self.state.scroll_token.selected = false;
 
         // 最適化結果を反映
-        self.optimize_result();
+        self.jobs.optimize_job.result(&mut self.state.files);
 
         // 入力イベントを処理
         self.input_events(ui);
@@ -92,6 +96,9 @@ impl eframe::App for Render {
 
         // ファイル一覧のアクションを処理
         self.process_pending_actions(ui);
+
+        // 効果音を再生
+        self.play_sound();
 
         // メインウィンドウを表示
         ui::draw(
@@ -133,28 +140,26 @@ impl Render {
         input::backspace(ui, &mut self.state.files, &mut self.pending_actions);
     }
 
-    /// 最適化結果を反映する
-    fn optimize_result(&mut self) {
-        // 最適化前か最適化中かどうかをチェック
-        let was_busy = self.state.files.has_standby() || self.state.files.has_optimizing();
+    /// 効果音を再生
+    fn play_sound(&mut self) {
+        // 最適化前か最適化中かどうか（忙しいかどうか）を取得
+        let busy = self.is_busy();
 
-        // 最適化結果を反映
-        self.jobs.optimize_job.result(&mut self.state.files);
-
-        // 最適化後か最適化中が終わっているかどうかをチェック
-        let now_idle = !self.state.files.has_standby() && !self.state.files.has_optimizing();
-
-        // 効果音を再生
-        if *self.state.config.play_sound() && was_busy && now_idle {
-            // 効果音の音量を設定
+        // ファイルがあって、忙しい状態が終わったら効果音を再生
+        if !self.state.files.is_empty()
+            && *self.state.config.play_sound()
+            && self.was_busy && !busy
+        {
             self.sound.set_volume(*self.state.config.sound_volume());
-
             if self.state.files.has_error() {
                 self.sound.play_alert();
             } else {
                 self.sound.play_completed();
             }
         }
+
+        // 忙しいかどうかを更新
+        self.was_busy = busy;
     }
 
     /// 処理予約されたアクションを処理
@@ -174,5 +179,12 @@ impl Render {
             // 再描画を要求
             ui.ctx().request_repaint();
         }
+    }
+
+    /// 最適化中か待機中かどうかをチェック
+    /// * `return` - 最適化中か待機中かどうか
+    fn is_busy(&self) -> bool {
+        self.state.files.has_standby()
+            || self.state.files.has_optimizing()
     }
 }
