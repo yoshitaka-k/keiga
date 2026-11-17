@@ -5,7 +5,7 @@ mod bottom;
 
 pub(crate) use view::view;
 
-use crate::{file, ui, filesize_format};
+use crate::{config, file, ui, filesize_format};
 use crate::ui::assets::{constants, svg, icon_color};
 
 /// アイコンウィジェットを作成
@@ -28,8 +28,8 @@ pub(crate) fn spinner_widget(size: f32, color: egui::Color32) -> impl egui::Widg
 /// 交互に表示する背景色を取得
 /// * `ui` - UI
 /// * `return` - 交互に表示する背景色
-pub(crate) fn alternate_background_color(ui: &egui::Ui) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
+pub(crate) fn alternate_background_color(config: &config::Config) -> egui::Color32 {
+    if *config.theme() == ui::Theme::Dark {
         egui::Color32::from_rgba_unmultiplied(255, 255, 255, 5)
     } else {
         egui::Color32::from_rgba_unmultiplied(0, 0, 0, 10)
@@ -39,7 +39,7 @@ pub(crate) fn alternate_background_color(ui: &egui::Ui) -> egui::Color32 {
 /// 選択されている背景色を取得
 /// * `ui` - UI
 /// * `return` - 選択されている背景色
-pub(crate) fn selected_background_color(_ui: &egui::Ui) -> egui::Color32 {
+pub(crate) fn selected_background_color(_config: &config::Config) -> egui::Color32 {
     egui::Color32::from_rgba_unmultiplied(20, 120, 130, 50)
 }
 

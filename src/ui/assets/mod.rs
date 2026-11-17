@@ -2,7 +2,7 @@ pub(crate) mod constants;
 pub(crate) mod fonts;
 pub(crate) mod svg;
 
-use crate::file;
+use crate::{config, file, ui};
 
 /// アプリアイコン
 pub(crate) const APP_ICON: egui::ImageSource<'static> = svg::bytes_source(
@@ -20,8 +20,8 @@ pub(crate) fn icon_color(ui: &egui::Ui) -> egui::Color32 {
 /// リストなし時のテキスト色
 /// * `ui` - UI
 /// * `return` - リストなし時のテキストの色
-pub(crate) fn list_empty_color(ui: &egui::Ui) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
+pub(crate) fn list_empty_color(config: &config::Config) -> egui::Color32 {
+    if *config.theme() == ui::Theme::Dark {
         constants::DARK_MODE_LIST_EMPTY_COLOR
     } else {
         constants::LIGHT_MODE_LIST_EMPTY_COLOR
@@ -31,8 +31,8 @@ pub(crate) fn list_empty_color(ui: &egui::Ui) -> egui::Color32 {
 /// 警告アイコンの色
 /// * `ui` - UI
 /// * `return` - 警告アイコンの色
-pub(crate) fn warning_color(ui: &egui::Ui) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
+pub(crate) fn warning_color(config: &config::Config) -> egui::Color32 {
+    if *config.theme() == ui::Theme::Dark {
         constants::DARK_MODE_WARNING_COLOR
     } else {
         constants::LIGHT_MODE_WARNING_COLOR
@@ -42,8 +42,8 @@ pub(crate) fn warning_color(ui: &egui::Ui) -> egui::Color32 {
 /// ボタンアイコンの色
 /// * `ui` - UI
 /// * `return` - ボタンアイコンの色
-pub(crate) fn button_icon_color(ui: &egui::Ui) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
+pub(crate) fn button_icon_color(config: &config::Config) -> egui::Color32 {
+    if *config.theme() == ui::Theme::Dark {
         constants::DARK_MODE_BUTTON_ICON_COLOR
     } else {
         constants::LIGHT_MODE_BUTTON_ICON_COLOR
@@ -51,11 +51,11 @@ pub(crate) fn button_icon_color(ui: &egui::Ui) -> egui::Color32 {
 }
 
 /// アイコンの色
-/// * `ctx` - コンテキスト
+/// * `config` - 設定
 /// * `status` - ステータス
 /// * `return` - アイコンの色
-pub(crate) fn status_icon_color(ctx: &egui::Context, status: file::Status) -> egui::Color32 {
-    if ctx.global_style().visuals.dark_mode {
+pub(crate) fn status_icon_color(config: &config::Config, status: file::Status) -> egui::Color32 {
+    if *config.theme() == ui::Theme::Dark {
         match status {
             file::Status::Standby => constants::DARK_MODE_CIRCLE_COLOR,
             file::Status::Optimizing => constants::DARK_MODE_OPTIMIZING_COLOR,

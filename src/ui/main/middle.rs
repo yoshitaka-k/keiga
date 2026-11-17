@@ -75,8 +75,8 @@ pub(crate) fn view(
             // ファイルが空の場合は表示
             if state.files.is_empty() {
                 ui.horizontal(|ui| {
-                    ui.add(main::icon_widget(svg::UPLOAD_FILE, constants::TOP_MENU_UPLOAD_FILE_ICON_SIZE, assets::list_empty_color(ui)));
-                    ui.label(text_color("Files or Folders to Optimize Drag & Drop.", assets::list_empty_color(ui), None));
+                    ui.add(main::icon_widget(svg::UPLOAD_FILE, constants::TOP_MENU_UPLOAD_FILE_ICON_SIZE, assets::list_empty_color(&state.config)));
+                    ui.label(text_color("Files or Folders to Optimize Drag & Drop.", assets::list_empty_color(&state.config), None));
                 });
             }
 
@@ -95,12 +95,12 @@ pub(crate) fn view(
 
                 // 交互に背景色
                 if index.is_multiple_of(2) {
-                    ui.painter().rect_filled(row_rect, ui::LIST_CORNER_RADIUS, main::alternate_background_color(ui));
+                    ui.painter().rect_filled(row_rect, ui::LIST_CORNER_RADIUS, main::alternate_background_color(&state.config));
                 }
 
                 // 選択されている場合は背景を表示
                 if *state.files.selected_index() == Some(index) {
-                    ui.painter().rect_filled(row_rect, ui::LIST_CORNER_RADIUS, main::selected_background_color(ui));
+                    ui.painter().rect_filled(row_rect, ui::LIST_CORNER_RADIUS, main::selected_background_color(&state.config));
                 }
 
                 // コンテンツを表示

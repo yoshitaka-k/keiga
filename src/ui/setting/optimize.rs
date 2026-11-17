@@ -22,9 +22,9 @@ pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
 
         // JPEG の圧縮方法の注意書きを表示
         if *config.jpeg_lossy() {
-            setting::warning_note(ui, "Re-encodes at the quality below..");
+            setting::warning_note(ui, config, "Re-encodes at the quality below..");
         } else {
-            setting::warning_note(ui, "losNear-lossless re-encode. Still lossy; may not shrink.");
+            setting::warning_note(ui, config, "losNear-lossless re-encode. Still lossy; may not shrink.");
         }
 
         // JPEG のスライダーを表示
@@ -56,9 +56,9 @@ pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
 
         // PNG の圧縮方法の注意書きを表示
         if *config.png_lossy() {
-            setting::warning_note(ui, "Reduces to 256 colors. Dithering below.");
+            setting::warning_note(ui, config, "Reduces to 256 colors. Dithering below.");
         } else {
-            setting::warning_note(ui, "Pixels unchanged. Uses the preset below.");
+            setting::warning_note(ui, config, "Pixels unchanged. Uses the preset below.");
         }
 
         // PNG のプリセットを表示

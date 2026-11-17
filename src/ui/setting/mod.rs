@@ -8,7 +8,7 @@ pub(crate) mod about;
 pub(crate) use view::view;
 
 // インポート
-use crate::ui;
+use crate::{config, ui};
 use crate::event::button;
 use crate::ui::assets::{self, constants, svg};
 use crate::update::UpdateJob;
@@ -16,8 +16,8 @@ use crate::update::UpdateJob;
 /// タブの選択時の背景色を取得
 /// * `ui` - UI
 /// * `return` - タブの選択時の背景色
-pub(crate) fn tab_selected_color(ui: &egui::Ui) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
+pub(crate) fn tab_selected_color(config: &config::Config) -> egui::Color32 {
+    if *config.theme() == ui::Theme::Dark {
         ui::DARK_TAB_SELECTED_COLOR
     } else {
         ui::LIGHT_TAB_SELECTED_COLOR
@@ -35,6 +35,8 @@ pub(crate) fn remaining_slider_width(ui: &egui::Ui) -> f32 {
 /// ヘッダーパネルを表示
 /// * `ui` - UI
 /// * `icon` - アイコン
+/// * `label` - ラベル
+/// * `update_job` - アップデート確認ボタン
 pub(crate) fn header_panel(
     ui: &mut egui::Ui,
     icon: egui::ImageSource<'static>,
@@ -66,16 +68,17 @@ pub(crate) fn header_panel(
 
 /// 警告ノートを表示
 /// * `ui` - UI
+/// * `config` - 設定
 /// * `text` - 警告ノートのテキスト
 /// * `return` - 警告ノートのリッチテキスト
-pub(crate) fn warning_note(ui: &mut egui::Ui, text: &str) {
+pub(crate) fn warning_note(ui: &mut egui::Ui, config: &config::Config, text: &str) {
     // デフォルトのスペースの幅を避けておく
     let spacing = ui.spacing().item_spacing.x;
 
     // 出力パスの注意書きを表示
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.x = ui::WARNING_ICON_SPACING;
-        ui.add(egui::Image::new(svg::WARNING).max_height(constants::WARNING_ICON_SIZE).tint(assets::warning_color(ui)));
+        ui.add(egui::Image::new(svg::WARNING).max_height(constants::WARNING_ICON_SIZE).tint(assets::warning_color(config)));
         ui.spacing_mut().item_spacing.x = spacing;
         ui.add(egui::Label::new(
             egui::RichText::new(text).weak(),

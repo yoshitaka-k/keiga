@@ -6,8 +6,9 @@ mod modal;
 /// メイン描画関数を公開
 pub(crate) use main::view as draw;
 
+use serde::{Deserialize, Serialize};
 use getset::Getters;
-use crate::file;
+use crate::{config, file};
 use assets::{fonts, svg};
 
 /// モーダルウィンドウの幅
@@ -72,7 +73,6 @@ const DARK_TAB_SELECTED_COLOR: egui::Color32 = egui::Color32::from_rgb(20, 120, 
 /// ライトモードタブの選択時の背景色
 const LIGHT_TAB_SELECTED_COLOR: egui::Color32 = egui::Color32::from_rgb(130, 220, 210);
 
-
 // モーダル
 
 /// モーダルのラベルの幅
@@ -104,7 +104,25 @@ const BOTTOM_PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
     bottom: 6,
 };
 
+/// テーマ
+#[derive(Clone, Copy, PartialEq, Deserialize, Serialize)]
+pub(crate) enum Theme {
+    Dark,
+    Light,
+}
+impl Theme {
+    /// テーマの視覚スタイルを取得
+    /// * `return` - テーマの視覚スタイル
+    pub(crate) fn visuals(&self) -> egui::Visuals {
+        match self {
+            Theme::Dark => egui::Visuals::dark(),
+            Theme::Light => egui::Visuals::light(),
+        }
+    }
+}
+
 /// フォントと SVG ローダーを追加
+/// * `ctx` - コンテキスト
 pub(crate) fn install(ctx: &egui::Context) {
     // フォントと SVG ローダーを追加
     fonts::install(ctx);
@@ -132,26 +150,26 @@ pub(crate) struct StatusColor {
 
 impl StatusColor {
     /// 新しいステータスアイコンの色を作成
-    /// * `ctx` - コンテキスト
+    /// * `config` - 設定
     /// * `return` - ステータスアイコンの色
-    pub fn new(ctx: &egui::Context) -> Self {
+    pub fn new(config: &config::Config) -> Self {
         Self {
-            standby: assets::status_icon_color(ctx, file::Status::Standby),
-            optimizing: assets::status_icon_color(ctx, file::Status::Optimizing),
-            optimized: assets::status_icon_color(ctx, file::Status::Optimized),
-            unchanged: assets::status_icon_color(ctx, file::Status::Unchanged),
-            skipped: assets::status_icon_color(ctx, file::Status::Skipped),
-            canceled: assets::status_icon_color(ctx, file::Status::Canceled),
-            error: assets::status_icon_color(ctx, file::Status::Error(String::new())),
+            standby: assets::status_icon_color(&config, file::Status::Standby),
+            optimizing: assets::status_icon_color(&config, file::Status::Optimizing),
+            optimized: assets::status_icon_color(&config, file::Status::Optimized),
+            unchanged: assets::status_icon_color(&config, file::Status::Unchanged),
+            skipped: assets::status_icon_color(&config, file::Status::Skipped),
+            canceled: assets::status_icon_color(&config, file::Status::Canceled),
+            error: assets::status_icon_color(&config, file::Status::Error(String::new())),
         }
     }
 }
 
 /// パネルの背景色
-/// * `ui` - UI
+/// * `config` - 設定
 /// * `return` - パネルの背景色
-pub(crate) fn panel_fill_color(ui: &egui::Ui) -> egui::Color32 {
-    if ui.ctx().global_style().visuals.dark_mode {
+pub(crate) fn panel_fill_color(config: &config::Config) -> egui::Color32 {
+    if *config.theme() == Theme::Dark {
         DARK_MODE_PANEL_COLOR
     } else {
         LIGHT_MODE_PANEL_COLOR
@@ -159,11 +177,11 @@ pub(crate) fn panel_fill_color(ui: &egui::Ui) -> egui::Color32 {
 }
 
 /// パネルのスタイルを設定
-/// * `ui` - UI
+/// * `config` - 設定
 /// * `inner_margin` - パネルの内側のマージン
 /// * `return` - パネルのスタイル
-pub(crate) fn panel_style(ui: &mut egui::Ui, inner_margin: egui::Margin) -> egui::Frame {
-    let panel_fill_color = panel_fill_color(ui);
+pub(crate) fn panel_style(config: &config::Config, inner_margin: egui::Margin) -> egui::Frame {
+    let panel_fill_color = panel_fill_color(config);
     egui::Frame::default()
         .fill(panel_fill_color)
         .inner_margin(inner_margin)

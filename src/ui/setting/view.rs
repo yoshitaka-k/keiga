@@ -52,7 +52,7 @@ pub(crate) fn view(
         update_job.result(updated_token);
 
         // パネルのスタイルを設定
-        let panel_style = ui::panel_style(ui, ui::TOP_PANEL_INNER_MARGIN);
+        let panel_style = ui::panel_style(config, ui::TOP_PANEL_INNER_MARGIN);
 
         // アイコンの色を取得
         let icon_color = assets::icon_color(ui);
@@ -66,7 +66,7 @@ pub(crate) fn view(
                 let selection_bg_fill = ui.style_mut().visuals.selection.bg_fill;
 
                 // タブの選択時の背景色を設定
-                ui.style_mut().visuals.selection.bg_fill = setting::tab_selected_color(ui);
+                ui.style_mut().visuals.selection.bg_fill = setting::tab_selected_color(config);
 
                 // タブを表示
                 ui.selectable_value(&mut setting_token.tab, state::SettingTab::General, state::SettingTab::General.to_string());

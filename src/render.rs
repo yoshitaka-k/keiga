@@ -40,6 +40,9 @@ impl Render {
             .and_then(|storage| eframe::get_value(storage, eframe::APP_KEY))
             .unwrap_or(config);
 
+        // テーマを設定
+        cc.egui_ctx.set_visuals(config.theme().visuals());
+
         // 範囲外の値をクランプ
         config.clamp_values();
 

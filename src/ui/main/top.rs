@@ -12,9 +12,9 @@ pub(crate) fn view(
     pending_actions: &mut Vec<event::EventAction>,
 ) {
     // パネルのスタイルを設定
-    let top_panel_style = ui::panel_style(ui, ui::TOP_PANEL_INNER_MARGIN);
+    let top_panel_style = ui::panel_style(config, ui::TOP_PANEL_INNER_MARGIN);
     // ボタンの色を設定
-    let button_color = assets::button_icon_color(ui);
+    let button_color = assets::button_icon_color(config);
 
     // パネルを表示
     egui::Panel::top("top_taskbar").frame(top_panel_style).show(ui, |ui| {

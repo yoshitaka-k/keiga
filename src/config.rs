@@ -2,6 +2,7 @@ use getset::{Getters, MutGetters};
 use serde::{Deserialize, Serialize};
 use oxipng::{Options, StripChunks};
 
+use crate::ui;
 use crate::optimize::options::PngPreset;
 
 /// JPEG 品質のデフォルト値
@@ -74,6 +75,9 @@ pub struct Config {
     play_sound: bool,
     /// 効果音の音量
     sound_volume: u8,
+
+    /// テーマ
+    theme: ui::Theme,
 }
 
 /// Config のデフォルト値
@@ -91,6 +95,7 @@ impl Default for Config {
             output_path: "".to_string(),
             play_sound: true,
             sound_volume: DEFAULT_SOUND_VOLUME,
+            theme: ui::Theme::Dark,
         }
     }
 }

@@ -14,7 +14,7 @@ pub(crate) fn view(
     pending_actions: &mut Vec<event::EventAction>,
 ) {
     // 状態カラーを作成
-    let status_color = ui::StatusColor::new(ui.ctx());
+    let status_color = ui::StatusColor::new(&state.config);
 
     // リスト行の高さと行数を取得
     let row_height = ui.text_style_height(&egui::TextStyle::Body)
@@ -30,6 +30,7 @@ pub(crate) fn view(
     // 状態とかボタンを表示するタスクバーを表示
     bottom::view(
         ui,
+        &state.config,
         &status_color,
         &mut state.files,
         &mut jobs.optimize_job,

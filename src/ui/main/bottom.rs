@@ -1,4 +1,4 @@
-use crate::{file, ui, state, duration_format};
+use crate::{config, file, ui, state, duration_format};
 use crate::event::button;
 use crate::optimize::OptimizeJob;
 use crate::ui::{main, assets, StatusColor};
@@ -11,6 +11,7 @@ use crate::ui::assets::{constants, fonts::text_color, svg};
 /// * `error_token` - エラーモーダルを表示するためのトークン
 pub(crate) fn view(
     ui: &mut egui::Ui,
+    config: &config::Config,
     status_color: &StatusColor,
     files: &mut file::OpenFiles,
     optimize_job: &mut OptimizeJob,
@@ -45,7 +46,7 @@ pub(crate) fn view(
     };
 
     // パネルのスタイルを設定
-    let bottom_panel_style = ui::panel_style(ui, ui::BOTTOM_PANEL_INNER_MARGIN);
+    let bottom_panel_style = ui::panel_style(config, ui::BOTTOM_PANEL_INNER_MARGIN);
 
     // パネルを表示
     egui::Panel::bottom("bottom_taskbar").frame(bottom_panel_style).show(ui, |ui| {
@@ -157,7 +158,7 @@ pub(crate) fn view(
             // 右寄せ
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 // ボタンの色を設定
-                let button_color = assets::button_icon_color(ui);
+                let button_color = assets::button_icon_color(config);
 
                 // クリアボタン
                 let clear_button = egui::Image::new(svg::CLEAR_ALL).max_height(constants::BUTTON_CLEAR_ICON_SIZE).tint(button_color);

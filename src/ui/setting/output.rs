@@ -33,7 +33,7 @@ pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
         });
 
         // 出力パスの注意書きを表示
-        setting::warning_note(ui, "Leave empty to overwrite the original files.");
+        setting::warning_note(ui, config, "Leave empty to overwrite the original files.");
 
         ui.add_space(ui::SETTING_ADD_SPACING);
         ui.separator();
@@ -47,6 +47,6 @@ pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
         });
 
         // 同じパスはスキップの注意書きを表示
-        setting::warning_note(ui, "Skip if already completed. Retry canceled and errors.");
+        setting::warning_note(ui, config, "Skip if already completed. Retry canceled and errors.");
     });
 }

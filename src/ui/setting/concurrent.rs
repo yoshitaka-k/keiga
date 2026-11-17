@@ -31,6 +31,6 @@ pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
         });
 
         // PNG の最適化数の注意書きを表示
-        setting::warning_note(ui, &format!("PNG is included in All. ({} / {})", config.png_optimization_num(), config.optimization_num()));
+        setting::warning_note(ui, config, &format!("PNG is included in All. ({} / {})", config.png_optimization_num(), config.optimization_num()));
     });
 }
