@@ -5,7 +5,8 @@ pub(crate) use jpeg::Jpeg;
 pub(crate) use png::Png;
 
 use std::path::Path;
-use image::{self, ImageDecoder, DynamicImage};
+use image;
+use image::{ImageDecoder, DynamicImage};
 use crate::{error, file};
 use crate::optimize;
 use crate::optimize::guard;

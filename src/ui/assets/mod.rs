@@ -1,5 +1,6 @@
-pub(crate) mod constants;
-pub(crate) mod fonts;
+pub(crate) mod color;
+pub(crate) mod size;
+pub(crate) mod font;
 pub(crate) mod svg;
 
 use crate::{config, file, ui};
@@ -22,9 +23,9 @@ pub(crate) fn icon_color(ui: &egui::Ui) -> egui::Color32 {
 /// * `return` - リストなし時のテキストの色
 pub(crate) fn list_empty_color(config: &config::Config) -> egui::Color32 {
     if *config.theme() == ui::Theme::Dark {
-        constants::DARK_MODE_LIST_EMPTY_COLOR
+        color::DARK_MODE_LIST_EMPTY_COLOR
     } else {
-        constants::LIGHT_MODE_LIST_EMPTY_COLOR
+        color::LIGHT_MODE_LIST_EMPTY_COLOR
     }
 }
 
@@ -33,9 +34,9 @@ pub(crate) fn list_empty_color(config: &config::Config) -> egui::Color32 {
 /// * `return` - 警告アイコンの色
 pub(crate) fn warning_color(config: &config::Config) -> egui::Color32 {
     if *config.theme() == ui::Theme::Dark {
-        constants::DARK_MODE_WARNING_COLOR
+        color::DARK_MODE_WARNING_COLOR
     } else {
-        constants::LIGHT_MODE_WARNING_COLOR
+        color::LIGHT_MODE_WARNING_COLOR
     }
 }
 
@@ -44,9 +45,9 @@ pub(crate) fn warning_color(config: &config::Config) -> egui::Color32 {
 /// * `return` - ボタンアイコンの色
 pub(crate) fn button_icon_color(config: &config::Config) -> egui::Color32 {
     if *config.theme() == ui::Theme::Dark {
-        constants::DARK_MODE_BUTTON_ICON_COLOR
+        color::DARK_MODE_BUTTON_ICON_COLOR
     } else {
-        constants::LIGHT_MODE_BUTTON_ICON_COLOR
+        color::LIGHT_MODE_BUTTON_ICON_COLOR
     }
 }
 
@@ -57,23 +58,36 @@ pub(crate) fn button_icon_color(config: &config::Config) -> egui::Color32 {
 pub(crate) fn status_icon_color(config: &config::Config, status: file::Status) -> egui::Color32 {
     if *config.theme() == ui::Theme::Dark {
         match status {
-            file::Status::Standby => constants::DARK_MODE_CIRCLE_COLOR,
-            file::Status::Optimizing => constants::DARK_MODE_OPTIMIZING_COLOR,
-            file::Status::Optimized => constants::DARK_MODE_OPTIMIZED_COLOR,
-            file::Status::Unchanged => constants::DARK_MODE_UNCHANGED_COLOR,
-            file::Status::Skipped => constants::DARK_MODE_SKIPPED_COLOR,
-            file::Status::Canceled => constants::DARK_MODE_CANCELED_COLOR,
-            file::Status::Error(_) => constants::DARK_MODE_ERROR_COLOR,
+            file::Status::Standby => color::DARK_MODE_CIRCLE_COLOR,
+            file::Status::Optimizing => color::DARK_MODE_OPTIMIZING_COLOR,
+            file::Status::Optimized => color::DARK_MODE_OPTIMIZED_COLOR,
+            file::Status::Unchanged => color::DARK_MODE_UNCHANGED_COLOR,
+            file::Status::Skipped => color::DARK_MODE_SKIPPED_COLOR,
+            file::Status::Canceled => color::DARK_MODE_CANCELED_COLOR,
+            file::Status::Error(_) => color::DARK_MODE_ERROR_COLOR,
         }
     } else {
         match status {
-            file::Status::Standby => constants::LIGHT_MODE_CIRCLE_COLOR,
-            file::Status::Optimizing => constants::LIGHT_MODE_OPTIMIZING_COLOR,
-            file::Status::Optimized => constants::LIGHT_MODE_OPTIMIZED_COLOR,
-            file::Status::Unchanged => constants::LIGHT_MODE_UNCHANGED_COLOR,
-            file::Status::Skipped => constants::LIGHT_MODE_SKIPPED_COLOR,
-            file::Status::Canceled => constants::LIGHT_MODE_CANCELED_COLOR,
-            file::Status::Error(_) => constants::LIGHT_MODE_ERROR_COLOR,
+            file::Status::Standby => color::LIGHT_MODE_CIRCLE_COLOR,
+            file::Status::Optimizing => color::LIGHT_MODE_OPTIMIZING_COLOR,
+            file::Status::Optimized => color::LIGHT_MODE_OPTIMIZED_COLOR,
+            file::Status::Unchanged => color::LIGHT_MODE_UNCHANGED_COLOR,
+            file::Status::Skipped => color::LIGHT_MODE_SKIPPED_COLOR,
+            file::Status::Canceled => color::LIGHT_MODE_CANCELED_COLOR,
+            file::Status::Error(_) => color::LIGHT_MODE_ERROR_COLOR,
         }
     }
+}
+
+/// フォントカラーを設定する
+/// * `text` - テキスト
+/// * `color` - カラー
+/// * `size` - 文字サイズ
+/// * `return` - テキスト
+pub fn text_color(text: &str, color: egui::Color32, size: Option<f32>) -> egui::RichText {
+    let mut rich_text = egui::RichText::new(text).color(color);
+    if let Some(size) = size {
+        rich_text = rich_text.size(size);
+    }
+    rich_text
 }

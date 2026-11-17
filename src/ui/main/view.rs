@@ -1,6 +1,6 @@
 use crate::{event, ui, state};
 use crate::ui::{setting, modal};
-use crate::ui::assets::constants;
+use crate::ui::assets::size;
 use crate::ui::main::{top, middle, bottom};
 
 /// メインウィンドウを表示
@@ -18,7 +18,7 @@ pub(crate) fn view(
 
     // リスト行の高さと行数を取得
     let row_height = ui.text_style_height(&egui::TextStyle::Body)
-        .max(constants::CHECK_ICON_SIZE) + ui::SEPARATOR_HEIGHT;
+        .max(size::CHECK_ICON_SIZE) + ui::SEPARATOR_HEIGHT;
 
     // 上部ボタンを表示
     top::view(

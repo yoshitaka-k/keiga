@@ -10,7 +10,8 @@ pub(crate) use view::view;
 // インポート
 use crate::{config, ui};
 use crate::event::button;
-use crate::ui::assets::{self, constants, svg};
+use crate::ui::assets;
+use crate::ui::assets::{size, svg};
 use crate::update::UpdateJob;
 
 /// タブの選択時の背景色を取得
@@ -51,7 +52,7 @@ pub(crate) fn header_panel(
     ui.horizontal(|ui| {
         ui.add_space(ui::SETTING_INDENT_SPACING);
         ui.spacing_mut().item_spacing.x = ui::HEADER_ICON_SPACING;
-        ui.add(egui::Image::new(icon).max_height(constants::SETTINGS_ICON_SIZE).tint(icon_color));
+        ui.add(egui::Image::new(icon).max_height(size::SETTINGS_ICON_SIZE).tint(icon_color));
         ui.spacing_mut().item_spacing.x = spacing;
         ui.label(label);
 
@@ -78,7 +79,7 @@ pub(crate) fn warning_note(ui: &mut egui::Ui, config: &config::Config, text: &st
     // 出力パスの注意書きを表示
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.x = ui::WARNING_ICON_SPACING;
-        ui.add(egui::Image::new(svg::WARNING).max_height(constants::WARNING_ICON_SIZE).tint(assets::warning_color(config)));
+        ui.add(egui::Image::new(svg::WARNING).max_height(size::WARNING_ICON_SIZE).tint(assets::warning_color(config)));
         ui.spacing_mut().item_spacing.x = spacing;
         ui.add(egui::Label::new(
             egui::RichText::new(text).weak(),

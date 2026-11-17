@@ -9,7 +9,7 @@ pub(crate) use main::view as draw;
 use serde::{Deserialize, Serialize};
 use getset::Getters;
 use crate::{config, file};
-use assets::{fonts, svg};
+use assets::{font, svg};
 
 /// モーダルウィンドウの幅
 const MODAL_WINDOW_WIDTH: f32 = 320.0;
@@ -125,7 +125,7 @@ impl Theme {
 /// * `ctx` - コンテキスト
 pub(crate) fn install(ctx: &egui::Context) {
     // フォントと SVG ローダーを追加
-    fonts::install(ctx);
+    font::install(ctx);
     svg::install(ctx);
 }
 

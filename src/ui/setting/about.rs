@@ -1,6 +1,6 @@
 use crate::{GITHUB_URL, ui};
 use crate::ui::{assets, setting};
-use crate::ui::assets::{constants, svg};
+use crate::ui::assets::{size, svg};
 use crate::update::UpdateJob;
 
 /// バージョンを表示
@@ -16,7 +16,7 @@ pub(crate) fn view(ui: &mut egui::Ui, update_job: &mut UpdateJob) {
 
     egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
         // アプリのアイコンを表示
-        ui.add(egui::Image::new(assets::APP_ICON).max_height(constants::APP_ICON_SIZE));
+        ui.add(egui::Image::new(assets::APP_ICON).max_height(size::APP_ICON_SIZE));
 
         // バージョンを表示
         ui.label(format!("Keiga v{}", env!("CARGO_PKG_VERSION")));

@@ -1,5 +1,5 @@
 use crate::ui;
-use crate::ui::assets::{constants, svg};
+use crate::ui::assets::{size, svg};
 use crate::ui::modal::heading_icon;
 use crate::update::{UpdateCheck, UpdatedToken};
 
@@ -20,17 +20,17 @@ pub(crate) fn updated(ctx: &egui::Context, updated_token: &mut UpdatedToken) {
             match &check {
                 // アップデートがある場合
                 UpdateCheck::Available { .. } => {
-                    ui.add(heading_icon(svg::UPDATE, constants::MODAL_UPDATE_ICON_SIZE, egui::Color32::GREEN));
+                    ui.add(heading_icon(svg::UPDATE, size::MODAL_UPDATE_ICON_SIZE, egui::Color32::GREEN));
                     ui.heading("Update available");
                 }
                 // アップデートが最新の場合
                 UpdateCheck::Latest => {
-                    ui.add(heading_icon(svg::UPDATE, constants::MODAL_UPDATE_ICON_SIZE, ui.visuals().text_color()));
+                    ui.add(heading_icon(svg::UPDATE, size::MODAL_UPDATE_ICON_SIZE, ui.visuals().text_color()));
                     ui.heading("Update not available");
                 }
                 // アップデートが取得できなかった場合
                 UpdateCheck::Failed => {
-                    ui.add(heading_icon(svg::ERROR, constants::MODAL_ERROR_ICON_SIZE, egui::Color32::RED));
+                    ui.add(heading_icon(svg::ERROR, size::MODAL_ERROR_ICON_SIZE, egui::Color32::RED));
                     ui.heading("Couldn't check for updates.");
                 }
             }

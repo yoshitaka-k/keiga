@@ -27,16 +27,3 @@ pub fn install(ctx: &egui::Context) {
 
     ctx.set_fonts(fonts);
 }
-
-/// フォントカラーを設定する
-/// * `text` - テキスト
-/// * `color` - カラー
-/// * `size` - 文字サイズ
-/// * `return` - テキスト
-pub fn text_color(text: &str, color: egui::Color32, size: Option<f32>) -> egui::RichText {
-    let mut rich_text = egui::RichText::new(text).color(color);
-    if let Some(size) = size {
-        rich_text = rich_text.size(size);
-    }
-    rich_text
-}

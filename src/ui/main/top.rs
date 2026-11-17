@@ -1,6 +1,6 @@
 use crate::{config, ui, event};
 use crate::ui::{main, assets};
-use crate::ui::assets::{constants, svg};
+use crate::ui::assets::{size, svg};
 
 /// 上部ボタンを表示
 /// * `ui` - UI
@@ -21,7 +21,7 @@ pub(crate) fn view(
         // 左右分割のレイアウトで、左にタイトル、右にボタンを配置する
         egui::Sides::new().shrink_left().truncate().show(ui,
             |ui| {
-                ui.add(main::icon_widget(svg::COMPRESS, constants::BUTTON_SETTINGS_ICON_SIZE, assets::icon_color(ui)));
+                ui.add(main::icon_widget(svg::COMPRESS, size::BUTTON_SETTINGS_ICON_SIZE, assets::icon_color(ui)));
                 ui.label("Quality: ");
 
                 ui.label("JPEG: ");
@@ -42,7 +42,7 @@ pub(crate) fn view(
             },
             |ui| {
                 // 設定ボタン
-                let settings_button = egui::Image::new(svg::SETTINGS).max_height(constants::BUTTON_SETTINGS_ICON_SIZE).tint(button_color);
+                let settings_button = egui::Image::new(svg::SETTINGS).max_height(size::BUTTON_SETTINGS_ICON_SIZE).tint(button_color);
                 if ui.button(settings_button).on_hover_text("Settings").clicked() {
                     let pos = ui.ctx().input(|input| {
                         input.viewport().outer_rect.map(|rect| rect.min)
@@ -54,7 +54,7 @@ pub(crate) fn view(
                 #[cfg(target_os = "macos")]
                 {
                     let hover_text = "File or Folder Open";
-                    let open_button = egui::Image::new(svg::UPLOAD).max_height(constants::BUTTON_OPEN_ICON_SIZE).tint(button_color);
+                    let open_button = egui::Image::new(svg::UPLOAD).max_height(size::BUTTON_OPEN_ICON_SIZE).tint(button_color);
                     if ui.button(open_button).on_hover_text(hover_text).clicked() {
                         pending_actions.push(event::EventAction::FolderOpen);
                     }
@@ -64,7 +64,7 @@ pub(crate) fn view(
                 #[cfg(not(target_os = "macos"))]
                 {
                     let hover_text = "Folder Open";
-                    let open_button = egui::Image::new(svg::FOLDER_OPEN).max_height(constants::BUTTON_OPEN_ICON_SIZE).tint(button_color);
+                    let open_button = egui::Image::new(svg::FOLDER_OPEN).max_height(size::BUTTON_OPEN_ICON_SIZE).tint(button_color);
                     if ui.button(open_button).on_hover_text(hover_text).clicked() {
                         pending_actions.push(event::EventAction::FolderOpen);
                     }
@@ -74,7 +74,7 @@ pub(crate) fn view(
                 // Macではフォルダダイアログでもファイルを開けるため、表示しないようにする
                 #[cfg(not(target_os = "macos"))]
                 {
-                    let open_button = egui::Image::new(svg::FILE_OPEN).max_height(constants::BUTTON_OPEN_ICON_SIZE).tint(button_color);
+                    let open_button = egui::Image::new(svg::FILE_OPEN).max_height(size::BUTTON_OPEN_ICON_SIZE).tint(button_color);
                     if ui.button(open_button).on_hover_text("File Open").clicked() {
                         pending_actions.push(event::EventAction::FileOpen);
                     }

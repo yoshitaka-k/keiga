@@ -6,7 +6,7 @@ mod bottom;
 pub(crate) use view::view;
 
 use crate::{config, file, ui, filesize_format};
-use crate::ui::assets::{constants, svg, icon_color};
+use crate::ui::assets::{size, svg, icon_color};
 
 /// アイコンウィジェットを作成
 /// * `icon` - アイコン
@@ -79,9 +79,9 @@ pub(crate) fn add_opentype_icon(
 ) -> egui::Response {
     let icon_color = icon_color(ui);
     if *path.is_relative_path() {
-        ui.add(icon_widget(svg::FOLDER, constants::FOLDER_ICON_SIZE, icon_color)).on_hover_text(path.relative_path().to_string())
+        ui.add(icon_widget(svg::FOLDER, size::FOLDER_ICON_SIZE, icon_color)).on_hover_text(path.relative_path().to_string())
     } else {
-        ui.add(icon_widget(svg::PHOTO, constants::PHOTO_ICON_SIZE, icon_color))
+        ui.add(icon_widget(svg::PHOTO, size::PHOTO_ICON_SIZE, icon_color))
     }
 }
 

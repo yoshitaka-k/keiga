@@ -1,6 +1,6 @@
 use crate::{config, ui, state, update};
 use crate::ui::{assets, setting, modal};
-use crate::ui::assets::{constants, svg};
+use crate::ui::assets::{size, svg};
 use crate::ui::setting::{general, optimize, output, concurrent, about};
 
 /// 設定ウィンドウを表示
@@ -60,7 +60,7 @@ pub(crate) fn view(
         // タブを表示
         egui::Panel::top("setting_top_taskbar").frame(panel_style).show(ui, |ui| {
             ui.horizontal(|ui| {
-                ui.add(egui::Image::new(svg::SETTINGS).max_height(constants::TOP_MENU_SETTINGS_ICON_SIZE).tint(icon_color));
+                ui.add(egui::Image::new(svg::SETTINGS).max_height(size::TOP_MENU_SETTINGS_ICON_SIZE).tint(icon_color));
 
                 // タブの選択時の背景色を保存
                 let selection_bg_fill = ui.style_mut().visuals.selection.bg_fill;
