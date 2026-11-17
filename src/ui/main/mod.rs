@@ -1,7 +1,10 @@
 pub(crate) mod render;
-pub(crate) mod top;
-pub(crate) mod middle;
-pub(crate) mod bottom;
+pub(crate) mod view;
+mod top;
+mod middle;
+mod bottom;
+
+pub(crate) use view::view;
 
 use crate::{file, ui, filesize_format};
 use crate::ui::assets::{constants, svg, icon_color};

@@ -1,8 +1,6 @@
 use crate::{config, event, file, optimize, update, ui, sounds, state};
 use crate::event::{open, key, click, input, button};
-use crate::ui::{setting, modal};
-use crate::ui::assets::{constants, fonts, svg};
-use crate::ui::main::{top, middle, bottom};
+use crate::ui::assets::{fonts, svg};
 
 /// レンダーを管理する構造体
 pub struct Rendar {
@@ -92,61 +90,18 @@ impl eframe::App for Rendar {
         self.input_events(ui);
 
         // ファイル追加時に最適化を実行
-        self.optimize_run();
+        self.jobs.optimize_job.run(&self.state.config, &mut self.state.files);
 
         // ファイル一覧のアクションを処理
         self.process_pending_actions(ui);
 
-        // 状態カラーを作成
-        let status_color = ui::StatusColor::new(ui.ctx());
-
-        // 上部ボタンを表示
-        top::view(
+        // メインウィンドウを表示
+        ui::draw(
             ui,
-            &self.state.config,
+            &mut self.state,
+            &mut self.jobs,
             &mut self.pending_actions,
         );
-
-        // 状態とかボタンを表示するタスクバーを表示
-        bottom::view(
-            ui,
-            &status_color,
-            &mut self.state.files,
-            &mut self.jobs.optimize_job,
-            &mut self.state.error_token,
-        );
-
-        // リスト行の高さと行数を取得
-        let row_height = ui.text_style_height(&egui::TextStyle::Body)
-            .max(constants::CHECK_ICON_SIZE) + ui::SEPARATOR_HEIGHT;
-
-        // ファイル一覧を表示
-        middle::view(
-            ui,
-            &self.state,
-            &mut self.pending_actions,
-            &status_color,
-            row_height,
-        );
-
-        // 設定ウィンドウを表示
-        if self.state.setting_token.open {
-            setting::view(
-                ui.ctx(),
-                &mut self.state.config,
-                &mut self.state.setting_token,
-                &mut self.jobs.update_job,
-                &mut self.state.updated_token,
-            );
-        }
-
-        // エラーモーダルを表示
-        if self.state.error_token.open {
-            modal::error(
-                ui.ctx(),
-                &mut self.state.error_token,
-            );
-        }
     }
 }
 
@@ -202,11 +157,6 @@ impl Rendar {
                 self.sound.play_completed();
             }
         }
-    }
-
-    /// ファイルを最適化実行
-    fn optimize_run(&mut self) {
-        self.jobs.optimize_job.run(&self.state.config, &mut self.state.files);
     }
 
     /// 処理予約されたアクションを処理

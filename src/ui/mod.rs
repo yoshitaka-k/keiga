@@ -4,6 +4,7 @@ mod setting;
 mod modal;
 
 pub use main::render::Rendar;
+pub(crate) use main::view as draw;
 
 use getset::Getters;
 use crate::file;
