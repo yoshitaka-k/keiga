@@ -1,5 +1,5 @@
 use crate::{config, event, file, optimize, update, ui, sounds, state};
-use crate::event::{open, key, click, input, button};
+use crate::event::input;
 use crate::ui::assets::{fonts, svg};
 
 /// レンダーを管理する構造体
@@ -160,63 +160,14 @@ impl Rendar {
     }
 
     /// 処理予約されたアクションを処理
-    /// * `files` - ファイル一覧
-    /// * `pending_actions` - 処理予約されたアクション
-    fn process_pending_actions(
-        &mut self,
-        ui: &egui::Ui,
-    ) {
+    /// * `ui` - UI
+    fn process_pending_actions(&mut self, ui: &egui::Ui) {
         // 処理予約されたアクションを取り出して空にする
         let mut pending_actions = std::mem::take(&mut self.pending_actions);
 
         // 取り出されたアクションを処理
         for action in pending_actions.drain(..) {
-            let result = match action {
-                event::EventAction::FileOpen => {
-                    open::file(&self.state.config, &mut self.state.files)
-                }
-                event::EventAction::FolderOpen => {
-                    open::folder(&self.state.config, &mut self.state.files)
-                }
-                event::EventAction::DropOpen(files) => {
-                    open::drop(
-                        ui.ctx(),
-                        &files,
-                        &self.state.config,
-                        &mut self.state.files,
-                    )
-                }
-                event::EventAction::SettingOpen(pos) => {
-                    button::setting_open(&mut self.state.setting_token, pos);
-                    Ok(())
-                }
-                event::EventAction::Click { index } => {
-                    click::click(&mut self.state.files, index);
-                    Ok(())
-                }
-                event::EventAction::DoubleClick(path) => {
-                    click::double_click(&path)
-                }
-                event::EventAction::Up => {
-                    key::up(&mut self.state.files, &mut self.state.scroll_token);
-                    Ok(())
-                }
-                event::EventAction::Down => {
-                    key::down(&mut self.state.files, &mut self.state.scroll_token);
-                    Ok(())
-                }
-                event::EventAction::Enter { path } => {
-                    click::double_click(&path)
-                }
-                event::EventAction::Space { path } => {
-                    key::space(&path)
-                }
-                event::EventAction::Backspace => {
-                    key::backspace(&mut self.state.files, &mut self.jobs.optimize_job)
-                }
-            };
-
-            if let Err(e) = result {
+            if let Err(e) = event::handle(ui.ctx(), &mut self.state, &mut self.jobs, action) {
                 log::error!("Error processing action: {}", e);
                 self.state.error_token.open = true;
                 self.state.error_token.value = Some(e);
