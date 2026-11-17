@@ -9,9 +9,10 @@ mod event;
 mod error;
 mod sounds;
 mod update;
+mod render;
 
 pub use config::Config;
-pub use ui::Rendar;
+pub use render::Render;
 
 /// アプリケーション名
 pub const APP_NAME: &str = "Keiga";

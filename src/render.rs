@@ -1,9 +1,8 @@
 use crate::{config, event, file, optimize, update, ui, sounds, state};
 use crate::event::input;
-use crate::ui::assets::{fonts, svg};
 
 /// レンダーを管理する構造体
-pub struct Rendar {
+pub struct Render {
     /// アプリケーションの状態
     state: state::State,
 
@@ -17,16 +16,15 @@ pub struct Rendar {
     sound: sounds::SoundPlayer,
 }
 
-/// Rendar の実装
-impl Rendar {
-    /// 新しい Rendar を作成
+/// Render の実装
+impl Render {
+    /// 新しい Render を作成
     /// * `cc` - 作成コンテキスト
     /// * `config` - 設定
-    /// * `return` - Rendar のインスタンス
+    /// * `return` - Render のインスタンス
     pub fn new(cc: &eframe::CreationContext<'_>, config: config::Config) -> Self {
         // フォントと SVG ローダーを追加
-        fonts::install(&cc.egui_ctx);
-        svg::install(&cc.egui_ctx);
+        ui::install(&cc.egui_ctx);
 
         // スタイルを設定
         cc.egui_ctx.global_style_mut(|style| {
@@ -58,7 +56,7 @@ impl Rendar {
             update_job: update::UpdateJob::new(cc.egui_ctx.clone()),
         };
 
-        // Rendar のインスタンスを作成
+        // Render のインスタンスを作成
         Self {
             state,
             jobs,
@@ -69,7 +67,7 @@ impl Rendar {
 }
 
 /// eframe::App の実装
-impl eframe::App for Rendar {
+impl eframe::App for Render {
     /// 終了前に Config の状態を保存
     /// * `storage` - ストレージ
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
@@ -106,7 +104,7 @@ impl eframe::App for Rendar {
 }
 
 /// ファイル一覧のアクションを処理
-impl Rendar {
+impl Render {
     /// 入力イベントを処理
     /// * `ui` - UI
     fn input_events(&mut self, ui: &mut egui::Ui) {

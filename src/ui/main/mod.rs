@@ -1,4 +1,3 @@
-pub(crate) mod render;
 pub(crate) mod view;
 mod top;
 mod middle;

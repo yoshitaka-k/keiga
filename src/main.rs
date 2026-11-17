@@ -3,7 +3,7 @@
 #![warn(clippy::all, rust_2018_idioms)]
 
 use std::env;
-use keiga::{APP_NAME, Config, Rendar};
+use keiga::{APP_NAME, Config, Render};
 
 /// バージョン
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -43,6 +43,6 @@ fn main() -> eframe::Result {
     eframe::run_native(
         APP_NAME,
         options,
-        Box::new(|cc| Ok(Box::new(Rendar::new(cc, config))))
+        Box::new(|cc| Ok(Box::new(Render::new(cc, config))))
     )
 }

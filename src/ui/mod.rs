@@ -3,11 +3,12 @@ mod assets;
 mod setting;
 mod modal;
 
-pub use main::render::Rendar;
+/// メイン描画関数を公開
 pub(crate) use main::view as draw;
 
 use getset::Getters;
 use crate::file;
+use assets::{fonts, svg};
 
 /// モーダルウィンドウの幅
 const MODAL_WINDOW_WIDTH: f32 = 320.0;
@@ -102,6 +103,13 @@ const BOTTOM_PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
     top: 4,
     bottom: 6,
 };
+
+/// フォントと SVG ローダーを追加
+pub(crate) fn install(ctx: &egui::Context) {
+    // フォントと SVG ローダーを追加
+    fonts::install(ctx);
+    svg::install(ctx);
+}
 
 /// ステータスアイコンの色
 #[derive(Getters)]
