@@ -1,0 +1,102 @@
+{
+  "code": "en",
+  "name": "English",
+  "labels": {
+    "optimize_status": {
+      "standby": "Standby",
+      "optimizing": "Optimizing",
+      "optimized": "Optimized",
+      "unchanged": "Unchanged",
+      "skipped": "Skipped",
+      "canceled": "Canceled",
+      "completed": "Completed",
+      "error": "Error"
+    },
+    "optimize": {
+      "jpeg": "Jpeg",
+      "png": "Png",
+      "lossy": "Lossy",
+      "lossless": "Lossless"
+    },
+    "main_top": {
+      "settings": "Settings",
+      "files_open": "Files Open",
+      "folder_open": "Folder Open",
+      "file_or_folder_open": "Files or Folder Open"
+    },
+    "main_bottom": {
+      "average_duration": "Average Duration",
+      "jpeg_average_duration": "JPEG Average Duration",
+      "png_average_duration": "PNG Average Duration",
+      "average_saved_rate": "Avg Saved Rate",
+      "cancel_and_clear": "Cancel and Clear"
+    },
+    "main_middle": {
+      "upload_note": "Files or Folders to Optimize Drag & Drop"
+    },
+    "setting": {
+      "heading": "Settings",
+      "general": "General",
+      "optimize": "Optimize",
+      "output": "Output",
+      "concurrent": "Concurrent",
+      "about": "About"
+    },
+    "setting_general": {
+      "language": "Language",
+      "theme": "Theme",
+      "dark": "Dark",
+      "light": "Light",
+      "sound": "Sound",
+      "sound_effects": "Sound effects",
+      "play_sound": "Play sound",
+      "dont_play_sound": "Don't play sound",
+      "volume": "Volume"
+    },
+    "setting_optimize": {
+      "compression": "Compression",
+      "quality": "Quality",
+      "preset": "Preset",
+      "dithering": "Dithering",
+      "jpeg_lossy_warning": "Re-encodes at the quality below.",
+      "jpeg_lossless_warning": "Near-lossless re-encode. Still lossy; may not shrink.",
+      "png_lossy_warning": "Reduces to 256 colors. Dithering below.",
+      "png_lossless_warning": "Pixels unchanged. Uses the preset below."
+    },
+    "setting_output": {
+      "output": "Output",
+      "path": "Path",
+      "browse": "Browse",
+      "clear": "Clear",
+      "output_path_warning": "Leave empty to overwrite the original files.",
+      "skip_same_path": "Skip same path",
+      "skip_same_path_yes": "Skip same path",
+      "skip_same_path_no": "Don't skip same path",
+      "skip_same_path_warning": "Skip if already completed. Retry canceled and errors."
+    },
+    "setting_concurrent": {
+      "concurrent": "Concurrent",
+      "all_files": "All files",
+      "png_files": "PNG files",
+      "png_files_warning": "PNG is included in All."
+    },
+    "setting_about": {
+      "about": "About",
+      "check_for_updates": "Check for updates"
+    },
+    "modal_error": {
+      "heading": "An error occurred"
+    },
+    "modal_update": {
+      "available": "Update available",
+      "latest": "Update not available",
+      "failed": "Couldn't check for updates.",
+      "new_version": "New version",
+      "current_version": "Current version",
+      "download": "Download"
+    },
+    "file_dialog": {
+      "image_files": "Image files"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-use crate::{config, ui, state, update};
+use crate::{config, ui, state, update, lang, APP_NAME};
 use crate::ui::{assets, setting, modal};
 use crate::ui::assets::{size, svg};
 use crate::ui::setting::{general, optimize, output, concurrent, about};
@@ -19,7 +19,7 @@ pub(crate) fn view(
 
     // 設定ウィンドウのオプションを設定
     let mut options = egui::ViewportBuilder::default()
-        .with_title(ui::WINDOW_TITLE)
+        .with_title(format!("{} - {}", APP_NAME, lang::current().setting.heading))
         .with_inner_size([ui::WINDOW_WIDTH, ui::WINDOW_HEIGHT])
         .with_maximize_button(false)
         .with_resizable(false);

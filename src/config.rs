@@ -76,6 +76,9 @@ pub struct Config {
     /// 効果音の音量
     sound_volume: u8,
 
+    /// 言語
+    language: String,
+
     /// テーマ
     theme: ui::Theme,
 }
@@ -95,6 +98,7 @@ impl Default for Config {
             output_path: "".to_string(),
             play_sound: true,
             sound_volume: DEFAULT_SOUND_VOLUME,
+            language: "en".to_string(),
             theme: ui::Theme::Dark,
         }
     }

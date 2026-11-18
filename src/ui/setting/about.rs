@@ -1,4 +1,4 @@
-use crate::{GITHUB_URL, ui};
+use crate::{GITHUB_URL, ui, lang};
 use crate::ui::{assets, setting};
 use crate::ui::assets::{size, svg};
 use crate::update::UpdateJob;
@@ -8,7 +8,7 @@ use crate::update::UpdateJob;
 /// * `update_job` - アップデートジョブ
 pub(crate) fn view(ui: &mut egui::Ui, update_job: &mut UpdateJob) {
     // ヘッダーパネルを表示
-    setting::header_panel(ui, svg::INFO, "About", Some(update_job));
+    setting::header_panel(ui, svg::INFO, lang::current().setting_about.about, Some(update_job));
 
     ui.add_space(ui::HEADER_BOTTOM_SPACING);
     ui.separator();

@@ -10,6 +10,7 @@ mod error;
 mod sounds;
 mod update;
 mod render;
+mod lang;
 
 pub use config::Config;
 pub use render::Render;

@@ -1,4 +1,4 @@
-use crate::{event, file, ui, state, duration_format};
+use crate::{event, file, ui, state, lang, duration_format};
 use crate::ui::{main, assets, StatusColor};
 use crate::ui::assets::{size, svg};
 
@@ -76,7 +76,7 @@ pub(crate) fn view(
             if state.files.is_empty() {
                 ui.horizontal(|ui| {
                     ui.add(main::icon_widget(svg::UPLOAD_FILE, size::TOP_MENU_UPLOAD_FILE_ICON_SIZE, assets::list_empty_color(&state.config)));
-                    ui.label(assets::text_color("Files or Folders to Optimize Drag & Drop.", assets::list_empty_color(&state.config), None));
+                    ui.label(assets::text_color(lang::current().main_middle.upload_note, assets::list_empty_color(&state.config), None));
                 });
             }
 
@@ -132,19 +132,19 @@ pub(crate) fn view(
                             main::list_row_content(ui, image_file, svg::CHECK, size::CHECK_ICON_SIZE, *status_color.unchanged());
 
                             ui.separator();
-                            ui.label(assets::text_color("No savings", *status_color.unchanged(), Some(ui::LIST_NOTE_SIZE)));
+                            ui.label(assets::text_color(lang::current().optimize_status.unchanged, *status_color.unchanged(), Some(ui::LIST_NOTE_SIZE)));
                         }
                         file::Status::Skipped => {
                             main::list_row_content(ui, image_file, svg::CHECK, size::CHECK_ICON_SIZE, *status_color.skipped());
 
                             ui.separator();
-                            ui.label(assets::text_color("Skipped", *status_color.skipped(), Some(ui::LIST_NOTE_SIZE)));
+                            ui.label(assets::text_color(lang::current().optimize_status.skipped, *status_color.skipped(), Some(ui::LIST_NOTE_SIZE)));
                         }
                         file::Status::Canceled => {
                             main::list_row_content(ui, image_file, svg::CANCEL, size::CANCEL_ICON_SIZE, *status_color.canceled());
 
                             ui.separator();
-                            ui.label(assets::text_color("Canceled", *status_color.canceled(), Some(ui::LIST_NOTE_SIZE)));
+                            ui.label(assets::text_color(lang::current().optimize_status.canceled, *status_color.canceled(), Some(ui::LIST_NOTE_SIZE)));
                         }
                         file::Status::Error(e) => {
                             main::list_row_content(ui, image_file, svg::ERROR, size::ERROR_ICON_SIZE, *status_color.error());

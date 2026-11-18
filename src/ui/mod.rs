@@ -8,7 +8,7 @@ pub(crate) use main::view as draw;
 
 use serde::{Deserialize, Serialize};
 use getset::Getters;
-use crate::{config, file};
+use crate::{config, file, lang};
 use assets::{font, svg};
 
 /// モーダルウィンドウの幅
@@ -44,8 +44,6 @@ const LIST_MAX_WIDTH_DIVIDER: f32 = 2.25;
 
 /// ウィンドウのID
 const SETTING_WINDOW_ID: &str = "setting_window";
-/// ウィンドウのタイトル
-const WINDOW_TITLE: &str = "Keiga Settings";
 /// ウィンドウの幅
 const WINDOW_WIDTH: f32 = 480.0;
 /// ウィンドウの高さ
@@ -63,7 +61,7 @@ const QUALITY_LABEL_WIDTH: f32 = 78.0;
 /// 出力のラベルの幅
 const OUTPUT_LABEL_WIDTH: f32 = 34.0;
 /// 並行処理のラベルの幅
-const CONCURRENT_LABEL_WIDTH: f32 = 48.0;
+const CONCURRENT_LABEL_WIDTH: f32 = 50.0;
 /// 追加のスペースの幅
 const SETTING_ADD_SPACING: f32 = 4.0;
 /// 設定のインデントのスペースの幅
@@ -118,6 +116,14 @@ impl Theme {
             Theme::Dark => egui::Visuals::dark(),
             Theme::Light => egui::Visuals::light(),
         }
+    }
+}
+impl std::fmt::Display for Theme {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            Theme::Dark => lang::current().setting_general.dark.to_string(),
+            Theme::Light => lang::current().setting_general.light.to_string(),
+        })
     }
 }
 

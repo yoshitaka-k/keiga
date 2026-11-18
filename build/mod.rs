@@ -1,9 +1,40 @@
-pub(crate) mod fonts;
 pub(crate) mod appicon;
-pub(crate) mod svg;
+pub(crate) mod fonts;
+pub(crate) mod lang;
 pub(crate) mod sounds;
+pub(crate) mod svg;
 
 use std::{fs, path::Path};
+
+/// 文字列をパスカルケースに変換する
+/// * `s` - 文字列
+/// * `return` - パスカルケースの文字列
+pub(crate) fn to_pascal(s: &str) -> String {
+    s.split(|c: char| c == '_' || c == '-' || c.is_whitespace()) // 区切り文字で分割
+     .filter(|word| !word.is_empty())
+     .map(|word| {
+         let mut chars = word.chars();
+         match chars.next() {
+             None => String::new(),
+             Some(first) => first.to_uppercase().collect::<String>() + &chars.as_str().to_lowercase(),
+         }
+     })
+     .collect()
+}
+
+/// JSON ファイルを読み込んで serde_json::Value に変換する
+/// * `path` - JSON ファイルのパス
+/// * `file` - JSON ファイルのファイル名
+/// * `return` - serde_json::Value
+pub(crate) fn load_json(path: &Path, file: &str) -> serde_json::Value {
+    let json_file = path.join(file);
+
+    let json_string = &fs::read_to_string(&json_file)
+        .unwrap_or_else(|_| panic!("failed to read {}", json_file.display()));
+
+    serde_json::from_str(json_string)
+        .unwrap_or_else(|_| panic!("{}: must be a valid JSON", file))
+}
 
 /// assets 配下のパスを include_bytes! 用に展開する
 /// * `path` - assets/ から始まるパス

@@ -1,4 +1,4 @@
-use crate::{config, ui, event};
+use crate::{config, ui, event, lang};
 use crate::ui::{main, assets};
 use crate::ui::assets::{size, svg};
 
@@ -22,18 +22,26 @@ pub(crate) fn view(
         egui::Sides::new().shrink_left().truncate().show(ui,
             |ui| {
                 ui.add(main::icon_widget(svg::COMPRESS, size::BUTTON_SETTINGS_ICON_SIZE, assets::icon_color(ui)));
-                ui.label("Quality: ");
+                ui.label(format!("{}:", lang::current().setting_optimize.quality));
 
-                ui.label("JPEG: ");
-                ui.label((if *config.jpeg_lossy() { "Lossy" } else { "Lossless" }).to_string());
+                ui.label(format!("{}:", lang::current().optimize.jpeg));
+                ui.label(if *config.jpeg_lossy() {
+                    lang::current().optimize.lossy.to_string()
+                } else {
+                    lang::current().optimize.lossless.to_string()
+                });
                 if *config.jpeg_lossy() {
                     ui.label(format!("({}%)", config.jpeg_quality()));
                 }
 
                 ui.label("|");
 
-                ui.label("PNG: ");
-                ui.label((if *config.png_lossy() { "Lossy" } else { "Lossless" }).to_string());
+                ui.label(format!("{}:", lang::current().optimize.png));
+                ui.label(if *config.png_lossy() {
+                    lang::current().optimize.lossy
+                } else {
+                    lang::current().optimize.lossless
+                });
                 if *config.png_lossy() {
                     ui.label(format!("({}%)", config.png_dithering()));
                 } else {
@@ -43,7 +51,7 @@ pub(crate) fn view(
             |ui| {
                 // 設定ボタン
                 let settings_button = egui::Image::new(svg::SETTINGS).max_height(size::BUTTON_SETTINGS_ICON_SIZE).tint(button_color);
-                if ui.button(settings_button).on_hover_text("Settings").clicked() {
+                if ui.button(settings_button).on_hover_text(lang::current().main_top.settings).clicked() {
                     let pos = ui.ctx().input(|input| {
                         input.viewport().outer_rect.map(|rect| rect.min)
                     });
@@ -53,7 +61,7 @@ pub(crate) fn view(
                 // フォルダダイアログを開くボタン
                 #[cfg(target_os = "macos")]
                 {
-                    let hover_text = "File or Folder Open";
+                    let hover_text = lang::current().main_top.file_or_folder_open;
                     let open_button = egui::Image::new(svg::UPLOAD).max_height(size::BUTTON_OPEN_ICON_SIZE).tint(button_color);
                     if ui.button(open_button).on_hover_text(hover_text).clicked() {
                         pending_actions.push(event::EventAction::FolderOpen);
@@ -63,7 +71,7 @@ pub(crate) fn view(
                 // フォルダダイアログを開くボタン
                 #[cfg(not(target_os = "macos"))]
                 {
-                    let hover_text = "Folder Open";
+                    let hover_text = lang::current().main_top.folder_open;
                     let open_button = egui::Image::new(svg::FOLDER_OPEN).max_height(size::BUTTON_OPEN_ICON_SIZE).tint(button_color);
                     if ui.button(open_button).on_hover_text(hover_text).clicked() {
                         pending_actions.push(event::EventAction::FolderOpen);
@@ -75,7 +83,7 @@ pub(crate) fn view(
                 #[cfg(not(target_os = "macos"))]
                 {
                     let open_button = egui::Image::new(svg::FILE_OPEN).max_height(size::BUTTON_OPEN_ICON_SIZE).tint(button_color);
-                    if ui.button(open_button).on_hover_text("File Open").clicked() {
+                    if ui.button(open_button).on_hover_text(lang::current().main_top.files_open).clicked() {
                         pending_actions.push(event::EventAction::FileOpen);
                     }
                 }

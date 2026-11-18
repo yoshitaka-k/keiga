@@ -3,14 +3,16 @@ use crate::{config, error, file};
 /// ファイルオープンダイアログを開いて選択結果を追加する
 /// * `config` - 設定
 /// * `files` - 開いているファイル
+/// * `label` - ファイルダイアログのラベル
 pub(crate) fn file(
     config: &config::Config,
     files: &mut file::OpenFiles,
+    label: &str,
 ) -> error::Result<()> {
     let extensions = file::allowed_extensions();
 
     let paths = rfd::FileDialog::new()
-        .add_filter("Images", extensions)
+        .add_filter(label, extensions)
         .pick_files();
 
     // ファイルを追加
@@ -26,22 +28,24 @@ pub(crate) fn file(
 /// ファイルオープンダイアログを開いて選択結果を追加する
 /// * `config` - 設定
 /// * `files` - 開いているファイル
+/// * `label` - ファイルダイアログのラベル
 pub(crate) fn folder(
     config: &config::Config,
     files: &mut file::OpenFiles,
+    label: &str,
 ) -> error::Result<()> {
     let extensions = file::allowed_extensions();
 
     // Macのみファイルとフォルダを同時選択できる
     #[cfg(target_os = "macos")]
     let paths = rfd::FileDialog::new()
-        .add_filter("Images", extensions)
+        .add_filter(label, extensions)
         .pick_files_or_folders();
 
     // Mac以外は複数フォルダ選択のみ
     #[cfg(not(target_os = "macos"))]
     let paths = rfd::FileDialog::new()
-        .add_filter("Images", extensions)
+        .add_filter(label, extensions)
         .pick_folders();
 
     // ファイルを追加

@@ -1,4 +1,5 @@
 use std::fmt;
+use crate::lang;
 
 /// ファイルステータス
 #[derive(Clone)]
@@ -24,12 +25,12 @@ impl fmt::Display for Status {
     /// * `return` - 最適化ステータスを文字列に変換
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Status::Standby => write!(f, "Standby"),
-            Status::Optimizing => write!(f, "Optimizing"),
-            Status::Optimized => write!(f, "Optimized"),
-            Status::Unchanged => write!(f, "Unchanged"),
-            Status::Skipped => write!(f, "Skipped"),
-            Status::Canceled => write!(f, "Canceled"),
+            Status::Standby => write!(f, "{}", lang::current().optimize_status.standby),
+            Status::Optimizing => write!(f, "{}", lang::current().optimize_status.optimizing),
+            Status::Optimized => write!(f, "{}", lang::current().optimize_status.optimized),
+            Status::Unchanged => write!(f, "{}", lang::current().optimize_status.unchanged),
+            Status::Skipped => write!(f, "{}", lang::current().optimize_status.skipped),
+            Status::Canceled => write!(f, "{}", lang::current().optimize_status.canceled),
             Status::Error(message) => write!(f, "Error: {}", message),
         }
     }

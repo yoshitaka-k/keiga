@@ -8,7 +8,7 @@ pub(crate) mod about;
 pub(crate) use view::view;
 
 // インポート
-use crate::{config, ui};
+use crate::{config, ui, lang};
 use crate::event::button;
 use crate::ui::assets;
 use crate::ui::assets::{size, svg};
@@ -59,7 +59,7 @@ pub(crate) fn header_panel(
         // アップデート確認ボタン
         if let Some(update_job) = update_job {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                if ui.button("Check for updates.").clicked() {
+                if ui.button(lang::current().setting_about.check_for_updates).clicked() {
                     button::check_for_update(update_job);
                 }
             });

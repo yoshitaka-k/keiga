@@ -1,0 +1,102 @@
+{
+  "code": "ja",
+  "name": "日本語",
+  "labels": {
+    "optimize_status": {
+      "standby": "待機",
+      "optimizing": "処理中",
+      "optimized": "最適化済み",
+      "unchanged": "変更なし",
+      "skipped": "スキップ",
+      "canceled": "キャンセル",
+      "completed": "完了",
+      "error": "エラー"
+    },
+    "optimize": {
+      "jpeg": "Jpeg",
+      "png": "Png",
+      "lossy": "Lossy",
+      "lossless": "Lossless"
+    },
+    "main_top": {
+      "settings": "設定",
+      "files_open": "ファイルを開く",
+      "folder_open": "フォルダを開く",
+      "file_or_folder_open": "ファイルまたはフォルダを開く"
+    },
+    "main_bottom": {
+      "average_duration": "平均処理時間",
+      "jpeg_average_duration": "JPEG 平均処理時間",
+      "png_average_duration": "PNG 平均処理時間",
+      "average_saved_rate": "平均削減率",
+      "cancel_and_clear": "キャンセルしてクリア"
+    },
+    "main_middle": {
+      "upload_note": "最適化するファイルやフォルダをドラッグ＆ドロップ"
+    },
+    "setting": {
+      "heading": "設定",
+      "general": "一般",
+      "optimize": "最適化",
+      "output": "出力",
+      "concurrent": "並行処理",
+      "about": "情報"
+    },
+    "setting_general": {
+      "language": "言語",
+      "theme": "テーマ",
+      "dark": "Dark",
+      "light": "Light",
+      "sound": "サウンド",
+      "sound_effects": "効果音",
+      "play_sound": "再生する",
+      "dont_play_sound": "再生しない",
+      "volume": "音量"
+    },
+    "setting_optimize": {
+      "compression": "圧縮",
+      "quality": "Quality",
+      "preset": "Preset",
+      "dithering": "Dithering",
+      "jpeg_lossy_warning": "下の Quality で再エンコードします。",
+      "jpeg_lossless_warning": "擬似可逆で再エンコード。完全な可逆ではなく、小さくならないこともあります。",
+      "png_lossy_warning": "256色に減色します。下の Dithering を使用。",
+      "png_lossless_warning": "画素は変えません。下の Preset を使用。"
+    },
+    "setting_output": {
+      "output": "出力",
+      "path": "パス",
+      "browse": "参照",
+      "clear": "クリア",
+      "output_path_warning": "空欄の場合は元ファイルを上書きします。",
+      "skip_same_path": "同じパス",
+      "skip_same_path_yes": "スキップする",
+      "skip_same_path_no": "スキップしない",
+      "skip_same_path_warning": "完了済みはスキップ。キャンセルとエラーは再試行します。"
+    },
+    "setting_concurrent": {
+      "concurrent": "並行処理",
+      "all_files": "すべて",
+      "png_files": "PNG",
+      "png_files_warning": "PNG は「すべて」の内数です。"
+    },
+    "setting_about": {
+      "about": "情報",
+      "check_for_updates": "アップデートを確認"
+    },
+    "modal_error": {
+      "heading": "エラーが発生しました"
+    },
+    "modal_update": {
+      "available": "新しいバージョンがあります。",
+      "latest": "アプリケーションは最新です。",
+      "failed": "アップデートの確認に失敗しました。",
+      "new_version": "新しいバージョン",
+      "current_version": "現在のバージョン",
+      "download": "ダウンロード"
+    },
+    "file_dialog": {
+      "image_files": "画像ファイル"
+    }
+  }
+}

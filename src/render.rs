@@ -1,4 +1,4 @@
-use crate::{config, event, file, optimize, update, ui, sounds, state};
+use crate::{config, event, file, optimize, update, ui, sounds, state, lang};
 use crate::event::input;
 
 /// レンダーを管理する構造体
@@ -39,6 +39,9 @@ impl Render {
         let mut config = cc.storage
             .and_then(|storage| eframe::get_value(storage, eframe::APP_KEY))
             .unwrap_or(config);
+
+        // 言語を設定
+        lang::set(config.language());
 
         // テーマを設定
         cc.egui_ctx.set_visuals(config.theme().visuals());

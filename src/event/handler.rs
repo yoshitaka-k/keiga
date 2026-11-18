@@ -1,4 +1,4 @@
-use crate::{error, event, state};
+use crate::{error, event, state, lang};
 use crate::event::{open, button, key, click};
 
 /// イベントを処理
@@ -15,10 +15,12 @@ pub(crate) fn handle(
 ) -> error::Result<()> {
     match action {
         event::EventAction::FileOpen => {
-            open::file(&state.config, &mut state.files)
+            let label = lang::current().file_dialog.image_files;
+            open::file(&state.config, &mut state.files, label)
         }
         event::EventAction::FolderOpen => {
-            open::folder(&state.config, &mut state.files)
+            let label = lang::current().file_dialog.image_files;
+            open::folder(&state.config, &mut state.files, label)
         }
         event::EventAction::DropOpen(files) => {
             open::drop(
