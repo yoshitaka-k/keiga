@@ -1,4 +1,4 @@
-pub(crate) mod view;
+mod view;
 mod top;
 mod middle;
 mod bottom;
@@ -13,7 +13,7 @@ use crate::ui::assets::{size, svg, icon_color};
 /// * `size` - アイコンのサイズ
 /// * `color` - アイコンの色
 /// * `return` - アイコンウィジェット
-pub(crate) fn icon_widget(icon: egui::ImageSource<'static>, size: f32, color: egui::Color32) -> impl egui::Widget {
+fn icon_widget(icon: egui::ImageSource<'static>, size: f32, color: egui::Color32) -> impl egui::Widget {
     egui::Image::new(icon).max_height(size).tint(color)
 }
 
@@ -21,14 +21,14 @@ pub(crate) fn icon_widget(icon: egui::ImageSource<'static>, size: f32, color: eg
 /// * `size` - スピナーのサイズ
 /// * `color` - スピナーの色
 /// * `return` - スピナーウィジェット
-pub(crate) fn spinner_widget(size: f32, color: egui::Color32) -> impl egui::Widget {
+fn spinner_widget(size: f32, color: egui::Color32) -> impl egui::Widget {
     egui::Spinner::new().size(size).color(color)
 }
 
 /// 交互に表示する背景色を取得
 /// * `ui` - UI
 /// * `return` - 交互に表示する背景色
-pub(crate) fn alternate_background_color(config: &config::Config) -> egui::Color32 {
+fn alternate_background_color(config: &config::Config) -> egui::Color32 {
     if *config.theme() == ui::Theme::Dark {
         egui::Color32::from_rgba_unmultiplied(255, 255, 255, 5)
     } else {
@@ -39,7 +39,7 @@ pub(crate) fn alternate_background_color(config: &config::Config) -> egui::Color
 /// 選択されている背景色を取得
 /// * `ui` - UI
 /// * `return` - 選択されている背景色
-pub(crate) fn selected_background_color(_config: &config::Config) -> egui::Color32 {
+fn selected_background_color(_config: &config::Config) -> egui::Color32 {
     egui::Color32::from_rgba_unmultiplied(20, 120, 130, 50)
 }
 
@@ -48,7 +48,7 @@ pub(crate) fn selected_background_color(_config: &config::Config) -> egui::Color
 /// * `pad` - パディング
 /// * `widget` - アイコン
 /// * `return` - アイコンセルのレスポンス
-pub(crate) fn add_icon_cell(
+fn add_icon_cell(
     ui: &mut egui::Ui,
     widget: impl egui::Widget,
     is_standby: bool
@@ -73,7 +73,7 @@ pub(crate) fn add_icon_cell(
 /// * `pad` - パディング
 /// * `path` - パス
 /// * `return` - OpenTypeアイコンのレスポンス
-pub(crate) fn add_opentype_icon(
+fn add_opentype_icon(
     ui: &mut egui::Ui,
     path: &file::Image,
 ) -> egui::Response {
@@ -91,7 +91,7 @@ pub(crate) fn add_opentype_icon(
 /// * `icon` - アイコン
 /// * `icon_size` - アイコンのサイズ
 /// * `icon_color` - アイコンの色
-pub(crate) fn list_row_content(
+fn list_row_content(
     ui: &mut egui::Ui,
     image: &file::Image,
     icon: egui::ImageSource<'static>,
@@ -131,7 +131,7 @@ pub(crate) fn list_row_content(
 /// * `pad` - 余白
 /// * `widget` - ステータスアイコン
 /// * `return` - ステータスアイコンのレスポンス
-pub(crate) fn add_padded_icon(ui: &mut egui::Ui, widget: impl egui::Widget, pad: f32) -> egui::Response {
+fn add_padded_icon(ui: &mut egui::Ui, widget: impl egui::Widget, pad: f32) -> egui::Response {
     let spacing = ui.spacing().item_spacing.x;
 
     ui.scope(|ui| {

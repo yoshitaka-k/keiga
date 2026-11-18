@@ -1,9 +1,9 @@
-pub(crate) mod view;
-pub(crate) mod general;
-pub(crate) mod optimize;
-pub(crate) mod output;
-pub(crate) mod concurrent;
-pub(crate) mod about;
+mod view;
+mod general;
+mod optimize;
+mod output;
+mod concurrent;
+mod about;
 
 pub(crate) use view::view;
 
@@ -17,7 +17,7 @@ use crate::update::UpdateJob;
 /// タブの選択時の背景色を取得
 /// * `ui` - UI
 /// * `return` - タブの選択時の背景色
-pub(crate) fn tab_selected_color(config: &config::Config) -> egui::Color32 {
+fn tab_selected_color(config: &config::Config) -> egui::Color32 {
     if *config.theme() == ui::Theme::Dark {
         ui::DARK_TAB_SELECTED_COLOR
     } else {
@@ -28,7 +28,7 @@ pub(crate) fn tab_selected_color(config: &config::Config) -> egui::Color32 {
 /// ラベル後の残り幅に合わせてスライダーのレール幅を決める
 /// * `ui` - UI
 /// * `return` - スライダーのレール幅
-pub(crate) fn remaining_slider_width(ui: &egui::Ui) -> f32 {
+fn remaining_slider_width(ui: &egui::Ui) -> f32 {
     let spacing = ui.spacing();
     (ui.available_width() - spacing.item_spacing.x - spacing.interact_size.x).max(0.0)
 }
@@ -38,7 +38,7 @@ pub(crate) fn remaining_slider_width(ui: &egui::Ui) -> f32 {
 /// * `icon` - アイコン
 /// * `label` - ラベル
 /// * `update_job` - アップデート確認ボタン
-pub(crate) fn header_panel(
+fn header_panel(
     ui: &mut egui::Ui,
     icon: egui::ImageSource<'static>,
     label: &str,
@@ -72,7 +72,7 @@ pub(crate) fn header_panel(
 /// * `config` - 設定
 /// * `text` - 警告ノートのテキスト
 /// * `return` - 警告ノートのリッチテキスト
-pub(crate) fn warning_note(ui: &mut egui::Ui, config: &config::Config, text: &str) {
+fn warning_note(ui: &mut egui::Ui, config: &config::Config, text: &str) {
     // デフォルトのスペースの幅を避けておく
     let spacing = ui.spacing().item_spacing.x;
 
