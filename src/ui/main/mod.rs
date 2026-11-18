@@ -13,7 +13,10 @@ use crate::ui::assets::{size, svg, icon_color};
 /// * `size` - アイコンのサイズ
 /// * `color` - アイコンの色
 /// * `return` - アイコンウィジェット
-fn icon_widget(icon: egui::ImageSource<'static>, size: f32, color: egui::Color32) -> impl egui::Widget {
+fn icon_widget(
+    icon: egui::ImageSource<'static>,
+    size: f32, color: egui::Color32
+) -> impl egui::Widget {
     egui::Image::new(icon).max_height(size).tint(color)
 }
 
@@ -21,7 +24,10 @@ fn icon_widget(icon: egui::ImageSource<'static>, size: f32, color: egui::Color32
 /// * `size` - スピナーのサイズ
 /// * `color` - スピナーの色
 /// * `return` - スピナーウィジェット
-fn spinner_widget(size: f32, color: egui::Color32) -> impl egui::Widget {
+fn spinner_widget(
+    size: f32,
+    color: egui::Color32
+) -> impl egui::Widget {
     egui::Spinner::new().size(size).color(color)
 }
 
@@ -79,7 +85,8 @@ fn add_opentype_icon(
 ) -> egui::Response {
     let icon_color = icon_color(ui);
     if *path.is_relative_path() {
-        ui.add(icon_widget(svg::FOLDER, size::FOLDER_ICON_SIZE, icon_color)).on_hover_text(path.relative_path().to_string())
+        ui.add(icon_widget(svg::FOLDER, size::FOLDER_ICON_SIZE, icon_color))
+            .on_hover_text(path.relative_path().to_string())
     } else {
         ui.add(icon_widget(svg::PHOTO, size::PHOTO_ICON_SIZE, icon_color))
     }
@@ -131,7 +138,11 @@ fn list_row_content(
 /// * `pad` - 余白
 /// * `widget` - ステータスアイコン
 /// * `return` - ステータスアイコンのレスポンス
-fn add_padded_icon(ui: &mut egui::Ui, widget: impl egui::Widget, pad: f32) -> egui::Response {
+fn add_padded_icon(
+    ui: &mut egui::Ui,
+    widget: impl egui::Widget,
+    pad: f32
+) -> egui::Response {
     let spacing = ui.spacing().item_spacing.x;
 
     ui.scope(|ui| {

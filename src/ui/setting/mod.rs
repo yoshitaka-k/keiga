@@ -72,7 +72,11 @@ fn header_panel(
 /// * `config` - 設定
 /// * `text` - 警告ノートのテキスト
 /// * `return` - 警告ノートのリッチテキスト
-fn warning_note(ui: &mut egui::Ui, config: &config::Config, text: &str) {
+fn warning_note(
+    ui: &mut egui::Ui,
+    config: &config::Config,
+    text: &str
+) {
     // デフォルトのスペースの幅を避けておく
     let spacing = ui.spacing().item_spacing.x;
 
