@@ -104,57 +104,60 @@ pub(crate) fn view(
 
             // 未処理
             ui.spacing_mut().item_spacing.x = 0.0;
+            ui.label(format!("{}: ", lang::current().optimize_status.standby));
             ui.label(assets::text_color(&format!("{}", standby_len), *status_color.standby(), None));
             ui.spacing_mut().item_spacing.x = spacing;
-            ui.label(format!(" {}", lang::current().optimize_status.standby));
+            ui.label(",");
 
             // 最適化中
             ui.spacing_mut().item_spacing.x = 0.0;
+            ui.label(format!("{}: ", lang::current().optimize_status.optimizing));
             ui.label(assets::text_color(&format!("{}", optimizing_len), *status_color.optimizing(), None));
             ui.spacing_mut().item_spacing.x = spacing;
-            ui.label(format!(" {}", lang::current().optimize_status.optimizing));
+            ui.label(",");
 
             // 完了
             ui.scope(|ui| {
                 ui.spacing_mut().item_spacing.x = 0.0;
+                ui.label(format!("{}: ", lang::current().optimize_status.completed));
                 ui.label(assets::text_color(&format!("{}", optimized_len + unchanged_len + skipped_len), completed_color, None));
                 ui.spacing_mut().item_spacing.x = spacing;
-                ui.label(format!(" {}", lang::current().optimize_status.completed));
+                ui.label(",");
             }).response.on_hover_ui(|ui| {
                 // 最適化済み
                 ui.horizontal(|ui| {
                     ui.spacing_mut().item_spacing.x = 0.0;
-                    ui.label(assets::text_color(&format!("{}", optimized_len), *status_color.optimized(), None));
+                    ui.label(format!("{}: ", lang::current().optimize_status.optimized));
                     ui.spacing_mut().item_spacing.x = spacing;
-                    ui.label(format!(" {}", lang::current().optimize_status.optimized));
+                    ui.label(assets::text_color(&format!("{}", optimized_len), *status_color.optimized(), None));
                 });
                 // 最適化不要
                 ui.horizontal(|ui| {
                     ui.spacing_mut().item_spacing.x = 0.0;
-                    ui.label(assets::text_color(&format!("{}", unchanged_len), *status_color.unchanged(), None));
+                    ui.label(format!("{}: ", lang::current().optimize_status.unchanged));
                     ui.spacing_mut().item_spacing.x = spacing;
-                    ui.label(format!(" {}", lang::current().optimize_status.unchanged));
+                    ui.label(assets::text_color(&format!("{}", unchanged_len), *status_color.unchanged(), None));
                 });
                 // スキップ
                 ui.horizontal(|ui| {
                     ui.spacing_mut().item_spacing.x = 0.0;
-                    ui.label(assets::text_color(&format!("{}", skipped_len), *status_color.skipped(), None));
+                    ui.label(format!("{}: ", lang::current().optimize_status.skipped));
                     ui.spacing_mut().item_spacing.x = spacing;
-                    ui.label(format!(" {}", lang::current().optimize_status.skipped));
+                    ui.label(assets::text_color(&format!("{}", skipped_len), *status_color.skipped(), None));
                 });
             });
 
             // エラー
             ui.spacing_mut().item_spacing.x = 0.0;
-            ui.label(assets::text_color(&format!("{}", error_len), *status_color.error(), None));
+            ui.label(format!("{}: ", lang::current().optimize_status.error));
             ui.spacing_mut().item_spacing.x = spacing;
-            ui.label(format!(" {}", lang::current().optimize_status.error));
+            ui.label(assets::text_color(&format!("{}", error_len), *status_color.error(), None));
 
             ui.separator();
 
             // 平均保存率
-            ui.label(format!("{}", lang::current().main_bottom.average_saved_rate));
             ui.spacing_mut().item_spacing.x = 0.0;
+            ui.label(format!("{}: ", lang::current().main_bottom.average_saved_rate));
             ui.label(assets::text_color(&format!("{:+.2}%", files.total_saved_rate()), *status_color.optimized(), None));
             ui.spacing_mut().item_spacing.x = spacing;
 
