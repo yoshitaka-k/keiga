@@ -131,20 +131,14 @@ pub(crate) fn install(ctx: &egui::Context) {
 
 /// ステータスアイコンの色
 #[derive(Getters)]
+#[getset(get = "pub")]
 pub(crate) struct StatusColor {
-    #[getset(get = "pub")]
     standby: egui::Color32,
-    #[getset(get = "pub")]
     optimizing: egui::Color32,
-    #[getset(get = "pub")]
     optimized: egui::Color32,
-    #[getset(get = "pub")]
     unchanged: egui::Color32,
-    #[getset(get = "pub")]
     skipped: egui::Color32,
-    #[getset(get = "pub")]
     canceled: egui::Color32,
-    #[getset(get = "pub")]
     error: egui::Color32,
 }
 
