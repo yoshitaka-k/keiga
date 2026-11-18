@@ -103,6 +103,9 @@ impl eframe::App for Render {
         // ファイル一覧のアクションを処理
         self.process_pending_actions(ui);
 
+        // ファイル情報を更新
+        self.state.files.update_file_info();
+
         // 効果音を再生
         self.play_sound();
 

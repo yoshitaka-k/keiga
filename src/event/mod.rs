@@ -21,4 +21,5 @@ pub(crate) enum EventAction {
     Enter { path: std::path::PathBuf },
     Space { path: std::path::PathBuf },
     Backspace,
+    Clear,
 }

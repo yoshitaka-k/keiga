@@ -30,6 +30,9 @@ pub(crate) fn handle(
                 &mut state.files,
             )
         }
+        event::EventAction::Clear => {
+            button::cancel_and_clear(&mut state.files, &mut jobs.optimize_job)
+        }
         event::EventAction::SettingOpen(pos) => {
             button::setting_open(&mut state.setting_token, pos);
             Ok(())

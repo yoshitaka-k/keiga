@@ -30,11 +30,9 @@ pub(crate) fn view(
     // 状態とかボタンを表示するタスクバーを表示
     bottom::view(
         ui,
-        &state.config,
+        state,
+        pending_actions,
         &status_color,
-        &mut state.files,
-        &mut jobs.optimize_job,
-        &mut state.error_token,
     );
 
     // ファイル一覧を表示
