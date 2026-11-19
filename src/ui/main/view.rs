@@ -18,7 +18,7 @@ pub(crate) fn view(
 
     // リスト行の高さと行数を取得
     let row_height = ui.text_style_height(&egui::TextStyle::Body)
-        .max(size::CHECK_ICON_SIZE) + ui::SEPARATOR_HEIGHT;
+        .max(size::STATUS_ICON_SIZE) + ui::SEPARATOR_HEIGHT;
 
     // 上部ボタンを表示
     top::view(

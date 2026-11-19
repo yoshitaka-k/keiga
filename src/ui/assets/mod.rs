@@ -71,16 +71,3 @@ pub(crate) fn status_icon_color(config: &config::Config, status: file::Status) -
         }
     }
 }
-
-/// フォントカラーを設定する
-/// * `text` - テキスト
-/// * `color` - カラー
-/// * `size` - 文字サイズ
-/// * `return` - テキスト
-pub(crate) fn text_color(text: &str, color: egui::Color32, size: Option<f32>) -> egui::RichText {
-    let mut rich_text = egui::RichText::new(text).color(color);
-    if let Some(size) = size {
-        rich_text = rich_text.size(size);
-    }
-    rich_text
-}

@@ -25,14 +25,10 @@ const LIGHT_MODE_PANEL_COLOR: egui::Color32 = egui::Color32::from_rgb(225, 225, 
 
 /// セパレータの高さ
 const SEPARATOR_HEIGHT: f32 = 4.0;
-/// スピナーのサイズ
-const SPINNER_SIZE: f32 = 8.0;
 /// アイコンセルの左パディング
 const LIST_ICON_CELL_LEFT_PADDING: f32 = 2.0;
 /// スタンバイアイコンセルの左パディング
 const LIST_ICON_STANDBY_LEFT_PADDING: f32 = 1.0;
-/// ボトムアイコンセルの左パディング
-const BOTTOM_ICON_CELL_LEFT_PADDING: f32 = 4.0;
 /// リストのノートのサイズ
 const LIST_NOTE_SIZE: f32 = 11.0;
 /// リストの角丸
@@ -211,13 +207,34 @@ fn icon_color(ui: &egui::Ui) -> egui::Color32 {
     ui.visuals().text_color()
 }
 
+/// リッチテキストを作成する
+/// * `text` - テキスト
+/// * `color` - テキストの色
+/// * `size` - テキストのサイズ
+/// * `return` - リッチテキスト
+pub(crate) fn rich_text(
+    text: &str,
+    color: egui::Color32,
+    size: Option<f32>
+) -> egui::RichText {
+    let mut rich_text = egui::RichText::new(text).color(color);
+    if let Some(size) = size {
+        rich_text = rich_text.size(size);
+    }
+    rich_text
+}
+
 /// テキストカラーを設定する
 /// * `ui` - UI
 /// * `text` - テキスト
 /// * `color` - カラー
 /// * `return` - ラベルのレスポンス
-pub(crate) fn rich_label(ui: &mut egui::Ui, text: &str, color: egui::Color32) -> egui::Response {
-    ui.label(egui::RichText::new(text).color(color))
+pub(crate) fn rich_label(
+    ui: &mut egui::Ui,
+    text: &str,
+    color: egui::Color32
+) -> egui::Response {
+    ui.label(rich_text(text, color, None))
 }
 
 /// パネルのスタイルを設定

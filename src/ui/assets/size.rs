@@ -1,15 +1,12 @@
-// List Icon Size
-pub(crate) const CIRCLE_ICON_SIZE: f32 = 12.0;
-pub(crate) const AUTORENEW_ICON_SIZE: f32 = 14.0;
-pub(crate) const CHECK_ICON_SIZE: f32 = 14.0;
-pub(crate) const CANCEL_ICON_SIZE: f32 = 14.0;
-pub(crate) const ERROR_ICON_SIZE: f32 = 14.0;
+/// ステータスアイコンのサイズ
+pub(crate) const STATUS_ICON_SIZE: f32 = 14.0;
 
-pub(crate) const PHOTO_ICON_SIZE: f32 = 15.0;
-pub(crate) const FOLDER_ICON_SIZE: f32 = 15.0;
+/// リストが空の時のアイコンのサイズ
+pub(crate) const EMPTY_ICON_SIZE: f32 = 16.0;
+/// リスト項目のアイコンのサイズ
+pub(crate) const LIST_ICON_SIZE: f32 = 14.0;
 
 // Main Icon Size
-pub(crate) const TOP_MENU_UPLOAD_FILE_ICON_SIZE: f32 = 16.0;
 pub(crate) const TOP_MENU_SETTINGS_ICON_SIZE: f32 = 16.0;
 
 // Settings Icon Size

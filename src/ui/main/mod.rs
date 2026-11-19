@@ -42,6 +42,49 @@ fn alternate_background_color(config: &config::Config) -> egui::Color32 {
     }
 }
 
+
+/// ステータスアイコンを描画
+/// * `ui` - UI
+/// * `status` - ステータス
+/// * `status_color` - ステータスカラー
+/// * `completed_color` - 完了色
+/// * `return` - ステータスアイコン
+fn status_icon(
+    ui: &mut egui::Ui,
+    status: &file::Status,
+    status_color: &ui::StatusColor,
+    completed_color: egui::Color32,
+    is_spinner: bool,
+) -> egui::Response {
+    match status {
+        file::Status::Standby => {
+            ui.add(icon_widget(svg::CIRCLE, size::STATUS_ICON_SIZE, *status_color.standby()))
+        }
+        file::Status::Optimizing => {
+            if is_spinner {
+                ui.add(spinner_widget(size::STATUS_ICON_SIZE, *status_color.optimizing()))
+            } else {
+                ui.add(icon_widget(svg::AUTORENEW, size::STATUS_ICON_SIZE, *status_color.optimizing()))
+            }
+        }
+        file::Status::Optimized => {
+            ui.add(icon_widget(svg::CHECK, size::STATUS_ICON_SIZE, completed_color))
+        }
+        file::Status::Unchanged => {
+            ui.add(icon_widget(svg::CHECK, size::STATUS_ICON_SIZE, *status_color.unchanged()))
+        }
+        file::Status::Skipped => {
+            ui.add(icon_widget(svg::CHECK, size::STATUS_ICON_SIZE, *status_color.skipped()))
+        }
+        file::Status::Canceled => {
+            ui.add(icon_widget(svg::CANCEL, size::STATUS_ICON_SIZE, *status_color.canceled()))
+        }
+        file::Status::Error(_) => {
+            ui.add(icon_widget(svg::ERROR, size::STATUS_ICON_SIZE, *status_color.error()))
+        }
+    }
+}
+
 /// 選択されている背景色を取得
 /// * `ui` - UI
 /// * `return` - 選択されている背景色
@@ -79,16 +122,16 @@ fn add_icon_cell(
 /// * `pad` - パディング
 /// * `path` - パス
 /// * `return` - OpenTypeアイコンのレスポンス
-fn add_opentype_icon(
+fn opentype_icon(
     ui: &mut egui::Ui,
     path: &file::Image,
 ) -> egui::Response {
     let icon_color = ui::icon_color(ui);
     if *path.is_relative_path() {
-        ui.add(icon_widget(svg::FOLDER, size::FOLDER_ICON_SIZE, icon_color))
+        ui.add(icon_widget(svg::FOLDER, size::LIST_ICON_SIZE, icon_color))
             .on_hover_text(path.relative_path().to_string())
     } else {
-        ui.add(icon_widget(svg::PHOTO, size::PHOTO_ICON_SIZE, icon_color))
+        ui.add(icon_widget(svg::PHOTO, size::LIST_ICON_SIZE, icon_color))
     }
 }
 
@@ -115,7 +158,7 @@ fn list_row_content(
     , true).on_hover_text(image.status().to_string());
 
     // オープンタイプアイコンを表示
-    add_opentype_icon(ui, image);
+    opentype_icon(ui, image);
 
     // ファイル名を表示
     ui.scope(|ui| {
@@ -131,25 +174,4 @@ fn list_row_content(
     } else {
         ui.label(format!("({})", size));
     }
-}
-
-/// 左右に余白を付けてステータスアイコンを配置
-/// * `ui` - UI
-/// * `pad` - 余白
-/// * `widget` - ステータスアイコン
-/// * `return` - ステータスアイコンのレスポンス
-fn add_padded_icon(
-    ui: &mut egui::Ui,
-    widget: impl egui::Widget,
-    pad: f32
-) -> egui::Response {
-    let spacing = ui.spacing().item_spacing.x;
-
-    ui.scope(|ui| {
-        ui.add_space(ui::BOTTOM_ICON_CELL_LEFT_PADDING + pad);
-        ui.spacing_mut().item_spacing.x = 0.0;
-        ui.add(widget);
-        ui.spacing_mut().item_spacing.x = spacing;
-        ui.add_space(pad);
-    }).response
 }

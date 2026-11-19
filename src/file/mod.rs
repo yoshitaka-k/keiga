@@ -37,7 +37,7 @@ fn is_allowed_extension(path: &Path) -> bool {
 }
 
 /// 最適化済みのファイル数を管理する構造体
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 struct OptimizedLen {
     jpeg: u32,
     png: u32,
@@ -56,7 +56,7 @@ impl OptimizedLen {
 }
 
 /// 最適化時間を管理する構造体
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 struct DurationInfo {
     jpeg: u64,
     png: u64,
@@ -75,7 +75,7 @@ impl DurationInfo {
 }
 
 /// ファイル情報を管理する構造体
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 struct FileInfo {
     standby_len: u32,
     optimizing_len: u32,
@@ -84,6 +84,7 @@ struct FileInfo {
     skipped_len: u32,
     canceled_len: u32,
     error_len: u32,
+    completed_len: u32,
     total_size: u64,
     total_new_size: u64,
     total_duration: DurationInfo,
@@ -103,6 +104,7 @@ impl FileInfo {
             skipped_len: 0,
             canceled_len: 0,
             error_len: 0,
+            completed_len: 0,
             total_size: 0,
             total_new_size: 0,
             total_duration: DurationInfo::new(),

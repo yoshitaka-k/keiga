@@ -25,31 +25,17 @@ pub(crate) fn view(
                 // デフォルトのスペースの幅を避けておく
                 let spacing = ui.spacing().item_spacing.x;
 
+                // ジョブの状態を取得
+                let job_status = state.files.job_status();
+
                 // 完了アイコンの色
                 let completed_color = completed_color(state, status_color);
 
                 // 処理中アイコンを配置
                 // 優先度: 最適化中 > エラー > 最適化済み・最適化不要 > 待機
-                let response = if state.files.optimizing_len() > 0 {
-                    main::add_padded_icon(ui,
-                        main::spinner_widget(ui::SPINNER_SIZE, *status_color.optimizing()),
-                    3.0)
-                } else if state.files.error_len() > 0 {
-                    main::add_padded_icon(ui,
-                        main::icon_widget(svg::ERROR, size::ERROR_ICON_SIZE, *status_color.error()),
-                    1.0)
-                } else if (state.files.optimized_len() + state.files.unchanged_len() + state.files.skipped_len()) > 0 {
-                    main::add_padded_icon(ui,
-                        main::icon_widget(svg::CHECK, size::CHECK_ICON_SIZE, completed_color),
-                    0.0)
-                } else {
-                    main::add_padded_icon(ui,
-                        main::icon_widget(svg::CIRCLE, size::CIRCLE_ICON_SIZE, *status_color.standby()),
-                    1.0)
-                };
-
-                // ホバーテキストを設定
-                response.on_hover_ui(|ui| {
+                main::status_icon(ui, &job_status, status_color, completed_color, false)
+                    .on_hover_ui(|ui|
+                {
                     ui.label(format!(
                         "{}: {}",
                         lang::current().main_bottom.average_duration,
@@ -105,7 +91,7 @@ pub(crate) fn view(
                         ui,
                         spacing,
                         lang::current().optimize_status.completed,
-                        state.files.optimized_len() + state.files.unchanged_len() + state.files.skipped_len(),
+                        state.files.completed_len(),
                         completed_color,
                     );
                     ui.label(",");
@@ -156,7 +142,11 @@ pub(crate) fn view(
                 // 平均保存率
                 ui.spacing_mut().item_spacing.x = 0.0;
                 ui.label(format!("{}: ", lang::current().main_bottom.average_saved_rate));
-                ui.label(assets::text_color(&format!("{:+.2}%", state.files.total_saved_rate()), *status_color.optimized(), None));
+                ui.label(ui::rich_text(
+                    &format!("{:+.2}%", state.files.total_saved_rate()),
+                    *status_color.optimized(),
+                    None,
+                ));
                 ui.spacing_mut().item_spacing.x = spacing;
             },
             |ui| {

@@ -75,8 +75,8 @@ pub(crate) fn view(
             // ファイルが空の場合は表示
             if state.files.is_empty() {
                 ui.horizontal(|ui| {
-                    ui.add(main::icon_widget(svg::UPLOAD_FILE, size::TOP_MENU_UPLOAD_FILE_ICON_SIZE, assets::list_empty_color(&state.config)));
-                    ui.label(assets::text_color(lang::current().main_middle.upload_note, assets::list_empty_color(&state.config), None));
+                    ui.add(main::icon_widget(svg::UPLOAD_FILE, size::EMPTY_ICON_SIZE, assets::list_empty_color(&state.config)));
+                    ui.label(ui::rich_text(lang::current().main_middle.upload_note, assets::list_empty_color(&state.config), None));
                 });
             }
 
@@ -115,13 +115,13 @@ pub(crate) fn view(
                     // 最適化ステータスに応じて表示
                     match image_file.status() {
                         file::Status::Standby => {
-                            main::list_row_content(ui, image_file, svg::CIRCLE, size::CIRCLE_ICON_SIZE, *status_color.standby());
+                            main::list_row_content(ui, image_file, svg::CIRCLE, size::STATUS_ICON_SIZE, *status_color.standby());
                         }
                         file::Status::Optimizing => {
-                            main::list_row_content(ui, image_file, svg::AUTORENEW, size::AUTORENEW_ICON_SIZE, *status_color.optimizing());
+                            main::list_row_content(ui, image_file, svg::AUTORENEW, size::STATUS_ICON_SIZE, *status_color.optimizing());
                         }
                         file::Status::Optimized => {
-                            main::list_row_content(ui, image_file, svg::CHECK, size::CHECK_ICON_SIZE, *status_color.optimized());
+                            main::list_row_content(ui, image_file, svg::CHECK, size::STATUS_ICON_SIZE, *status_color.optimized());
 
                             ui.separator();
                             ui.label(format!("{:+.2}%", image_file.saved_rate()));
@@ -129,28 +129,28 @@ pub(crate) fn view(
                             ui.label(duration.to_string());
                         }
                         file::Status::Unchanged => {
-                            main::list_row_content(ui, image_file, svg::CHECK, size::CHECK_ICON_SIZE, *status_color.unchanged());
+                            main::list_row_content(ui, image_file, svg::CHECK, size::STATUS_ICON_SIZE, *status_color.unchanged());
 
                             ui.separator();
-                            ui.label(assets::text_color(lang::current().optimize_status.unchanged, *status_color.unchanged(), Some(ui::LIST_NOTE_SIZE)));
+                            ui.label(ui::rich_text(lang::current().optimize_status.unchanged, *status_color.unchanged(), Some(ui::LIST_NOTE_SIZE)));
                         }
                         file::Status::Skipped => {
-                            main::list_row_content(ui, image_file, svg::CHECK, size::CHECK_ICON_SIZE, *status_color.skipped());
+                            main::list_row_content(ui, image_file, svg::CHECK, size::STATUS_ICON_SIZE, *status_color.skipped());
 
                             ui.separator();
-                            ui.label(assets::text_color(lang::current().optimize_status.skipped, *status_color.skipped(), Some(ui::LIST_NOTE_SIZE)));
+                            ui.label(ui::rich_text(lang::current().optimize_status.skipped, *status_color.skipped(), Some(ui::LIST_NOTE_SIZE)));
                         }
                         file::Status::Canceled => {
-                            main::list_row_content(ui, image_file, svg::CANCEL, size::CANCEL_ICON_SIZE, *status_color.canceled());
+                            main::list_row_content(ui, image_file, svg::CANCEL, size::STATUS_ICON_SIZE, *status_color.canceled());
 
                             ui.separator();
-                            ui.label(assets::text_color(lang::current().optimize_status.canceled, *status_color.canceled(), Some(ui::LIST_NOTE_SIZE)));
+                            ui.label(ui::rich_text(lang::current().optimize_status.canceled, *status_color.canceled(), Some(ui::LIST_NOTE_SIZE)));
                         }
                         file::Status::Error(e) => {
-                            main::list_row_content(ui, image_file, svg::ERROR, size::ERROR_ICON_SIZE, *status_color.error());
+                            main::list_row_content(ui, image_file, svg::ERROR, size::STATUS_ICON_SIZE, *status_color.error());
 
                             ui.separator();
-                            ui.label(assets::text_color(e, *status_color.error(), Some(ui::LIST_NOTE_SIZE)));
+                            ui.label(ui::rich_text(e, *status_color.error(), Some(ui::LIST_NOTE_SIZE)));
                         }
                     }
                 });

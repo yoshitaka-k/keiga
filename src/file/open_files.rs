@@ -140,6 +140,7 @@ impl OpenFiles {
         self.file_info.skipped_len = skipped_len;
         self.file_info.canceled_len = canceled_len;
         self.file_info.error_len = error_len;
+        self.file_info.completed_len = optimized_len.total() + unchanged_len + skipped_len;
 
         self.file_info.total_size = total_size;
         self.file_info.total_new_size = total_new_size;
@@ -198,6 +199,12 @@ impl OpenFiles {
         self.file_info.error_len
     }
 
+    /// 完了したファイルの数を取得
+    /// * `return` - 完了したファイルの数
+    pub fn completed_len(&self) -> u32 {
+        self.file_info.completed_len
+    }
+
     /// ファイルの総節約率を取得
     /// * `return` - ファイルの総節約率
     pub fn total_saved_rate(&self) -> f32 {
@@ -220,6 +227,22 @@ impl OpenFiles {
     /// * `return` - ファイルの PNG 平均最適化時間
     pub fn png_average_duration(&self) -> u64 {
         self.file_info.png_average_duration
+    }
+
+    /// ジョブの状態を取得
+    /// 優先度: リサイズ中 > エラー > リサイズ済み・変更なし・スキップ > 待機
+    /// * `return` - ジョブの状態
+    pub fn job_status(&self) -> file::Status {
+        if self.file_info.optimizing_len > 0 {
+            file::Status::Optimizing
+        } else if self.file_info.error_len > 0 {
+            file::Status::Error(String::new())
+        } else if self.file_info.completed_len > 0
+        {
+            file::Status::Optimized
+        } else {
+            file::Status::Standby
+        }
     }
 
     /// JPEG ファイルがあるかどうか
