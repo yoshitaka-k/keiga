@@ -8,7 +8,7 @@ mod about;
 pub(crate) use view::view;
 
 // インポート
-use crate::{config, ui, lang};
+use crate::{config, lang, ui};
 use crate::event::button;
 use crate::ui::assets;
 use crate::ui::assets::{size, svg};
@@ -47,7 +47,7 @@ fn header_panel(
     let spacing = ui.spacing().item_spacing.x;
 
     // ボタンの色を設定
-    let icon_color = assets::icon_color(ui);
+    let icon_color = ui::icon_color(ui);
 
     ui.horizontal(|ui| {
         ui.add_space(ui::SETTING_INDENT_SPACING);

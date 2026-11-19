@@ -11,13 +11,6 @@ pub(crate) const APP_ICON: egui::ImageSource<'static> = svg::bytes_source(
     include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/assets/icon.png")),
 );
 
-/// ラベルと同じ色を返す
-/// * `ui` - UI
-/// * `return` - アイコンの色
-pub(crate) fn icon_color(ui: &egui::Ui) -> egui::Color32 {
-    ui.visuals().text_color()
-}
-
 /// リストなし時のテキスト色
 /// * `ui` - UI
 /// * `return` - リストなし時のテキストの色

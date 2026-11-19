@@ -1,5 +1,5 @@
 use crate::{config, ui, event, lang};
-use crate::ui::{main, assets};
+use crate::ui::assets;
 use crate::ui::assets::{size, svg};
 
 /// 上部ボタンを表示
@@ -21,7 +21,7 @@ pub(crate) fn view(
         // 左右分割のレイアウトで、左にタイトル、右にボタンを配置する
         egui::Sides::new().shrink_left().truncate().show(ui,
             |ui| {
-                ui.add(main::icon_widget(svg::COMPRESS, size::BUTTON_SETTINGS_ICON_SIZE, assets::icon_color(ui)));
+                ui::add_icon(ui, svg::COMPRESS, size::BUTTON_SETTINGS_ICON_SIZE, ui::icon_color(ui));
                 ui.label(format!("{}:", lang::current().setting_optimize.quality));
 
                 ui.label(format!("{}:", lang::current().optimize.jpeg));

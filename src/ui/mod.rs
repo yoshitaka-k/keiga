@@ -102,6 +102,14 @@ const BOTTOM_PANEL_INNER_MARGIN: egui::Margin = egui::Margin {
     bottom: 6,
 };
 
+/// フォントと SVG ローダーを追加
+/// * `ctx` - コンテキスト
+pub(crate) fn install(ctx: &egui::Context) {
+    // フォントと SVG ローダーを追加
+    font::install(ctx);
+    svg::install(ctx);
+}
+
 /// テーマ
 #[derive(Clone, Copy, PartialEq, Deserialize, Serialize)]
 pub(crate) enum Theme {
@@ -125,14 +133,6 @@ impl std::fmt::Display for Theme {
             Theme::Light => lang::current().setting_general.light.to_string(),
         })
     }
-}
-
-/// フォントと SVG ローダーを追加
-/// * `ctx` - コンテキスト
-pub(crate) fn install(ctx: &egui::Context) {
-    // フォントと SVG ローダーを追加
-    font::install(ctx);
-    svg::install(ctx);
 }
 
 /// ステータスアイコンの色
@@ -165,15 +165,59 @@ impl StatusColor {
     }
 }
 
-/// パネルの背景色
-/// * `config` - 設定
-/// * `return` - パネルの背景色
-pub(crate) fn panel_fill_color(config: &config::Config) -> egui::Color32 {
-    if *config.theme() == Theme::Dark {
-        DARK_MODE_PANEL_COLOR
-    } else {
-        LIGHT_MODE_PANEL_COLOR
-    }
+/// アイコンを追加
+/// * `ui` - UI
+/// * `icon` - アイコンのパス
+/// * `size` - アイコンのサイズ
+/// * `color` - アイコンの色
+/// * `return` - アイコンのUI
+pub(crate) fn add_icon(
+    ui: &mut egui::Ui,
+    icon: egui::ImageSource<'static>,
+    size: f32,
+    color: egui::Color32,
+) -> egui::Response {
+    ui.add(
+        egui::Image::new(icon)
+            .max_height(size)
+            .tint(color)
+    )
+}
+
+/// ラベルの幅を取得
+/// * `ui` - UI
+/// * `label` - ラベルのテキスト
+/// * `width` - ラベルの幅
+/// * `return` - ラベルのレスポンス
+pub(crate) fn add_label(
+    ui: &mut egui::Ui,
+    label: &str,
+    width: f32
+) -> egui::Response {
+    ui.allocate_ui_with_layout(
+        egui::vec2(width, ui.spacing().interact_size.y),
+        egui::Layout::right_to_left(egui::Align::Center),
+        |ui| {
+            ui.set_min_width(width);
+            ui.label(label)
+        }
+    ).inner
+}
+
+/// ラベルと同じ色を返す
+/// * `ui` - UI
+/// * `return` - アイコンの色
+fn icon_color(ui: &egui::Ui) -> egui::Color32 {
+    ui.visuals().text_color()
+}
+
+/// テキストカラーを設定する
+/// * `ui` - UI
+/// * `text` - テキスト
+/// * `color` - カラー
+/// * `return` - ラベルのレスポンス
+pub(crate) fn rich_label(ui: &mut egui::Ui, text: &str, color: egui::Color32) -> egui::Response {
+    ui.label(egui::RichText::new(text).color(color))
 }
 
 /// パネルのスタイルを設定
@@ -187,18 +231,13 @@ pub(crate) fn panel_style(config: &config::Config, inner_margin: egui::Margin) -
         .inner_margin(inner_margin)
 }
 
-/// ラベルの幅を取得
-/// * `ui` - UI
-/// * `label` - ラベルのテキスト
-/// * `width` - ラベルの幅
-/// * `return` - ラベルのレスポンス
-pub(crate) fn add_label(ui: &mut egui::Ui, label: &str, width: f32) -> egui::Response {
-    ui.allocate_ui_with_layout(
-        egui::vec2(width, ui.spacing().interact_size.y),
-        egui::Layout::right_to_left(egui::Align::Center),
-        |ui| {
-            ui.set_min_width(width);
-            ui.label(label)
-        }
-    ).inner
+/// パネルの背景色
+/// * `config` - 設定
+/// * `return` - パネルの背景色
+pub(crate) fn panel_fill_color(config: &config::Config) -> egui::Color32 {
+    if *config.theme() == Theme::Dark {
+        DARK_MODE_PANEL_COLOR
+    } else {
+        LIGHT_MODE_PANEL_COLOR
+    }
 }
