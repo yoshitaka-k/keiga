@@ -33,7 +33,7 @@ pub(crate) fn view(
 
                 // 処理中アイコンを配置
                 // 優先度: 最適化中 > エラー > 最適化済み・最適化不要 > 待機
-                main::status_icon(ui, &job_status, status_color, completed_color, false)
+                main::status_icon(ui, &job_status, status_color, completed_color, true)
                     .on_hover_ui(|ui|
                 {
                     ui.label(format!(
