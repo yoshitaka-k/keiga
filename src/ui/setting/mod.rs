@@ -9,11 +9,9 @@ mod about;
 pub(crate) use view::view;
 
 // インポート
-use crate::{config, lang, ui};
-use crate::event::button;
+use crate::{config, lang, event, ui};
 use crate::ui::assets;
 use crate::ui::assets::{size, svg};
-use crate::update::UpdateJob;
 
 /// ヘッダーパネルを表示
 /// * `ui` - UI
@@ -24,7 +22,6 @@ fn header_panel(
     ui: &mut egui::Ui,
     icon: egui::ImageSource<'static>,
     label: &str,
-    update_job: Option<&mut UpdateJob>,
 ) {
     let spacing = ui.spacing().item_spacing.x;
 
@@ -37,15 +34,29 @@ fn header_panel(
         ui.add(egui::Image::new(icon).max_height(size::SETTINGS_ICON_SIZE).tint(icon_color));
         ui.spacing_mut().item_spacing.x = spacing;
         ui.label(label);
+    });
+}
+
+/// アプリ情報のヘッダーパネルを表示
+/// * `ui` - UI
+/// * `icon` - アイコン
+/// * `label` - ラベル
+/// * `pending_actions` - 未処理のアクション
+fn about_header_panel(
+    ui: &mut egui::Ui,
+    icon: egui::ImageSource<'static>,
+    label: &str,
+    pending_actions: &mut Vec<event::EventAction>,
+) {
+    ui.horizontal(|ui| {
+        header_panel(ui, icon, label);
 
         // アップデート確認ボタン
-        if let Some(update_job) = update_job {
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                if ui.button(lang::current().setting_about.check_for_updates).clicked() {
-                    button::check_for_update(update_job);
-                }
-            });
-        }
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            if ui.button(lang::current().setting_about.check_for_updates).clicked() {
+                pending_actions.push(event::EventAction::CheckForUpdate);
+            }
+        });
     });
 }
 

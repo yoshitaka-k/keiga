@@ -10,7 +10,7 @@ pub(crate) fn view(
     config: &mut config::Config,
 ) {
     // グループヘッダーパネルを表示
-    setting::header_panel(ui, svg::CYCLE, lang::current().setting_concurrent.concurrent, None);
+    setting::header_panel(ui, svg::CYCLE, lang::current().setting_concurrent.concurrent);
 
     egui::Frame::group(ui.style()).show(ui, |ui| {
         // 全ファイルの最適化数

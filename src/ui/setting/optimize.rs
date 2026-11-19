@@ -10,7 +10,7 @@ pub(crate) fn view(
     ui: &mut egui::Ui,
     config: &mut config::Config,
 ) {
-    setting::header_panel(ui, svg::IMAGE, lang::current().optimize.jpeg, None);
+    setting::header_panel(ui, svg::IMAGE, lang::current().optimize.jpeg);
 
     egui::Frame::group(ui.style()).show(ui, |ui| {
         // JPEG の圧縮方法を表示
@@ -44,7 +44,7 @@ pub(crate) fn view(
 
     ui.add_space(ui::SETTING_ADD_SPACING);
 
-    setting::header_panel(ui, svg::IMAGE, lang::current().optimize.png, None);
+    setting::header_panel(ui, svg::IMAGE, lang::current().optimize.png);
 
     egui::Frame::group(ui.style()).show(ui, |ui| {
         // PNG の圧縮方法を表示

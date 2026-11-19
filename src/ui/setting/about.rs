@@ -1,17 +1,21 @@
-use crate::{GITHUB_URL, ui, lang};
+use crate::{GITHUB_URL, ui, lang, event};
 use crate::ui::{assets, setting};
 use crate::ui::assets::{size, svg};
-use crate::update::UpdateJob;
 
 /// バージョンを表示
 /// * `ui` - UI
-/// * `update_job` - アップデートジョブ
+/// * `pending_actions` - 未処理のアクション
 pub(crate) fn view(
     ui: &mut egui::Ui,
-    update_job: &mut UpdateJob,
+    pending_actions: &mut Vec<event::EventAction>,
 ) {
     // ヘッダーパネルを表示
-    setting::header_panel(ui, svg::INFO, lang::current().setting_about.about, Some(update_job));
+    setting::about_header_panel(
+        ui,
+        svg::INFO,
+        lang::current().setting_about.about,
+        pending_actions,
+    );
 
     ui.add_space(ui::HEADER_BOTTOM_SPACING);
     ui.separator();

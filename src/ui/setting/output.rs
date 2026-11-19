@@ -10,7 +10,7 @@ pub(crate) fn view(
     config: &mut config::Config,
 ) {
     // グループヘッダーパネルを表示
-    setting::header_panel(ui, svg::OUTPUT, lang::current().setting_output.output, None);
+    setting::header_panel(ui, svg::OUTPUT, lang::current().setting_output.output);
 
     // フレームを表示
     egui::Frame::group(ui.style()).show(ui, |ui| {

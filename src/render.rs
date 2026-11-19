@@ -116,7 +116,6 @@ impl eframe::App for Render {
         ui::draw(
             ui,
             &mut self.state,
-            &mut self.jobs,
             &mut self.pending_actions,
         );
     }

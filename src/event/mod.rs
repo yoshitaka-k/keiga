@@ -13,6 +13,7 @@ pub(crate) enum EventAction {
     FileOpen,
     FolderOpen,
     DropOpen(Vec<std::path::PathBuf>),
+    Clear,
     SettingOpen(Option<egui::Pos2>),
     SettingClose,
     Click { index: Option<usize> },
@@ -22,5 +23,5 @@ pub(crate) enum EventAction {
     Enter { path: std::path::PathBuf },
     Space { path: std::path::PathBuf },
     Backspace,
-    Clear,
+    CheckForUpdate,
 }

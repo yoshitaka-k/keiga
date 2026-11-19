@@ -10,7 +10,7 @@ pub(crate) fn view(
     config: &mut config::Config,
 ) {
     // 言語選択のヘッダーパネルを表示
-    setting::header_panel(ui, theme_icon(config), lang::current().setting_general.language, None);
+    setting::header_panel(ui, theme_icon(config), lang::current().setting_general.language);
 
     // 言語選択のフレームを表示
     egui::Frame::group(ui.style()).show(ui, |ui| {
@@ -28,7 +28,7 @@ pub(crate) fn view(
     ui.add_space(ui::SETTING_ADD_SPACING);
 
     // テーマ選択のヘッダーパネルを表示
-    setting::header_panel(ui, theme_icon(config), lang::current().setting_general.theme, None);
+    setting::header_panel(ui, theme_icon(config), lang::current().setting_general.theme);
 
     // テーマ選択のフレームを表示
     egui::Frame::group(ui.style()).show(ui, |ui| {
@@ -47,7 +47,7 @@ pub(crate) fn view(
     ui.add_space(ui::SETTING_ADD_SPACING);
 
     // グループヘッダーパネルを表示
-    setting::header_panel(ui, volume_icon(config), lang::current().setting_general.sound, None);
+    setting::header_panel(ui, volume_icon(config), lang::current().setting_general.sound);
 
     // フレームを表示
     egui::Frame::group(ui.style()).show(ui, |ui| {

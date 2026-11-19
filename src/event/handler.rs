@@ -65,5 +65,9 @@ pub(crate) fn handle(
         event::EventAction::Backspace => {
             key::backspace(&mut state.files, &mut jobs.optimize_job)
         }
+        event::EventAction::CheckForUpdate => {
+            button::check_for_update(&mut jobs.update_job);
+            Ok(())
+        }
     }
 }

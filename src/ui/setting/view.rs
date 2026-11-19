@@ -1,4 +1,4 @@
-use crate::{state, ui, lang, event, update, APP_NAME};
+use crate::{state, ui, lang, event, APP_NAME};
 use crate::event::input;
 use crate::ui::modal;
 use crate::ui::setting::{top, general, optimize, output, concurrent, about};
@@ -10,7 +10,6 @@ use crate::ui::setting::{top, general, optimize, output, concurrent, about};
 pub(crate) fn view(
     ctx: &egui::Context,
     state: &mut state::State,
-    update_job: &mut update::UpdateJob,
     pending_actions: &mut Vec<event::EventAction>,
 ) {
     // ウィンドウのIDを生成
@@ -46,7 +45,7 @@ pub(crate) fn view(
                 state::SettingTab::Optimize => optimize::view(ui, &mut state.config),
                 state::SettingTab::Output => output::view(ui, &mut state.config),
                 state::SettingTab::Concurrent => concurrent::view(ui, &mut state.config),
-                state::SettingTab::About => about::view(ui, update_job),
+                state::SettingTab::About => about::view(ui, pending_actions),
             }
         });
 

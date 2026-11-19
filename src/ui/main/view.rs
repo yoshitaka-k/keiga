@@ -10,7 +10,6 @@ use crate::ui::main::{top, middle, bottom};
 pub(crate) fn view(
     ui: &mut egui::Ui,
     state: &mut state::State,
-    jobs: &mut state::Jobs,
     pending_actions: &mut Vec<event::EventAction>,
 ) {
     // 状態カラーを作成
@@ -49,7 +48,6 @@ pub(crate) fn view(
         setting::view(
             ui.ctx(),
             state,
-            &mut jobs.update_job,
             pending_actions,
         );
     }
