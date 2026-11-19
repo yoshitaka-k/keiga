@@ -9,72 +9,55 @@ static NEXT_ID: AtomicU64 = AtomicU64::new(1);
 
 /// 画像ファイルを管理する構造体
 #[derive(Clone, Getters, Setters)]
+#[getset(get = "pub")]
 pub(crate) struct Image {
     /// ファイルの一意な ID
-    #[getset(get = "pub")]
     id: u64,
 
     /// ファイルのパス
-    #[getset(get= "pub")]
     path: PathBuf,
 
-    /// ドロップ基準からの相対パス
-    #[getset(get = "pub")]
-    relative_path: String,
+    /// ファイルの相対パス
+    relative_path: PathBuf,
 
     /// 出力したファイルのパス
+    #[getset(skip)]
     #[getset(set = "pub")]
     output_path: Option<PathBuf>,
 
-    /// 相対パスかどうか
-    #[getset(get = "pub")]
-    is_relative_path: bool,
-
-    /// ファイルの名前
-    #[getset(get = "pub")]
-    file_name: String,
-
     /// ファイルの拡張子
-    #[getset(get = "pub")]
     extension: file::Extension,
 
+    /// フォルダ経由で追加されたファイルかどうか
+    is_in_folder: bool,
+
     /// ファイルの最適化ステータス
-    #[getset(get = "pub", set = "pub")]
+    #[getset(set = "pub")]
     status: file::Status,
 
     /// ファイルのサイズ
-    #[getset(get = "pub")]
     size: u64,
 
     /// ファイルの最適化後のサイズ
-    #[getset(get = "pub", set = "pub")]
+    #[getset(set = "pub")]
     new_size: u64,
 
     /// ファイルの最適化での節約率
-    #[getset(get = "pub", set = "pub")]
+    #[getset(set = "pub")]
     saved_rate: f32,
 
     /// 最適化時間（ミリ秒）
-    #[getset(get = "pub", set = "pub")]
+    #[getset(set = "pub")]
     duration: u64,
 }
 
+/// public methods
 impl Image {
     /// 新しい Image を作成
     /// * `path` - ファイルのパス
     /// * `relative_path` - ドロップ基準からの相対パス
     /// * `return` - Image のインスタンス
-    pub fn new(path: PathBuf, relative_path: String) -> Result<Self, error::KeigaError> {
-        // ファイルの一意な ID を発行
-        let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
-
-        // ファイル名を取得
-        let file_name = if let Some(name) = path.file_name() {
-            name.to_string_lossy().to_string()
-        } else {
-            return Err(error::KeigaError::file_error("File name not found".to_string(), path.clone()));
-        };
-
+    pub fn new(path: PathBuf, relative_path: PathBuf, is_in_folder: bool) -> Result<Self, error::KeigaError> {
         // 画像を読み込む
         let reader = image::ImageReader::open(&path)
             .and_then(|r| r.with_guessed_format())
@@ -97,16 +80,12 @@ impl Image {
             .map_err(|e| error::KeigaError::file_error(e.to_string(), path.clone()))?
             .len();
 
-        // 相対パスかどうかを判断
-        let is_relative_path = relative_path != file_name;
-
         Ok(Self {
-            id,
+            id: NEXT_ID.fetch_add(1, Ordering::Relaxed),
             path,
             relative_path,
             output_path: None,
-            is_relative_path,
-            file_name,
+            is_in_folder,
             extension,
             status: file::Status::Standby,
             size,
@@ -114,6 +93,12 @@ impl Image {
             saved_rate: 0.00f32,
             duration: 0,
         })
+    }
+
+    /// ファイル名を取得
+    /// * `return` - ファイル名
+    pub fn file_name(&self) -> std::borrow::Cow<'_, str> {
+        self.path.file_name().map(|f| f.to_string_lossy()).unwrap_or_default()
     }
 
     /// 出力ファイルのパスを取得

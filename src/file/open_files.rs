@@ -377,9 +377,10 @@ impl OpenFiles {
         error: String,
     ) {
         let relative_path = path.strip_prefix(base_dir);
-        let relative_path = relative_path.unwrap_or(path).to_path_buf().to_string_lossy().into_owned();
+        let is_in_folder = relative_path.as_ref().is_ok_and(|p| p.components().count() > 1);
+        let relative_path = relative_path.unwrap_or(path).to_path_buf();
 
-        let mut image = match file::Image::new(path.to_path_buf(), relative_path) {
+        let mut image = match file::Image::new(path.to_path_buf(), relative_path, is_in_folder) {
             Ok(image) => image,
             Err(e) => {
                 log::error!("Error: {}", e);
@@ -413,15 +414,19 @@ impl OpenFiles {
 
         if metadata.is_file() {
             if file::is_allowed_extension(&path) {
-                // strip_prefix は path を借りるので、
-                // 先に String にして into_owned()で所有権を移す
-                let relative_path = path.strip_prefix(base_dir)
-                    .unwrap_or(&path)
-                    .to_string_lossy()
-                    .into_owned();
+                // base_dir からの相対パスを求める
+                let relative_path = path.strip_prefix(base_dir);
+
+                // フォルダ経由で追加されたファイルかどうか
+                let is_in_folder = relative_path.as_ref().is_ok_and(|p| {
+                    p.components().count() > 1
+                });
+
+                // 所有権のある PathBuf にする
+                let relative_path = relative_path.unwrap_or(&path).to_path_buf();
 
                 // ファイルを作成
-                let mut image = match file::Image::new(path.clone(), relative_path) {
+                let mut image = match file::Image::new(path.clone(), relative_path, is_in_folder) {
                     Ok(image) => image,
                     Err(e) => {
                         log::error!("Error: {}", e);

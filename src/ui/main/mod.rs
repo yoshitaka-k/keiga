@@ -101,10 +101,9 @@ fn opentype_icon(
     path: &file::Image,
 ) -> egui::Response {
     let icon_color = ui::icon_color(ui);
-    if *path.is_relative_path() {
-        ui.add(icon_widget(svg::FOLDER, size::LIST_ICON_SIZE, icon_color))
-            .on_hover_text(path.relative_path().to_string())
-    } else {
-        ui.add(icon_widget(svg::PHOTO, size::LIST_ICON_SIZE, icon_color))
-    }
+    let icon = if *path.is_in_folder() { svg::FOLDER } else { svg::PHOTO };
+    let hover_text = path.relative_path().display().to_string();
+
+    ui.add(icon_widget(icon, size::LIST_ICON_SIZE, icon_color))
+        .on_hover_text(hover_text)
 }
