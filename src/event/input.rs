@@ -64,6 +64,17 @@ pub fn command_comma(ui: &mut egui::Ui, pending_actions: &mut Vec<event::EventAc
     }
 }
 
+/// Command + W キーが押されたら設定ウィンドウを閉じる
+/// * `ui` - ウィジェットのUI
+pub fn command_w(ui: &mut egui::Ui, pending_actions: &mut Vec<event::EventAction>) {
+    if ui.input(|input| {
+        input.modifiers.matches_exact(egui::Modifiers::COMMAND)
+        && input.key_pressed(egui::Key::W)
+    }) {
+        pending_actions.push(event::EventAction::SettingClose);
+    }
+}
+
 /// 上矢印キーが押されたら選択された行を上に移動する
 /// * `ui` - ウィジェットのUI
 /// * `files` - 開いているファイル

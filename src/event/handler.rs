@@ -37,6 +37,10 @@ pub(crate) fn handle(
             button::setting_open(&mut state.setting_token, pos);
             Ok(())
         }
+        event::EventAction::SettingClose => {
+            state.setting_token.open = false;
+            Ok(())
+        }
         event::EventAction::Click { index } => {
             click::click(&mut state.files, index);
             Ok(())

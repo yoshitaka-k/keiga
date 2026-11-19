@@ -48,10 +48,9 @@ pub(crate) fn view(
     if state.setting_token.open {
         setting::view(
             ui.ctx(),
-            &mut state.config,
-            &mut state.setting_token,
+            state,
             &mut jobs.update_job,
-            &mut state.updated_token,
+            pending_actions,
         );
     }
 

@@ -1,4 +1,5 @@
 mod view;
+mod top;
 mod general;
 mod optimize;
 mod output;
@@ -13,25 +14,6 @@ use crate::event::button;
 use crate::ui::assets;
 use crate::ui::assets::{size, svg};
 use crate::update::UpdateJob;
-
-/// タブの選択時の背景色を取得
-/// * `ui` - UI
-/// * `return` - タブの選択時の背景色
-fn tab_selected_color(config: &config::Config) -> egui::Color32 {
-    if *config.theme() == ui::Theme::Dark {
-        ui::DARK_TAB_SELECTED_COLOR
-    } else {
-        ui::LIGHT_TAB_SELECTED_COLOR
-    }
-}
-
-/// ラベル後の残り幅に合わせてスライダーのレール幅を決める
-/// * `ui` - UI
-/// * `return` - スライダーのレール幅
-fn remaining_slider_width(ui: &egui::Ui) -> f32 {
-    let spacing = ui.spacing();
-    (ui.available_width() - spacing.item_spacing.x - spacing.interact_size.x).max(0.0)
-}
 
 /// ヘッダーパネルを表示
 /// * `ui` - UI
@@ -89,4 +71,12 @@ fn warning_note(
             egui::RichText::new(text).weak(),
         ));
     });
+}
+
+/// ラベル後の残り幅に合わせてスライダーのレール幅を決める
+/// * `ui` - UI
+/// * `return` - スライダーのレール幅
+fn remaining_slider_width(ui: &egui::Ui) -> f32 {
+    let spacing = ui.spacing();
+    (ui.available_width() - spacing.item_spacing.x - spacing.interact_size.x).max(0.0)
 }

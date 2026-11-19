@@ -94,6 +94,9 @@ impl eframe::App for Render {
         // 最適化結果を反映
         self.jobs.optimize_job.result(&mut self.state.files);
 
+        // 更新結果を取得
+        self.jobs.update_job.result(&mut self.state.updated_token);
+
         // 入力イベントを処理
         self.input_events(ui);
 

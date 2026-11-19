@@ -14,6 +14,7 @@ pub(crate) enum EventAction {
     FolderOpen,
     DropOpen(Vec<std::path::PathBuf>),
     SettingOpen(Option<egui::Pos2>),
+    SettingClose,
     Click { index: Option<usize> },
     DoubleClick(std::path::PathBuf),
     Up,

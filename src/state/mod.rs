@@ -23,7 +23,7 @@ pub(crate) struct Jobs {
 
 /// 設定タブ
 #[derive(PartialEq)]
-pub enum SettingTab {
+pub(crate) enum SettingTab {
     General,
     Optimize,
     Output,

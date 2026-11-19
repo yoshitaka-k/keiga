@@ -1,7 +1,7 @@
-use crate::{config, ui, state, update, lang, APP_NAME};
-use crate::ui::{setting, modal};
-use crate::ui::assets::{size, svg};
-use crate::ui::setting::{general, optimize, output, concurrent, about};
+use crate::{state, ui, lang, event, update, APP_NAME};
+use crate::event::input;
+use crate::ui::modal;
+use crate::ui::setting::{top, general, optimize, output, concurrent, about};
 
 /// 設定ウィンドウを表示
 /// * `ctx` - コンテキスト
@@ -9,10 +9,9 @@ use crate::ui::setting::{general, optimize, output, concurrent, about};
 /// * `window_pos` - ウィンドウの表示位置
 pub(crate) fn view(
     ctx: &egui::Context,
-    config: &mut config::Config,
-    setting_token: &mut state::SettingToken,
+    state: &mut state::State,
     update_job: &mut update::UpdateJob,
-    updated_token: &mut update::UpdatedToken,
+    pending_actions: &mut Vec<event::EventAction>,
 ) {
     // ウィンドウのIDを生成
     let window_id = egui::ViewportId::from_hash_of(ui::SETTING_WINDOW_ID);
@@ -26,12 +25,9 @@ pub(crate) fn view(
 
     // ウィンドウの表示位置を指定
     // take()で、取り出して None にする（ボタン押下時だけ位置更新と前面化）
-    if let Some(pos) = setting_token.pos.take() {
+    if let Some(pos) = state.setting_token.pos.take() {
         // ウィンドウの位置を指定
         options = options.with_position(pos);
-
-        // タブを初期化
-        setting_token.tab = state::SettingTab::General;
 
         // 表示していたら、ウィンドウの位置を更新して前面に出す
         ctx.send_viewport_cmd_to(window_id, egui::ViewportCommand::OuterPosition(pos));
@@ -40,65 +36,31 @@ pub(crate) fn view(
 
     // 設定ウィンドウを表示
     ctx.show_viewport_immediate(window_id, options, |ui, _class| {
-        // Command + W キーが押されたら閉じる
-        if ui.input(|input| {
-            input.modifiers.matches_exact(egui::Modifiers::COMMAND)
-            && input.key_pressed(egui::Key::W)
-        }) {
-            setting_token.open = false;
-        }
-
-        // 更新結果を取得
-        update_job.result(updated_token);
-
-        // パネルのスタイルを設定
-        let panel_style = ui::panel_style(config, ui::TOP_PANEL_INNER_MARGIN);
-
-        // アイコンの色を取得
-        let icon_color = ui::icon_color(ui);
-
-        // タブを表示
-        egui::Panel::top("setting_top_taskbar").frame(panel_style).show(ui, |ui| {
-            ui.horizontal(|ui| {
-                ui::add_icon(ui, svg::SETTINGS, size::TOP_MENU_SETTINGS_ICON_SIZE, icon_color);
-
-                // タブの選択時の背景色を保存
-                let selection_bg_fill = ui.style_mut().visuals.selection.bg_fill;
-
-                // タブの選択時の背景色を設定
-                ui.style_mut().visuals.selection.bg_fill = setting::tab_selected_color(config);
-
-                // タブを表示
-                ui.selectable_value(&mut setting_token.tab, state::SettingTab::General, state::SettingTab::General.to_string());
-                ui.selectable_value(&mut setting_token.tab, state::SettingTab::Optimize, state::SettingTab::Optimize.to_string());
-                ui.selectable_value(&mut setting_token.tab, state::SettingTab::Output, state::SettingTab::Output.to_string());
-                ui.selectable_value(&mut setting_token.tab, state::SettingTab::Concurrent, state::SettingTab::Concurrent.to_string());
-                ui.selectable_value(&mut setting_token.tab, state::SettingTab::About, state::SettingTab::About.to_string());
-
-                // タブの選択時の背景色をリセット
-                ui.style_mut().visuals.selection.bg_fill = selection_bg_fill;
-            });
-        });
+        // 上部パネルを表示
+        top::view(ui, &state.config, &mut state.setting_token);
 
         egui::CentralPanel::default().show(ui, |ui| {
             // タブに応じて表示内容を切り替え
-            match setting_token.tab {
-                state::SettingTab::General => general::view(ui, config),
-                state::SettingTab::Optimize => optimize::view(ui, config),
-                state::SettingTab::Output => output::view(ui, config),
-                state::SettingTab::Concurrent => concurrent::view(ui, config),
+            match state.setting_token.tab {
+                state::SettingTab::General => general::view(ui, &mut state.config),
+                state::SettingTab::Optimize => optimize::view(ui, &mut state.config),
+                state::SettingTab::Output => output::view(ui, &mut state.config),
+                state::SettingTab::Concurrent => concurrent::view(ui, &mut state.config),
                 state::SettingTab::About => about::view(ui, update_job),
             }
         });
 
+        // Command + W キーが押されたら閉じる
+        input::command_w(ui, pending_actions);
+
         // ウィンドウの閉じるボタンが押されたら閉じる
         if ui.input(|input| input.viewport().close_requested()) {
-            setting_token.open = false;
+            pending_actions.push(event::EventAction::SettingClose);
         }
 
         // 更新モーダルを表示
-        if updated_token.open {
-            modal::updated(ui, updated_token);
+        if state.updated_token.open {
+            modal::updated(ui, &mut state.updated_token);
         }
     });
 }
