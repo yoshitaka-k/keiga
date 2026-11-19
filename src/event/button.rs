@@ -1,5 +1,4 @@
-use crate::{file, error, update, state};
-use crate::optimize::OptimizeJob;
+use crate::{state, file, error, optimize, update};
 
 /// 設定ダイアログを開く
 /// * `setting_token` - 設定ダイアログを開くためのトークン
@@ -20,11 +19,16 @@ pub(crate) fn setting_open(
 
 /// 最適化を停止（キャンセル）してファイル一覧をクリアする
 /// * `files` - ファイル一覧
+/// * `scan_job` - スキャンジョブ
 /// * `optimize_job` - 最適化ジョブ
 pub(crate) fn cancel_and_clear(
     files: &mut file::OpenFiles,
-    optimize_job: &mut OptimizeJob
+    scan_job: &mut file::ScanJob,
+    optimize_job: &mut optimize::OptimizeJob,
 ) -> error::Result<()> {
+    // スキャンを停止
+    scan_job.stop_running();
+
     // 最適化を停止（全体キャンセル）
     optimize_job.stop_running();
 

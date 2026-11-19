@@ -16,22 +16,20 @@ pub(crate) fn handle(
     match action {
         event::EventAction::FileOpen => {
             let label = lang::current().file_dialog.image_files;
-            open::file(&state.config, &mut state.files, label)
+            open::file(&jobs.scan_job, label);
+            Ok(())
         }
         event::EventAction::FolderOpen => {
             let label = lang::current().file_dialog.image_files;
-            open::folder(&state.config, &mut state.files, label)
+            open::folder(&jobs.scan_job, label);
+            Ok(())
         }
         event::EventAction::DropOpen(files) => {
-            open::drop(
-                ctx,
-                &files,
-                &state.config,
-                &mut state.files,
-            )
+            open::drop(ctx, &jobs.scan_job, files);
+            Ok(())
         }
         event::EventAction::Clear => {
-            button::cancel_and_clear(&mut state.files, &mut jobs.optimize_job)
+            button::cancel_and_clear(&mut state.files, &mut jobs.scan_job, &mut jobs.optimize_job)
         }
         event::EventAction::SettingOpen(pos) => {
             button::setting_open(&mut state.setting_token, pos);

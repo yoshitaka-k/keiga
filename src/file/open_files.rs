@@ -1,8 +1,7 @@
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use getset::{Getters, Setters};
 
-use crate::{config, error, file};
+use crate::{config, file};
 
 /// ドロップされたファイルを管理する構造体
 #[derive(Clone, Getters, Setters)]
@@ -20,6 +19,7 @@ pub(crate) struct OpenFiles {
     file_info: file::FileInfo,
 }
 
+/// public methods
 impl OpenFiles {
     /// 新しい OpenFiles を作成
     /// * `return` - OpenFiles のインスタンス
@@ -230,7 +230,7 @@ impl OpenFiles {
     }
 
     /// ジョブの状態を取得
-    /// 優先度: リサイズ中 > エラー > リサイズ済み・変更なし・スキップ > 待機
+    /// 優先度: 最適化中 > エラー > 最適化済み・変更なし・スキップ > 待機
     /// * `return` - ジョブの状態
     pub fn job_status(&self) -> file::Status {
         if self.file_info.optimizing_len > 0 {
@@ -281,18 +281,41 @@ impl OpenFiles {
     /// * `return` - 入力が違くて、出力パスが一致するファイルが処理中、処理済みの状態であるかどうか
     pub fn has_output_conflict(&self,
         path: &Path,
-        output_path: &Path,
+        output_path: Option<&Path>,
     ) -> bool {
-        // 出力パスが一致するファイルで最適化中、最適化済み、変更なしの状態
-        self.images.iter().any(|f| {
-            f.path() != path
-                && f.output_path() == output_path
-                && (
-                    f.is_optimizing()
-                    || f.is_optimized()
-                    || f.is_unchanged()
-            )
-        })
+        if let Some(output_path) = output_path {
+            // 出力パスが一致するファイルで最適化中、最適化済み、変更なしの状態
+            self.images.iter().any(|f| {
+                f.path() != path
+                    && f.output_path().as_deref() == Some(output_path)
+                    && (
+                        f.is_optimizing()
+                        || f.is_optimized()
+                        || f.is_unchanged()
+                    )
+            })
+        } else {
+            false
+        }
+    }
+
+    /// 選択されたファイルのインデックスを1増やす
+    pub fn index_add(&mut self) {
+        let selected = self.selected_index.map(|i| {
+            let last = self.images.len().saturating_sub(1);
+            (i + 1).min(last)
+        });
+
+        self.selected_index = selected;
+    }
+
+    /// 選択されたファイルのインデックスを1減らす
+    pub fn index_sub(&mut self) {
+        let selected = self.selected_index.map(|i| {
+            i.saturating_sub(1)
+        });
+
+        self.selected_index = selected;
     }
 
     /// 最適化結果を既存の一覧へ反映
@@ -316,6 +339,66 @@ impl OpenFiles {
         }
     }
 
+    /// ファイルスキャン結果を反映
+    /// * `config` - 設定
+    /// * `result` - ファイルスキャン結果
+    pub fn scan_result(&mut self,
+        config: &config::Config,
+        result: file::ScanResult
+    ) {
+        match result {
+            file::ScanResult::Found { path, base_dir } => {
+                // base_dir からの相対パスを求める
+                let relative_path = path.strip_prefix(base_dir);
+
+                // フォルダ経由で追加されたファイルかどうか
+                let is_in_folder = relative_path.as_ref().is_ok_and(|p| {
+                    p.components().count() > 1
+                });
+
+                // 所有権のある PathBuf にする
+                let relative_path = relative_path.unwrap_or(&path).to_path_buf();
+
+                // 画像ファイル構造体を作成
+                let mut image = match file::Image::new(path.to_path_buf(), relative_path, is_in_folder) {
+                    Ok(image) => image,
+                    Err(e) => {
+                        log::error!("Error: {}", e);
+                        return;
+                    }
+                };
+
+                // 出力パスを作成
+                let output_path = image.make_output_path(config.output_path());
+                image.set_output_path(Some(output_path.clone()));
+
+                // 同じパスが待機中か最適化中の場合はエラーを返す
+                if self.is_standby_or_optimizing(&path) {
+                    image.set_status(file::Status::Error("Input already in progress".to_string()));
+                    self.images.push(image);
+                    return;
+                }
+
+                // 同じパスはスキップ
+                if *config.skip_same_path() && self.is_input_and_output(&path, &output_path) {
+                    image.set_status(file::Status::Skipped);
+                    self.images.push(image);
+                    return;
+                }
+
+                // 画像ファイル構造体を追加
+                self.images.push(image);
+            }
+            file::ScanResult::Failed { path, base_dir, error } => {
+                // エラーを追加
+                self.error_file(&path, &base_dir, error);
+            }
+        }
+    }
+}
+
+/// private methods
+impl OpenFiles {
     /// ファイルが待機中か最適化中かどうかを確認
     /// * `path` - ファイルのパス
     /// * `return` - 待機中か最適化中かどうか
@@ -323,48 +406,19 @@ impl OpenFiles {
         self.images.iter().any(|f| f.path() == path && f.is_standby_or_optimizing())
     }
 
-    /// 入力・出力ファイルが一致しているかどうかを確認
+    /// ファイルが入力パスと出力パスが同じかどうかを確認
     /// * `path` - ファイルのパス
-    /// * `output_path` - 出力ファイルのパス
-    /// * `return` - 入力・出力ファイルが一致しているかどうか
-    fn is_input_output_path(&self, path: &Path, output_path: &Path) -> bool {
+    /// * `output_path` - 出力パス
+    /// * `return` - 入力パスと出力パスが同じかどうか
+    fn is_input_and_output(&self,
+        path: &Path,
+        output_path: &Path,
+    ) -> bool {
         self.images.iter().any(|f| {
             f.path() == path
-                && f.output_path() == output_path
+                && f.output_path().as_deref() == Some(output_path)
                 && (f.is_optimized() || f.is_unchanged())
         })
-    }
-
-    /// 選択されたファイルのインデックスを1増やす
-    pub fn index_add(&mut self) {
-        let selected = self.selected_index.map(|i| {
-            let last = self.images.len().saturating_sub(1);
-            (i + 1).min(last)
-        });
-
-        self.selected_index = selected;
-    }
-
-    /// 選択されたファイルのインデックスを1減らす
-    pub fn index_sub(&mut self) {
-        let selected = self.selected_index.map(|i| {
-            i.saturating_sub(1)
-        });
-
-        self.selected_index = selected;
-    }
-
-    /// パスを追加
-    /// * `config` - 設定
-    /// * `path` - ドロップされたファイルのパス
-    /// * `return` - 結果
-    pub fn add_path(&mut self, config: &config::Config, path: PathBuf) -> error::Result<()> {
-        // parent() は path を借りるので、先に PathBuf にして借用を終わらせる
-        let base_dir = path.parent().unwrap_or(&path).to_path_buf();
-
-        self.find_file(config, path, &base_dir)?;
-
-        Ok(())
     }
 
     /// ファイルをエラーで追加
@@ -390,84 +444,5 @@ impl OpenFiles {
 
         image.set_status(file::Status::Error(error));
         self.images.push(image);
-    }
-
-    /// ファイルを検索
-    /// * `config` - 設定
-    /// * `path` - ドロップされたファイルのパス
-    /// * `base_dir` - ドロップされたパスの親（相対パスの基準）
-    /// * `return` - ファイルのパス
-    fn find_file(&mut self,
-        config: &config::Config,
-        path: PathBuf,
-        base_dir: &Path
-    ) -> error::Result<()> {
-        // ファイルの存在を確認
-        // シンボリックリンクは無視する
-        let metadata = match path.symlink_metadata() {
-            Ok(metadata) => metadata,
-            Err(e) => {
-                self.error_file(&path, base_dir, e.to_string());
-                return Ok(());
-            }
-        };
-
-        if metadata.is_file() {
-            if file::is_allowed_extension(&path) {
-                // base_dir からの相対パスを求める
-                let relative_path = path.strip_prefix(base_dir);
-
-                // フォルダ経由で追加されたファイルかどうか
-                let is_in_folder = relative_path.as_ref().is_ok_and(|p| {
-                    p.components().count() > 1
-                });
-
-                // 所有権のある PathBuf にする
-                let relative_path = relative_path.unwrap_or(&path).to_path_buf();
-
-                // ファイルを作成
-                let mut image = match file::Image::new(path.clone(), relative_path, is_in_folder) {
-                    Ok(image) => image,
-                    Err(e) => {
-                        log::error!("Error: {}", e);
-                        return Ok(());
-                    }
-                };
-
-                // 出力ファイルのパスを作成
-                let output_path = image.make_output_path(config);
-                image.set_output_path(Some(output_path.clone()));
-
-                // 同じパスが待機中か最適化中なら、新規行をエラーで追加
-                if self.is_standby_or_optimizing(image.path()) {
-                    image.set_status(file::Status::Error("Already in progress".to_string()));
-                }
-                // 同じ入力を同じ出力先へ書き済みなら、新規行をスキップで追加
-                else if *config.skip_same_path()
-                    && self.is_input_output_path(image.path(), &image.output_path())
-                {
-                    image.set_status(file::Status::Skipped);
-                }
-
-                self.images.push(image);
-            }
-        } else if metadata.is_dir() {
-            let entries = match fs::read_dir(&path) {
-                Ok(entries) => entries,
-                Err(e) => {
-                    self.error_file(&path, base_dir, e.to_string());
-                    return Ok(());
-                }
-            };
-
-            for entry in entries {
-                match entry {
-                    Ok(entry) => self.find_file(config, entry.path(), base_dir)?,
-                    Err(e) => self.error_file(&path, base_dir, e.to_string()),
-                }
-            }
-        }
-
-        Ok(())
     }
 }

@@ -61,6 +61,7 @@ impl Render {
 
         // ジョブを作成
         let jobs = state::Jobs {
+            scan_job: file::ScanJob::new(cc.egui_ctx.clone()),
             optimize_job: optimize::OptimizeJob::new(cc.egui_ctx.clone()),
             update_job: update::UpdateJob::new(cc.egui_ctx.clone()),
         };
@@ -91,11 +92,8 @@ impl eframe::App for Render {
         // 選択された行を解除はイベント・アクションの前
         self.state.scroll_token.selected = false;
 
-        // 最適化結果を反映
-        self.jobs.optimize_job.result(&mut self.state.files);
-
-        // 更新結果を取得
-        self.jobs.update_job.result(&mut self.state.updated_token);
+        // ジョブの結果を反映
+        self.jobs_result();
 
         // 入力イベントを処理
         self.input_events(ui);
@@ -151,6 +149,18 @@ impl Render {
         input::backspace(ui, &mut self.state.files, &mut self.pending_actions);
     }
 
+    /// ジョブの結果を反映
+    fn jobs_result(&mut self) {
+        // スキャン結果を反映
+        self.jobs.scan_job.result(&self.state.config, &mut self.state.files);
+
+        // 最適化結果を反映
+        self.jobs.optimize_job.result(&mut self.state.files);
+
+        // 更新結果を取得
+        self.jobs.update_job.result(&mut self.state.updated_token);
+    }
+
     /// 効果音を再生
     fn play_sound(&mut self) {
         // 最適化前か最適化中かどうか（忙しいかどうか）を取得
@@ -195,7 +205,8 @@ impl Render {
     /// 最適化中か待機中かどうかをチェック
     /// * `return` - 最適化中か待機中かどうか
     fn is_busy(&self) -> bool {
-        self.state.files.has_standby()
+        self.jobs.scan_job.is_running()
+            || self.state.files.has_standby()
             || self.state.files.has_optimizing()
     }
 }

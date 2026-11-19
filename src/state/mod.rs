@@ -17,6 +17,7 @@ pub(crate) struct State {
 }
 
 pub(crate) struct Jobs {
+    pub scan_job: file::ScanJob,
     pub optimize_job: optimize::OptimizeJob,
     pub update_job: update::UpdateJob,
 }

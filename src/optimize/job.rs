@@ -72,7 +72,7 @@ impl OptimizeJob {
             let mut file = file.clone();
 
             // 入力が違くて、出力先パスが同じファイルが処理中、処理済みの状態である場合はエラーを返す
-            if files.has_output_conflict(file.path(), file.output_path()) {
+            if files.has_output_conflict(file.path(), file.output_path().as_deref()) {
                 files.set_status_error(*file.id(), "Output path conflicts");
                 continue;
             }
@@ -229,7 +229,9 @@ impl OptimizeJob {
         image.set_status(file::Status::Optimizing);
 
         // 出力ファイルのパスを取得
-        let output_path = image.output_path().clone();
+        let Some(output_path) = image.output_path().clone() else {
+            return Ok(file::Status::Error("Output path is not set".to_string()));
+        };
 
         // 最適化を実行
         let result = match image.extension() {
@@ -267,10 +269,12 @@ impl OptimizeJob {
                         let duration = end_time.duration_since(start_time).as_millis();
                         image.set_duration(duration as u64);
 
-                        // 最適化後のファイルサイズと節約率を更新
+                        // 最適化後のファイルサイズを取得
                         let metadata = output_path.metadata().map_err(|e| {
                             error::KeigaError::file_error(e.to_string(), output_path.clone())
                         })?;
+
+                        // 最適化後のファイルサイズを更新
                         image.set_new_size(metadata.len());
                         image.set_saved_rate(file::calc_saved_rate(*image.size(), *image.new_size()));
 

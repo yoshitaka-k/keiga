@@ -1,14 +1,13 @@
-use crate::{config, error, file};
+use std::path::PathBuf;
+use crate::file;
 
 /// ファイルオープンダイアログを開いて選択結果を追加する
-/// * `config` - 設定
-/// * `files` - 開いているファイル
+/// * `scan_job` - ファイルスキャンジョブ
 /// * `label` - ファイルダイアログのラベル
 pub(crate) fn file(
-    config: &config::Config,
-    files: &mut file::OpenFiles,
+    scan_job: &file::ScanJob,
     label: &str,
-) -> error::Result<()> {
+) {
     let extensions = file::allowed_extensions();
 
     let paths = rfd::FileDialog::new()
@@ -17,23 +16,17 @@ pub(crate) fn file(
 
     // ファイルを追加
     if let Some(paths) = paths {
-        for path in paths {
-            files.add_path(config, path)?;
-        }
+        open_paths(scan_job, paths);
     }
-
-    Ok(())
 }
 
 /// ファイルオープンダイアログを開いて選択結果を追加する
-/// * `config` - 設定
-/// * `files` - 開いているファイル
+/// * `scan_job` - ファイルスキャンジョブ
 /// * `label` - ファイルダイアログのラベル
 pub(crate) fn folder(
-    config: &config::Config,
-    files: &mut file::OpenFiles,
+    scan_job: &file::ScanJob,
     label: &str,
-) -> error::Result<()> {
+) {
     let extensions = file::allowed_extensions();
 
     // Macのみファイルとフォルダを同時選択できる
@@ -50,33 +43,34 @@ pub(crate) fn folder(
 
     // ファイルを追加
     if let Some(paths) = paths {
-        for path in paths {
-            files.add_path(config, path)?;
-        }
+        open_paths(scan_job, paths);
     }
-
-    Ok(())
 }
 
 /// ドロップされたファイルを処理
+/// * `ctx` - コンテキスト
+/// * `scan_job` - ファイルスキャンジョブ
 /// * `dropped_files` - ドロップされたファイル
-/// * `config` - 設定
-/// * `files` - 開いているファイル
 pub(crate) fn drop(
     ctx: &egui::Context,
-    dropped_files: &Vec<std::path::PathBuf>,
-    config: &config::Config,
-    files: &mut file::OpenFiles,
-) -> error::Result<()> {
-    for file in dropped_files {
-        files.add_path(config, file.to_path_buf())?;
-    }
+    scan_job: &file::ScanJob,
+    dropped_files: Vec<PathBuf>,
+) {
+    open_paths(scan_job, dropped_files);
 
     // ウィンドウを前面に持ってくる
     ctx.send_viewport_cmd_to(
         egui::ViewportId::ROOT,
         egui::ViewportCommand::Focus,
     );
+}
 
-    Ok(())
+/// ファイルを追加
+/// * `scan_job` - ファイルスキャンジョブ
+/// * `paths` - 追加するファイルのパス
+fn open_paths(
+    scan_job: &file::ScanJob,
+    paths: Vec<PathBuf>,
+) {
+    scan_job.run(paths);
 }

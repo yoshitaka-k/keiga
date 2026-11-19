@@ -2,10 +2,11 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
 use getset::{Getters, Setters};
 
-use crate::{config, error, file};
+use crate::{error, file};
 
-/// Image の一意な ID を発行するカウンタ
-static NEXT_ID: AtomicU64 = AtomicU64::new(1);
+/// Image の一意 ID を発行する
+const COUNT_UP: u64 = 1;
+static NEXT_ID: AtomicU64 = AtomicU64::new(COUNT_UP);
 
 /// 画像ファイルを管理する構造体
 #[derive(Clone, Getters, Setters)]
@@ -21,7 +22,6 @@ pub(crate) struct Image {
     relative_path: PathBuf,
 
     /// 出力したファイルのパス
-    #[getset(skip)]
     #[getset(set = "pub")]
     output_path: Option<PathBuf>,
 
@@ -101,12 +101,6 @@ impl Image {
         self.path.file_name().map(|f| f.to_string_lossy()).unwrap_or_default()
     }
 
-    /// 出力ファイルのパスを取得
-    /// * `return` - 出力ファイルのパス
-    pub fn output_path(&self) -> &PathBuf {
-        self.output_path.as_ref().unwrap_or(&self.path)
-    }
-
     /// ファイルが JPEG かどうか
     /// * `return` - ファイルが JPEG かどうか
     pub fn is_jpeg(&self) -> bool {
@@ -167,14 +161,14 @@ impl Image {
         matches!(self.status, file::Status::Standby | file::Status::Optimizing)
     }
 
-    /// 出力ファイルのパスを作成
-    /// * `config` - 設定
-    /// * `return` - 出力ファイルのパス
-    pub fn make_output_path(&self, config: &config::Config) -> PathBuf {
-        if config.output_path().is_empty() {
+    /// 出力先を作成
+    /// * `output_path` - 出力先
+    /// * `return` - 出力先
+    pub fn make_output_path(&self, output_path: &str) -> PathBuf {
+        if output_path.is_empty() {
             self.path.clone()
         } else {
-            PathBuf::from(config.output_path()).join(self.relative_path.clone())
+            PathBuf::from(output_path).join(self.relative_path.clone())
         }
     }
 
