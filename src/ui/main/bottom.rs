@@ -145,7 +145,6 @@ pub(crate) fn view(
                 ui.label(ui::rich_text(
                     &format!("{:+.2}%", state.files.total_saved_rate()),
                     *status_color.optimized(),
-                    None,
                 ));
                 ui.spacing_mut().item_spacing.x = spacing;
             },

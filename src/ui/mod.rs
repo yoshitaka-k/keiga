@@ -26,15 +26,13 @@ const LIGHT_MODE_PANEL_COLOR: egui::Color32 = egui::Color32::from_rgb(225, 225, 
 /// セパレータの高さ
 const SEPARATOR_HEIGHT: f32 = 4.0;
 /// アイコンセルの左パディング
-const LIST_ICON_CELL_LEFT_PADDING: f32 = 2.0;
-/// スタンバイアイコンセルの左パディング
-const LIST_ICON_STANDBY_LEFT_PADDING: f32 = 1.0;
-/// リストのノートのサイズ
-const LIST_NOTE_SIZE: f32 = 11.0;
+const LIST_ICON_INDENT: f32 = 2.0;
+/// リストの右インデントの幅
+const LIST_RIGHT_INDENT: f32 = 10.0;
 /// リストの角丸
 const LIST_CORNER_RADIUS: f32 = 1.0;
-/// リストの最大幅の割り算
-const LIST_MAX_WIDTH_DIVIDER: f32 = 2.25;
+/// リストのファイル名の最小比率
+const LIST_NAME_MIN_RATIO: f32 = 1.0 / 3.3;
 
 // 設定ウィンドウ
 
@@ -210,18 +208,12 @@ fn icon_color(ui: &egui::Ui) -> egui::Color32 {
 /// リッチテキストを作成する
 /// * `text` - テキスト
 /// * `color` - テキストの色
-/// * `size` - テキストのサイズ
 /// * `return` - リッチテキスト
 pub(crate) fn rich_text(
     text: &str,
     color: egui::Color32,
-    size: Option<f32>
 ) -> egui::RichText {
-    let mut rich_text = egui::RichText::new(text).color(color);
-    if let Some(size) = size {
-        rich_text = rich_text.size(size);
-    }
-    rich_text
+    egui::RichText::new(text).color(color)
 }
 
 /// テキストカラーを設定する
@@ -234,7 +226,7 @@ pub(crate) fn rich_label(
     text: &str,
     color: egui::Color32
 ) -> egui::Response {
-    ui.label(rich_text(text, color, None))
+    ui.label(rich_text(text, color))
 }
 
 /// パネルのスタイルを設定

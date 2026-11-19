@@ -1,4 +1,4 @@
-use crate::{event, file, ui, state, lang, duration_format};
+use crate::{event, file, ui, state, lang, filesize_format, duration_format};
 use crate::ui::{main, assets, StatusColor};
 use crate::ui::assets::{size, svg};
 
@@ -41,6 +41,14 @@ pub(crate) fn view(
             ui, row_height, total_length,
             |ui, row_range|
         {
+            // ファイルが空の場合は表示
+            if state.files.is_empty() {
+                ui.horizontal(|ui| {
+                    ui.add(main::icon_widget(svg::UPLOAD_FILE, size::EMPTY_ICON_SIZE, assets::list_empty_color(&state.config)));
+                    ui.label(ui::rich_text(lang::current().main_middle.upload_note, assets::list_empty_color(&state.config)));
+                });
+            }
+
             // UIの幅と行間隔
             let width = ui.available_width();
             let row_spacing = ui.spacing().item_spacing.y;
@@ -72,20 +80,9 @@ pub(crate) fn view(
                 .unwrap_or(&[])
                 .to_vec();
 
-            // ファイルが空の場合は表示
-            if state.files.is_empty() {
-                ui.horizontal(|ui| {
-                    ui.add(main::icon_widget(svg::UPLOAD_FILE, size::EMPTY_ICON_SIZE, assets::list_empty_color(&state.config)));
-                    ui.label(ui::rich_text(lang::current().main_middle.upload_note, assets::list_empty_color(&state.config), None));
-                });
-            }
-
             // リストを表示
-            for (offset, image_file) in visible.iter().enumerate() {
+            for (offset, image) in visible.iter().enumerate() {
                 let index = start + offset;
-
-                // 最適化時間をフォーマット
-                let duration = duration_format(*image_file.duration());
 
                 // 行をクリックできるようにする
                 let (row_rect, response) = ui.allocate_exact_size(
@@ -103,6 +100,16 @@ pub(crate) fn view(
                     ui.painter().rect_filled(row_rect, ui::LIST_CORNER_RADIUS, main::selected_background_color(&state.config));
                 }
 
+                // ステータスに応じてノートを表示
+                let note = match image.status() {
+                    file::Status::Standby | file::Status::Optimizing => None,
+                    file::Status::Optimized => Some(egui::RichText::new(duration_format(*image.duration()))),
+                    file::Status::Unchanged => Some(ui::rich_text(lang::current().optimize_status.unchanged, *status_color.unchanged())),
+                    file::Status::Skipped => Some(ui::rich_text(lang::current().optimize_status.skipped, *status_color.skipped())),
+                    file::Status::Canceled => Some(ui::rich_text(lang::current().optimize_status.canceled, *status_color.canceled())),
+                    file::Status::Error(e) => Some(ui::rich_text(e, *status_color.error())),
+                };
+
                 // コンテンツを表示
                 ui.scope_builder(
                     egui::UiBuilder::new()
@@ -112,47 +119,53 @@ pub(crate) fn view(
                     // 折り返さないようにして、溢れた分は省略
                     ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
 
-                    // 最適化ステータスに応じて表示
-                    match image_file.status() {
-                        file::Status::Standby => {
-                            main::list_row_content(ui, image_file, svg::CIRCLE, size::STATUS_ICON_SIZE, *status_color.standby());
-                        }
-                        file::Status::Optimizing => {
-                            main::list_row_content(ui, image_file, svg::AUTORENEW, size::STATUS_ICON_SIZE, *status_color.optimizing());
-                        }
-                        file::Status::Optimized => {
-                            main::list_row_content(ui, image_file, svg::CHECK, size::STATUS_ICON_SIZE, *status_color.optimized());
+                    let spacing = ui.spacing().item_spacing.x;
 
-                            ui.separator();
-                            ui.label(format!("{:+.2}%", image_file.saved_rate()));
-                            ui.separator();
-                            ui.label(duration.to_string());
-                        }
-                        file::Status::Unchanged => {
-                            main::list_row_content(ui, image_file, svg::CHECK, size::STATUS_ICON_SIZE, *status_color.unchanged());
+                    // ステータスアイコンの表示
+                    ui.add_space(ui::LIST_ICON_INDENT);
+                    ui.add_space(ui::LIST_ICON_INDENT);
+                    ui.spacing_mut().item_spacing.x = ui::LIST_ICON_INDENT;
+                    main::status_icon(ui, image.status(), status_color, *status_color.optimized(), false)
+                        .on_hover_text(image.status().to_string());
+                    ui.spacing_mut().item_spacing.x = spacing;
 
-                            ui.separator();
-                            ui.label(ui::rich_text(lang::current().optimize_status.unchanged, *status_color.unchanged(), Some(ui::LIST_NOTE_SIZE)));
-                        }
-                        file::Status::Skipped => {
-                            main::list_row_content(ui, image_file, svg::CHECK, size::STATUS_ICON_SIZE, *status_color.skipped());
+                    ui.separator();
 
-                            ui.separator();
-                            ui.label(ui::rich_text(lang::current().optimize_status.skipped, *status_color.skipped(), Some(ui::LIST_NOTE_SIZE)));
-                        }
-                        file::Status::Canceled => {
-                            main::list_row_content(ui, image_file, svg::CANCEL, size::STATUS_ICON_SIZE, *status_color.canceled());
+                    // ディレクトリか、ファイルかを表示
+                    main::opentype_icon(ui, image);
 
+                    // ファイル名とステータスノートを表示
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        // ステータスノートを表示
+                        if let Some(note) = note {
+                            ui.add_space(ui::LIST_RIGHT_INDENT);
+                            ui.label(note);
                             ui.separator();
-                            ui.label(ui::rich_text(lang::current().optimize_status.canceled, *status_color.canceled(), Some(ui::LIST_NOTE_SIZE)));
                         }
-                        file::Status::Error(e) => {
-                            main::list_row_content(ui, image_file, svg::ERROR, size::STATUS_ICON_SIZE, *status_color.error());
 
+                        // 節約率を表示
+                        if matches!(image.status(), file::Status::Optimized) {
+                            ui.label(format!("{} ({:+.2}%)",
+                                &filesize_format(*image.new_size()),
+                                *image.saved_rate()
+                            ));
                             ui.separator();
-                            ui.label(ui::rich_text(e, *status_color.error(), Some(ui::LIST_NOTE_SIZE)));
                         }
-                    }
+
+                        // ファイル名と元の画像のサイズを表示
+                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                            // ファイル名の表示最小幅を設定
+                            ui.set_min_width(ui.available_width() * ui::LIST_NAME_MIN_RATIO);
+
+                            // ファイル名と元の画像のサイズを取得
+                            let label = format!("{} ({})",
+                                image.file_name(),
+                                &filesize_format(*image.size())
+                            );
+
+                            ui.add(egui::Label::new(label).truncate());
+                        });
+                    });
                 });
 
                 // 最終行以外は行下端に区切り線
@@ -172,7 +185,7 @@ pub(crate) fn view(
 
                 // ダブルクリックアクションを処理予約
                 if response.double_clicked() {
-                    pending_actions.push(event::EventAction::DoubleClick(image_file.reveal_path().clone()));
+                    pending_actions.push(event::EventAction::DoubleClick(image.reveal_path().clone()));
                 }
             }
 
