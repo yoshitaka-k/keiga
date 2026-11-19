@@ -6,7 +6,10 @@ use crate::update::UpdateJob;
 /// バージョンを表示
 /// * `ui` - UI
 /// * `update_job` - アップデートジョブ
-pub(crate) fn view(ui: &mut egui::Ui, update_job: &mut UpdateJob) {
+pub(crate) fn view(
+    ui: &mut egui::Ui,
+    update_job: &mut UpdateJob,
+) {
     // ヘッダーパネルを表示
     setting::header_panel(ui, svg::INFO, lang::current().setting_about.about, Some(update_job));
 

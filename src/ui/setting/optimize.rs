@@ -6,7 +6,10 @@ use crate::ui::assets::svg;
 /// 品質を表示
 /// * `ui` - UI
 /// * `config` - 設定
-pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
+pub(crate) fn view(
+    ui: &mut egui::Ui,
+    config: &mut config::Config,
+) {
     setting::header_panel(ui, svg::IMAGE, lang::current().optimize.jpeg, None);
 
     egui::Frame::group(ui.style()).show(ui, |ui| {

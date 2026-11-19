@@ -5,7 +5,10 @@ use crate::ui::assets::svg;
 /// 並行処理数を表示
 /// * `ui` - UI
 /// * `config` - 設定
-pub(crate) fn view(ui: &mut egui::Ui, config: &mut config::Config) {
+pub(crate) fn view(
+    ui: &mut egui::Ui,
+    config: &mut config::Config,
+) {
     // グループヘッダーパネルを表示
     setting::header_panel(ui, svg::CYCLE, lang::current().setting_concurrent.concurrent, None);
 
