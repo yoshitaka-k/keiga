@@ -25,8 +25,9 @@ pub(crate) struct Image {
     #[getset(set = "pub")]
     output_path: Option<PathBuf>,
 
-    /// ファイルの拡張子
-    extension: file::Extension,
+    /// ファイルのメタデータ
+    #[getset(set = "pub")]
+    metadata: file::Metadata,
 
     /// フォルダ経由で追加されたファイルかどうか
     is_in_folder: bool,
@@ -58,23 +59,6 @@ impl Image {
     /// * `relative_path` - ドロップ基準からの相対パス
     /// * `return` - Image のインスタンス
     pub fn new(path: PathBuf, relative_path: PathBuf, is_in_folder: bool) -> Result<Self, error::KeigaError> {
-        // 画像を読み込む
-        let reader = image::ImageReader::open(&path)
-            .and_then(|r| r.with_guessed_format())
-            .map_err(|e| error::KeigaError::file_error(e.to_string(), path.to_path_buf()))?;
-
-        // 画像のフォーマットを取得
-        let format = reader.format().ok_or_else(|| {
-            error::KeigaError::file_error("Unknown image format".to_string(), path.to_path_buf())
-        })?;
-
-        // 読み取ったフォーマットを拡張子に対応づける
-        let extension = match format {
-            image::ImageFormat::Jpeg => file::Extension::Jpeg,
-            image::ImageFormat::Png => file::Extension::Png,
-            _ => file::Extension::None,
-        };
-
         // ファイルサイズを取得
         let size = path.metadata()
             .map_err(|e| error::KeigaError::file_error(e.to_string(), path.clone()))?
@@ -86,7 +70,7 @@ impl Image {
             relative_path,
             output_path: None,
             is_in_folder,
-            extension,
+            metadata: file::Metadata::Pending,
             status: file::Status::Standby,
             size,
             new_size: 0,
@@ -101,16 +85,39 @@ impl Image {
         self.path.file_name().map(|f| f.to_string_lossy()).unwrap_or_default()
     }
 
+    /// ファイルの拡張子を取得
+    /// * `return` - ファイルの拡張子
+    pub fn extension(&self) -> file::Extension {
+        match self.metadata {
+            file::Metadata::Loading => file::Extension::None,
+            file::Metadata::Pending => file::Extension::None,
+            file::Metadata::Ready(extension) => extension,
+            file::Metadata::Unavailable => file::Extension::None,
+        }
+    }
+
     /// ファイルが JPEG かどうか
     /// * `return` - ファイルが JPEG かどうか
     pub fn is_jpeg(&self) -> bool {
-        matches!(self.extension, file::Extension::Jpeg)
+        matches!(self.extension(), file::Extension::Jpeg)
     }
 
     /// ファイルが PNG かどうか
     /// * `return` - ファイルが PNG かどうか
     pub fn is_png(&self) -> bool {
-        matches!(self.extension, file::Extension::Png)
+        matches!(self.extension(), file::Extension::Png)
+    }
+
+    /// ファイルがメタデータを読み込んでないかどうか
+    /// * `return` - ファイルがメタデータを読み込んでないかどうか
+    pub fn is_pending(&self) -> bool {
+        matches!(self.metadata, file::Metadata::Pending)
+    }
+
+    /// ファイルがメタデータを読み込んでないかリサイズ中かどうか
+    /// * `return` - ファイルがメタデータを読み込んでないかリサイズ中かどうか
+    pub fn is_pending_or_loading(&self) -> bool {
+        matches!(self.metadata, file::Metadata::Pending | file::Metadata::Loading)
     }
 
     /// ファイルが待機中かどうか

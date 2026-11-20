@@ -38,11 +38,25 @@ impl OpenFiles {
         self.file_info = file::FileInfo::new();
     }
 
-    /// 待機中のファイルを1件取得
-    /// * `return` - 待機中のファイル1件
+    /// メタデータを読み込んでないファイルを1件取得
+    /// * `return` - メタデータを読み込んでないファイル1件
+    pub fn get_pending_file(&mut self) -> Option<&mut file::Image> {
+        self.images.iter_mut().find(|f| f.is_pending())
+    }
+
+    /// 最適化待機中のファイルを1件取得
+    ///
+    /// メタデータ読み込み中のファイルは取得しない
+    /// 最適化待機中のファイルを取得
+    /// png ファイルの取得が許可されている場合は、png ファイルも取得する
+    ///
+    /// * `allow_png` - PNG ファイルを許可するかどうか
+    /// * `return` - 最適化待機中のファイル1件
     pub fn get_standby_file(&mut self, allow_png: bool) -> Option<&mut file::Image> {
         self.images.iter_mut().find(|f| {
-            f.is_standby() && (allow_png || !f.is_png())
+            !f.is_pending_or_loading()
+            && f.is_standby()
+            && (allow_png || !f.is_png())
         })
     }
 
@@ -257,8 +271,8 @@ impl OpenFiles {
         self.images.iter().any(|f| f.is_png())
     }
 
-    /// 未処理ファイルがあるかどうか
-    /// * `return` - 未処理ファイルがあるかどうか
+    /// 最適化待機中のファイルがあるかどうか
+    /// * `return` - 最適化待機中のファイルがあるかどうか
     pub fn has_standby(&self) -> bool {
         self.images.iter().any(|f| f.is_standby())
     }
@@ -316,6 +330,15 @@ impl OpenFiles {
         });
 
         self.selected_index = selected;
+    }
+
+    /// メタデータ読み込み結果を反映
+    /// * `result` - メタデータ読み込み結果
+    pub fn apply_metadata_result(&mut self, result: file::Image) {
+        // 既存のファイル一覧から ID が一致するファイルを検索
+        if let Some(file) = self.images.iter_mut().find(|f| f.id() == result.id()) {
+            file.set_metadata(*result.metadata());
+        }
     }
 
     /// 最適化結果を既存の一覧へ反映

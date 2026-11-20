@@ -3,12 +3,14 @@ mod image;
 mod status;
 mod token;
 mod scan_job;
+mod meta_job;
 
 pub(crate) use open_files::OpenFiles;
 pub(crate) use image::Image;
 pub(crate) use status::Status;
 pub(crate) use token::ScanToken;
 pub(crate) use scan_job::ScanJob;
+pub(crate) use meta_job::MetaJob;
 
 use std::path::{Path, PathBuf};
 
@@ -20,8 +22,21 @@ pub(crate) enum ScanResult {
     Failed { path: PathBuf, base_dir: PathBuf, error: String },
 }
 
+/// 画像の情報
+/// * `Pending` - まだ読んでいない
+/// * `Loading` - 読んでいる最中
+/// * `Ready` - 読めた（拡張子）
+/// * `Unavailable` - 読めなかった
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Metadata {
+    Pending,
+    Loading,
+    Ready(Extension),
+    Unavailable,
+}
+
 /// ファイルの拡張子を管理する列挙型
-#[derive(Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Extension {
     Jpeg,
     Png,

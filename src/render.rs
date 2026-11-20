@@ -62,6 +62,7 @@ impl Render {
         // ジョブを作成
         let jobs = state::Jobs {
             scan_job: file::ScanJob::new(cc.egui_ctx.clone()),
+            meta_job: file::MetaJob::new(cc.egui_ctx.clone()),
             optimize_job: optimize::OptimizeJob::new(cc.egui_ctx.clone()),
             update_job: update::UpdateJob::new(cc.egui_ctx.clone()),
         };
@@ -97,6 +98,9 @@ impl eframe::App for Render {
 
         // 入力イベントを処理
         self.input_events(ui);
+
+        // ファイル追加時にメタデータを取得
+        self.jobs.meta_job.run(&mut self.state.files);
 
         // ファイル追加時に最適化を実行
         self.jobs.optimize_job.run(&self.state.config, &mut self.state.files);
@@ -153,6 +157,9 @@ impl Render {
     fn jobs_result(&mut self) {
         // スキャン結果を反映
         self.jobs.scan_job.result(&self.state.config, &mut self.state.files);
+
+        // メタデータ結果を反映
+        self.jobs.meta_job.result(&mut self.state.files);
 
         // 最適化結果を反映
         self.jobs.optimize_job.result(&mut self.state.files);
