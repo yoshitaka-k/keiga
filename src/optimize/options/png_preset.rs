@@ -1,6 +1,5 @@
 use std::fmt;
 use serde::{Deserialize, Serialize};
-use oxipng::Options;
 
 /// PNG プリセット
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -13,15 +12,15 @@ pub(crate) enum PngPreset {
 }
 
 impl PngPreset {
-    /// PNG プリセットを oxipng の Options に変換
-    /// * `return` - プリセットの Options
-    pub fn to_options(&self) -> Options {
+    /// PNG プリセットを oxipng の oxipng::Options に変換
+    /// * `return` - プリセットの oxipng::Options
+    pub fn to_options(&self) -> oxipng::Options {
         match self {
-            PngPreset::Min => Options::from_preset(0),
-            PngPreset::Fast => Options::from_preset(1),
-            PngPreset::Default => Options::from_preset(2),
-            PngPreset::Best => Options::from_preset(4),
-            PngPreset::Max => Options::from_preset(6),
+            PngPreset::Min => oxipng::Options::from_preset(0),
+            PngPreset::Fast => oxipng::Options::from_preset(1),
+            PngPreset::Default => oxipng::Options::from_preset(2),
+            PngPreset::Best => oxipng::Options::from_preset(4),
+            PngPreset::Max => oxipng::Options::from_preset(6),
         }
     }
 }
