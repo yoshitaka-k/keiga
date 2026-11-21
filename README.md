@@ -62,7 +62,7 @@ Rust の勉強がてら、自分用に Image Optimization ってことで、Keig
 | Canceled | キャンセル済み |
 | Error | 失敗（エラーコード付きのメッセージを表示） |
 
-下部バーは standby / optimizing / completed / error の件数と平均節約率です。completed にホバーすると optimized / no savings / skipped の内訳、左のアイコンにホバーすると最適化できたファイルの平均所要時間が出ます。JPEG と PNG が両方あるときは、形式ごとの平均も並びます。
+下部バーは standby / optimizing / completed の件数と、平均節約率・平均新サイズです。error は件数があるときだけ並びます。completed にホバーすると optimized / unchanged / skipped の内訳、optimizing にホバーすると（JPEG と PNG が両方あるとき）形式ごとの件数、左のアイコンにホバーすると最適化できたファイルの平均所要時間が出ます。平均節約率・平均新サイズも、JPEG と PNG が両方あるときは形式ごとの平均がホバーで出ます。
 
 ## Mouse & keyboard
 
