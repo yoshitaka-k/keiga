@@ -1,4 +1,5 @@
 use std::path::Path;
+use super::optimize_with_oxipng;
 use crate::{error, optimize};
 
 /// PNG Lossless 最適化
@@ -18,9 +19,7 @@ pub(crate) fn optimize(
     })?;
 
     // oxipng でロスレス最適化（パレット維持・ビット深度削減・再圧縮）
-    let output = oxipng::optimize_from_memory(&input, &options.options).map_err(|e| {
-        error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
-    })?;
+    let output = optimize_with_oxipng(&input, &options, path)?;
 
     // 元ファイルのファイルサイズを取得
     let size = input.len();

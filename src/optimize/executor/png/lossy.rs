@@ -1,5 +1,6 @@
 use std::path::Path;
 use image::GenericImageView;
+use super::optimize_with_oxipng;
 use crate::{error, optimize};
 use crate::optimize::executor;
 
@@ -13,7 +14,7 @@ struct LossyInfo {
 
 /// PNG Lossy 最適化
 ///
-/// quantizr crate で最適化
+/// quantizr crate で最適化したのち、oxipng crate で更に最適化
 ///
 /// * `path` - 最適化する PNG のパス
 /// * `options` - 最適化オプション
@@ -62,6 +63,9 @@ pub(crate) fn optimize(
         error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
     })?;
 
+    // oxipng で更に最適化
+    let buffer = optimize_with_oxipng(&buffer, &options, path)?;
+
     // 元ファイルのファイルサイズを取得
     let size = path.metadata().map_err(|e| {
         error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
@@ -69,6 +73,7 @@ pub(crate) fn optimize(
 
     Ok((size, buffer))
 }
+
 /// 画像を保存
 /// https://github.com/DarthSim/quantizr/blob/master/example/src/main.rs
 /// * `palette` - パレット
