@@ -3,7 +3,7 @@ mod guard;
 pub(crate) mod executor;
 pub(crate) mod options;
 pub(crate) use job::OptimizeJob;
-pub(crate) use executor::{Optimizer, OpenImageResult, Jpeg, Png};
+pub(crate) use executor::{Optimizer, Jpeg, Png};
 pub(crate) use options::{JpegOptions, PngOptions};
 
 /// 一時ファイルの拡張子

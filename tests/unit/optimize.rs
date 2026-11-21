@@ -11,7 +11,7 @@ fn lossy_decodes_png_with_jpg_extension() {
         options: oxipng::Options::default(),
     };
 
-    let (size, output) = optimize::Png::lossy(path, options).expect("png content with jpg extension");
+    let (size, output) = optimize::Png::encode(path, options).expect("png content with jpg extension");
 
     assert!(size > 0);
     assert!(output.starts_with(&[0x89, b'P', b'N', b'G']));
