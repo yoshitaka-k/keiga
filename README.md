@@ -30,8 +30,8 @@ Rust の勉強がてら、自分用に Image Optimization ってことで、Keig
 
 | Extension | Optimization |
 | --- | --- |
-| `.jpg` / `.jpeg` | Lossless（[MozJPEG](https://github.com/mozilla/mozjpeg) の擬似可逆。既定）<br>Lossy（JPEG Quality で再エンコード） |
-| `.png` | Lossless（[oxipng](https://github.com/oxipng/oxipng)）<br>Lossy（[quantizr](https://docs.rs/quantizr/latest/quantizr/index.html)。256色。Dithering で調整） |
+| `.jpg` / `.jpeg` | Lossless（[MozJPEG](https://github.com/mozilla/mozjpeg) の擬似可逆。既定）<br>Lossy（MozJPEG。Quality で再エンコード） |
+| `.png` | Lossless（[oxipng](https://github.com/oxipng/oxipng)）<br>Lossy（[quantizr](https://docs.rs/quantizr/latest/quantizr/index.html) で 256色減色のあと、oxipng。Dithering で調整） |
 
 ダイアログには他の画像拡張子も表示されますが、最適化対象外はエラーコード付きの `Unsupported extension` になります。
 
@@ -112,9 +112,9 @@ Rust の勉強がてら、自分用に Image Optimization ってことで、Keig
 
 | Setting | Range | Notes |
 | --- | --- | --- |
-| JPEG Compression | Lossless / Lossy | 既定 Lossless。Lossless は MozJPEG の擬似可逆で、完全な可逆ではない |
-| JPEG Quality | 60–100 | Lossy 時のみ有効。非可逆（既定 80） |
-| PNG Compression | Lossless / Lossy | 既定 Lossless。Lossy は 256色への減色 |
+| JPEG Compression | Lossless / Lossy | 既定 Lossless。どちらも MozJPEG。Lossless は擬似可逆で、完全な可逆ではない |
+| JPEG Quality | 60–100 | Lossy 時のみ有効（既定 80） |
+| PNG Compression | Lossless / Lossy | 既定 Lossless。Lossy は quantizr で 256色へ減色したあと oxipng |
 | PNG Preset | Min / Fast / Default / Best / Max | Lossless 時のみ有効。oxipng のプリセット（既定 Default） |
 | PNG Dithering | 0–100 | Lossy 時のみ有効（既定 80） |
 
