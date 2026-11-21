@@ -5,7 +5,9 @@ use crate::{error, optimize};
 use crate::optimize::executor;
 
 /// JPEG Lossy 最適化
+///
 /// image crate で最適化
+///
 /// * `path` - 最適化する JPEG のパス
 /// * `options` - 最適化オプション
 /// * `return` - 元のファイルサイズとエンコードされたデータ

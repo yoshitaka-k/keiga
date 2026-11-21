@@ -3,7 +3,9 @@ use std::panic;
 use crate::error;
 
 /// JPEG Lossless 最適化
+///
 /// mozjpeg crate で最適化
+///
 /// * `path` - 最適化する JPEG のパス
 /// * `return` - 元のファイルサイズとエンコードされたデータ
 pub(crate) fn optimize(

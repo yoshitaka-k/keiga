@@ -12,7 +12,9 @@ struct LossyInfo {
 }
 
 /// PNG Lossy 最適化
+///
 /// quantizr crate で最適化
+///
 /// * `path` - 最適化する PNG のパス
 /// * `options` - 最適化オプション
 /// * `return` - 元のファイルサイズとエンコードされたデータ

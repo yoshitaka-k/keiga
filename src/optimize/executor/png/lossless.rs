@@ -2,7 +2,9 @@ use std::path::Path;
 use crate::{error, optimize};
 
 /// PNG Lossless 最適化
+///
 /// oxipng crate で最適化
+///
 /// * `path` - 最適化する PNG のパス
 /// * `options` - 最適化オプション
 /// * `return` - 元のファイルサイズとエンコードされたデータ
