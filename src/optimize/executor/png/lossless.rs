@@ -18,8 +18,10 @@ pub(crate) fn optimize(
         error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
     })?;
 
+    // oxipng のオプションを取得
+    let mut png_options = options.options;
     // oxipng でロスレス最適化（パレット維持・ビット深度削減・再圧縮）
-    let output = optimize_with_oxipng(&input, &options, path)?;
+    let output = optimize_with_oxipng(&input, &mut png_options, &options.chunks, path)?;
 
     // 元ファイルのファイルサイズを取得
     let size = input.len();

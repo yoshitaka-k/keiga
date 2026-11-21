@@ -249,6 +249,8 @@ impl OptimizeJob {
                 let options = optimize::PngOptions {
                     lossy: *config.png_lossy(),
                     dithering: *config.png_dithering(),
+                    chunks: config.png_chunks(),
+                    // lossless の場合は oxipng のオプションを使用する
                     options: config.png_options(),
                 };
                 optimize::Png::execute(image.path(), &output_path, options, token)

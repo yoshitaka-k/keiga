@@ -18,5 +18,6 @@ pub struct JpegOptions {
 pub struct PngOptions {
     pub lossy: bool,
     pub dithering: u8,
+    pub chunks: oxipng::IndexSet<[u8; 4]>,
     pub options: oxipng::Options,
 }

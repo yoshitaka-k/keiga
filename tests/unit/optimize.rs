@@ -8,6 +8,7 @@ fn lossy_decodes_png_with_jpg_extension() {
     let options = optimize::PngOptions {
         lossy: true,
         dithering: 0,
+        chunks: oxipng::IndexSet::new(),
         options: oxipng::Options::default(),
     };
 

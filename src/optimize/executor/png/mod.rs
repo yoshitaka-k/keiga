@@ -32,10 +32,15 @@ impl optimize::Optimizer for Png {
 /// * `return` - 最適化された PNG のバッファ
 fn optimize_with_oxipng(
     buffer: &[u8],
-    options: &optimize::PngOptions,
+    options: &mut oxipng::Options,
+    chunks: &oxipng::IndexSet<[u8; 4]>,
     path: &Path,
 ) -> error::Result<Vec<u8>> {
-    oxipng::optimize_from_memory(&buffer, &options.options).map_err(|e| {
+    // チャンクを保持
+    options.strip = oxipng::StripChunks::Keep(chunks.clone());
+
+    // oxipng で最適化
+    oxipng::optimize_from_memory(&buffer, options).map_err(|e| {
         error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
     })
 }

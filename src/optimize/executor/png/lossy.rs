@@ -2,7 +2,7 @@ use std::path::Path;
 use image::GenericImageView;
 use super::optimize_with_oxipng;
 use crate::{error, optimize};
-use crate::optimize::executor;
+use crate::optimize::{options, executor};
 
 /// PNG Lossy 最適化情報
 struct LossyInfo {
@@ -63,8 +63,10 @@ pub(crate) fn optimize(
         error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
     })?;
 
+    // oxipng のオプションを取得
+    let mut png_options = options::PngPreset::Default.to_options();
     // oxipng で更に最適化
-    let buffer = optimize_with_oxipng(&buffer, &options, path)?;
+    let buffer = optimize_with_oxipng(&buffer, &mut png_options, &options.chunks, path)?;
 
     // 元ファイルのファイルサイズを取得
     let size = path.metadata().map_err(|e| {

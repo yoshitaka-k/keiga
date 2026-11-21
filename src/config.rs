@@ -1,6 +1,5 @@
 use getset::{Getters, MutGetters};
 use serde::{Deserialize, Serialize};
-use oxipng::{Options, StripChunks};
 
 use crate::ui;
 use crate::optimize::options::PngPreset;
@@ -111,9 +110,9 @@ impl Config {
         Self::default()
     }
 
-    /// PNG 最適化オプションを作成
-    /// * `return` - 最適化オプション
-    pub fn png_options(&self) -> Options {
+    /// PNG チャンクを取得
+    /// * `return` - PNG チャンク
+    pub fn png_chunks(&self) -> oxipng::IndexSet<[u8; 4]> {
         let mut chunks = oxipng::IndexSet::new();
 
         // Safe に含まれるチャンクを保持
@@ -133,9 +132,14 @@ impl Config {
         chunks.insert(*b"zTXt");
         chunks.insert(*b"iTXt");
 
-        let mut options = self.png_preset().to_options();
-        options.strip = StripChunks::Keep(chunks);
-        options
+        chunks
+    }
+
+    /// PNG 最適化オプションを作成
+    /// * `return` - 最適化オプション
+    pub fn png_options(&self) -> oxipng::Options {
+        // プリセットを取得
+        self.png_preset().to_options()
     }
 
     /// 値をクランプする
