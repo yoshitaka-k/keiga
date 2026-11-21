@@ -127,7 +127,11 @@ pub(crate) fn view(
                         &state.files.completed_len().to_string(),
                         completed_color,
                     );
-                    ui.label(",");
+
+                    // エラーがあればカンマを表示
+                    if state.files.error_len() > 0 {
+                        ui.label(",");
+                    }
                 }).response.on_hover_ui(|ui| {
                     // 最適化済み
                     labeled_value(
@@ -155,17 +159,18 @@ pub(crate) fn view(
                     );
                 });
 
-                // エラー
-                labeled_value(
-                    ui,
-                    spacing,
-                    Some(&format!("{}: ", lang::current().optimize_status.error)),
-                    &state.files.error_len().to_string(),
-                    *status_color.error(),
-                );
-
-                // 次のセパレータとの間を空ける
-                ui.label("");
+                // エラーがあれば表示
+                if state.files.error_len() > 0 {
+                    ui.scope(|ui| {
+                        labeled_value(
+                            ui,
+                            spacing,
+                            Some(&format!("{}: ", lang::current().optimize_status.error)),
+                            &state.files.error_len().to_string(),
+                            *status_color.error(),
+                        );
+                    });
+                }
 
                 ui.separator();
 
@@ -307,12 +312,14 @@ fn labeled_value(
     value: &str,
     color: egui::Color32,
 ) -> egui::Response {
-    ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = 0.0;
+    ui.spacing_mut().item_spacing.x = 0.0;
+    let response = ui.horizontal(|ui| {
         if let Some(label) = label {
             ui.label(label);
         }
         ui::rich_label(ui, value, color);
-        ui.spacing_mut().item_spacing.x = spacing;
-    }).response
+    }).response;
+    ui.spacing_mut().item_spacing.x = spacing;
+
+    response
 }
