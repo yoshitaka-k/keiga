@@ -13,11 +13,13 @@ pub(crate) fn optimize(
     path: &Path,
     options: optimize::JpegOptions
 ) -> error::Result<(usize, Vec<u8>)> {
-    let configure = |comp: &mut mozjpeg::Compress| {
+    let configure = |comp: &mut mozjpeg::Compress, color_space: mozjpeg::ColorSpace| {
         // 品質を設定
         comp.set_quality(options.quality as f32);
         // YCbCr の場合はサンプリングを 4:2:0 に設定
-        comp.set_chroma_sampling_pixel_sizes((2, 2), (2, 2));
+        if color_space == mozjpeg::ColorSpace::JCS_YCbCr {
+            comp.set_chroma_sampling_pixel_sizes((2, 2), (2, 2));
+        }
         // プログレッシブ JPEG を使用
         comp.set_progressive_mode();
         // プログレッシブJPEGの各スキャン構成の自動最適化を有効化

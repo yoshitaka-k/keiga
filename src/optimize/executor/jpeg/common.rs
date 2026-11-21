@@ -11,7 +11,7 @@ use crate::error;
 /// * `return` - 元のファイルサイズとエンコードされたデータ
 pub(crate) fn encode_with(
     path: &Path,
-    configure: impl FnOnce(&mut mozjpeg::Compress) + panic::UnwindSafe,
+    configure: impl FnOnce(&mut mozjpeg::Compress, mozjpeg::ColorSpace) + panic::UnwindSafe,
 ) -> error::Result<(usize, Vec<u8>)> {
     // ファイルを読み込む
     let input = std::fs::read(path).map_err(|e| {
@@ -41,7 +41,7 @@ pub(crate) fn encode_with(
         comp.set_size(width, height);
 
         // コンフィグを適用
-        configure(&mut comp);
+        configure(&mut comp, color_space);
 
         // コンプレッサーを開始
         let mut comp_start = comp.start_compress(Vec::new())?;

@@ -13,11 +13,13 @@ const LOSSLESS_QUALITY: f32 = 100.0;
 pub(crate) fn optimize(
     path: &Path,
 ) -> error::Result<(usize, Vec<u8>)> {
-    let configure = |comp: &mut mozjpeg::Compress| {
+    let configure = |comp: &mut mozjpeg::Compress, color_space: mozjpeg::ColorSpace| {
         // 品質を設定
         comp.set_quality(LOSSLESS_QUALITY);
         // YCbCr の場合はサンプリングを 4:4:4 に設定
-        comp.set_chroma_sampling_pixel_sizes((1, 1), (1, 1));
+        if color_space == mozjpeg::ColorSpace::JCS_YCbCr {
+            comp.set_chroma_sampling_pixel_sizes((1, 1), (1, 1));
+        }
     };
 
     common::encode_with(path, configure)
