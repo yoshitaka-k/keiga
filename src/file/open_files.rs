@@ -89,33 +89,40 @@ impl OpenFiles {
     /// ファイル情報を更新
     pub fn update_file_info(&mut self) {
         let mut standby_len = 0;
-        let mut optimizing_len = 0;
+        let mut optimizing_len = file::OptimizingLen::new();
         let mut optimized_len = file::OptimizedLen::new();
         let mut unchanged_len = 0;
         let mut canceled_len = 0;
         let mut skipped_len = 0;
         let mut error_len = 0;
 
-        let mut total_size = 0;
-        let mut total_new_size = 0;
+        let mut total_size = file::SizeInfo::new();
+        let mut total_new_size = file::NewSizeInfo::new();
         let mut total_duration = file::DurationInfo::new();
 
         // 各ファイルの情報を集計
         for file in &self.images {
             match file.status() {
                 file::Status::Standby => standby_len += 1,
-                file::Status::Optimizing => optimizing_len += 1,
+                file::Status::Optimizing => {
+                    if file.is_jpeg() {
+                        optimizing_len.jpeg += 1;
+                    } else if file.is_png() {
+                        optimizing_len.png += 1;
+                    }
+                },
                 file::Status::Optimized => {
                     if file.is_jpeg() {
                         optimized_len.jpeg += 1;
                         total_duration.jpeg += file.duration();
+                        total_size.jpeg += file.size();
+                        total_new_size.jpeg += file.new_size();
                     } else if file.is_png() {
                         optimized_len.png += 1;
                         total_duration.png += file.duration();
+                        total_size.png += file.size();
+                        total_new_size.png += file.new_size();
                     }
-
-                    total_size += file.size();
-                    total_new_size += file.new_size();
                 }
                 file::Status::Unchanged => unchanged_len += 1,
                 file::Status::Skipped => skipped_len += 1,
@@ -123,28 +130,6 @@ impl OpenFiles {
                 file::Status::Error(_) => error_len += 1,
             }
         }
-
-        // 節約率を計算
-        let total_saved_rate = file::calc_saved_rate(total_size, total_new_size);
-
-        // 平均最適化時間を計算
-        let average_duration = if optimized_len.total() > 0 {
-            total_duration.total() / optimized_len.total() as u64
-        } else {
-            0
-        };
-
-        let jpeg_average_duration = if optimized_len.jpeg > 0 {
-            total_duration.jpeg / optimized_len.jpeg as u64
-        } else {
-            0
-        };
-
-        let png_average_duration = if optimized_len.png > 0 {
-            total_duration.png / optimized_len.png as u64
-        } else {
-            0
-        };
 
         // ファイル情報を更新
         self.file_info.standby_len = standby_len;
@@ -154,15 +139,10 @@ impl OpenFiles {
         self.file_info.skipped_len = skipped_len;
         self.file_info.canceled_len = canceled_len;
         self.file_info.error_len = error_len;
-        self.file_info.completed_len = optimized_len.total() + unchanged_len + skipped_len;
 
         self.file_info.total_size = total_size;
         self.file_info.total_new_size = total_new_size;
         self.file_info.total_duration = total_duration;
-        self.file_info.total_saved_rate = total_saved_rate;
-        self.file_info.average_duration = average_duration;
-        self.file_info.jpeg_average_duration = jpeg_average_duration;
-        self.file_info.png_average_duration = png_average_duration;
     }
 
     /// ファイルの数を取得
@@ -186,7 +166,19 @@ impl OpenFiles {
     /// 最適化中のファイルの数を取得
     /// * `return` - 最適化中のファイルの数
     pub fn optimizing_len(&self) -> u32 {
-        self.file_info.optimizing_len
+        self.file_info.optimizing_len.total()
+    }
+
+    /// 最適化中の JPEG ファイルの数を取得
+    /// * `return` - 最適化中の JPEG ファイルの数
+    pub fn jpeg_optimizing_len(&self) -> u32 {
+        self.file_info.optimizing_len.jpeg()
+    }
+
+    /// 最適化中の PNG ファイルの数を取得
+    /// * `return` - 最適化中の PNG ファイルの数
+    pub fn png_optimizing_len(&self) -> u32 {
+        self.file_info.optimizing_len.png()
     }
 
     /// 最適化済みのファイルの数を取得
@@ -216,42 +208,72 @@ impl OpenFiles {
     /// 完了したファイルの数を取得
     /// * `return` - 完了したファイルの数
     pub fn completed_len(&self) -> u32 {
-        self.file_info.completed_len
+        self.file_info.optimized_len.total() + self.file_info.unchanged_len + self.file_info.skipped_len
+    }
+
+    /// ファイルの総平均新サイズを取得
+    /// * `return` - ファイルの総平均新サイズ
+    pub fn total_average_saved(&self) -> u64 {
+        file::calc_average_value(self.file_info.total_new_size.total(), self.file_info.optimized_len.total())
+    }
+
+    /// ファイルの JPEG 平均新サイズを取得
+    /// * `return` - ファイルの JPEG 平均新サイズ
+    pub fn jpeg_average_saved(&self) -> u64 {
+        file::calc_average_value(self.file_info.total_new_size.jpeg, self.file_info.optimized_len.jpeg)
+    }
+
+    /// ファイルの PNG 平均新サイズを取得
+    /// * `return` - ファイルの PNG 平均新サイズ
+    pub fn png_average_saved(&self) -> u64 {
+        file::calc_average_value(self.file_info.total_new_size.png, self.file_info.optimized_len.png)
     }
 
     /// ファイルの総節約率を取得
     /// * `return` - ファイルの総節約率
     pub fn total_saved_rate(&self) -> f32 {
-        self.file_info.total_saved_rate
+        file::calc_saved_rate(self.file_info.total_size.total(), self.file_info.total_new_size.total())
     }
 
-    /// ファイルの平均最適化時間を取得
-    /// * `return` - ファイルの平均最適化時間
-    pub fn average_duration(&self) -> u64 {
-        self.file_info.average_duration
+    /// ファイルの JPEG 平均節約率を取得
+    /// * `return` - ファイルの JPEG 平均節約率
+    pub fn jpeg_average_saved_rate(&self) -> f32 {
+        file::calc_saved_rate(self.file_info.total_size.jpeg, self.file_info.total_new_size.jpeg)
+    }
+
+    /// ファイルの PNG 平均節約率を取得
+    /// * `return` - ファイルの PNG 平均節約率
+    pub fn png_average_saved_rate(&self) -> f32 {
+        file::calc_saved_rate(self.file_info.total_size.png, self.file_info.total_new_size.png)
+    }
+
+    /// ファイルの総最適化時間を取得
+    /// * `return` - ファイルの総最適化時間
+    pub fn total_average_duration(&self) -> u64 {
+        file::calc_average_value(self.file_info.total_duration.total(), self.file_info.optimized_len.total())
     }
 
     /// ファイルの JPEG 平均最適化時間を取得
     /// * `return` - ファイルの JPEG 平均最適化時間
     pub fn jpeg_average_duration(&self) -> u64 {
-        self.file_info.jpeg_average_duration
+        file::calc_average_value(self.file_info.total_duration.jpeg, self.file_info.optimized_len.jpeg)
     }
 
     /// ファイルの PNG 平均最適化時間を取得
     /// * `return` - ファイルの PNG 平均最適化時間
     pub fn png_average_duration(&self) -> u64 {
-        self.file_info.png_average_duration
+        file::calc_average_value(self.file_info.total_duration.png, self.file_info.optimized_len.png)
     }
 
     /// ジョブの状態を取得
     /// 優先度: 最適化中 > エラー > 最適化済み・変更なし・スキップ > 待機
     /// * `return` - ジョブの状態
     pub fn job_status(&self) -> file::Status {
-        if self.file_info.optimizing_len > 0 {
+        if self.file_info.optimizing_len.total() > 0 {
             file::Status::Optimizing
         } else if self.file_info.error_len > 0 {
             file::Status::Error(String::new())
-        } else if self.file_info.completed_len > 0
+        } else if self.completed_len() > 0
         {
             file::Status::Optimized
         } else {

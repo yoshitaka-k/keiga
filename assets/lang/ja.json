@@ -2,6 +2,10 @@
   "code": "ja",
   "name": "日本語",
   "labels": {
+    "extensions": {
+      "jpeg": "Jpeg",
+      "png": "Png"
+    },
     "optimize_status": {
       "standby": "待機",
       "optimizing": "処理中",
@@ -13,8 +17,6 @@
       "error": "エラー"
     },
     "optimize": {
-      "jpeg": "Jpeg",
-      "png": "Png",
       "lossy": "Lossy",
       "lossless": "Lossless"
     },
@@ -26,9 +28,14 @@
     },
     "main_bottom": {
       "average_duration": "平均処理時間",
-      "jpeg_average_duration": "JPEG 平均処理時間",
-      "png_average_duration": "PNG 平均処理時間",
-      "average_saved_rate": "平均削減率",
+      "jpeg_average_duration": "Jpeg 平均処理時間",
+      "png_average_duration": "Png 平均処理時間",
+      "optimizing": "処理中",
+      "average": "平均",
+      "jpeg_average_saved_rate": "Jpeg 平均削減率",
+      "png_average_saved_rate": "Png 平均削減率",
+      "jpeg_average_saved": "Jpeg 平均新サイズ",
+      "png_average_saved": "Png 平均新サイズ",
       "cancel_and_clear": "キャンセルしてクリア"
     },
     "main_middle": {

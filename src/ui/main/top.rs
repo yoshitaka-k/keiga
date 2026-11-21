@@ -24,7 +24,7 @@ pub(crate) fn view(
                 ui::add_icon(ui, svg::COMPRESS, size::BUTTON_SETTINGS_ICON_SIZE, ui::icon_color(ui));
                 ui.label(format!("{}:", lang::current().setting_optimize.quality));
 
-                ui.label(format!("{}:", lang::current().optimize.jpeg));
+                ui.label(format!("{}:", lang::current().extensions.jpeg));
                 ui.label(if *config.jpeg_lossy() {
                     lang::current().optimize.lossy.to_string()
                 } else {
@@ -36,7 +36,7 @@ pub(crate) fn view(
 
                 ui.label("|");
 
-                ui.label(format!("{}:", lang::current().optimize.png));
+                ui.label(format!("{}:", lang::current().extensions.png));
                 ui.label(if *config.png_lossy() {
                     lang::current().optimize.lossy
                 } else {

@@ -2,6 +2,10 @@
   "code": "en",
   "name": "English",
   "labels": {
+    "extensions": {
+      "jpeg": "Jpeg",
+      "png": "Png"
+    },
     "optimize_status": {
       "standby": "Standby",
       "optimizing": "Optimizing",
@@ -13,8 +17,6 @@
       "error": "Error"
     },
     "optimize": {
-      "jpeg": "Jpeg",
-      "png": "Png",
       "lossy": "Lossy",
       "lossless": "Lossless"
     },
@@ -25,10 +27,15 @@
       "file_or_folder_open": "Files or Folder Open"
     },
     "main_bottom": {
-      "average_duration": "Average Duration",
-      "jpeg_average_duration": "JPEG Average Duration",
-      "png_average_duration": "PNG Average Duration",
-      "average_saved_rate": "Avg Saved Rate",
+      "average_duration": "Avg Duration",
+      "jpeg_average_duration": "Jpeg Avg Duration",
+      "png_average_duration": "Png Avg Duration",
+      "optimizing": "Optimizing",
+      "average": "Avg",
+      "jpeg_average_saved_rate": "Jpeg Avg Rate",
+      "png_average_saved_rate": "Png Avg Rate",
+      "jpeg_average_saved": "Jpeg Avg New Size",
+      "png_average_saved": "Png Avg New Size",
       "cancel_and_clear": "Cancel and Clear"
     },
     "main_middle": {

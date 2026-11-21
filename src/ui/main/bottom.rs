@@ -1,4 +1,4 @@
-use crate::{ui, state, lang, event, duration_format};
+use crate::{ui, state, lang, event, duration_format, filesize_format};
 use crate::ui::{main, assets, StatusColor};
 use crate::ui::assets::{size, svg};
 
@@ -36,29 +36,36 @@ pub(crate) fn view(
                 main::status_icon(ui, &job_status, status_color, completed_color, true)
                     .on_hover_ui(|ui|
                 {
-                    ui.label(format!(
-                        "{}: {}",
-                        lang::current().main_bottom.average_duration,
-                        duration_format(state.files.average_duration()),
-                    ));
+                    // 平均最適化時間を表示
+                    labeled_value(
+                        ui,
+                        spacing,
+                        Some(&format!("{}: ", lang::current().main_bottom.average_duration)),
+                        &duration_format(state.files.total_average_duration()),
+                        optimizing_color(state, status_color),
+                    );
 
                     // JPEG と PNG の平均最適化時間を表示
                     if state.files.has_jpeg() && state.files.has_png() {
                         ui.separator();
 
                         if state.files.has_jpeg() {
-                            ui.label(format!(
-                                "{}: {}",
-                                lang::current().main_bottom.jpeg_average_duration,
-                                duration_format(state.files.jpeg_average_duration()),
-                            ));
+                            labeled_value(
+                                ui,
+                                spacing,
+                                Some(&format!("{}: ", lang::current().main_bottom.jpeg_average_duration)),
+                                &duration_format(state.files.jpeg_average_duration()),
+                                optimizing_color(state, status_color),
+                            );
                         }
                         if state.files.has_png() {
-                            ui.label(format!(
-                                "{}: {}",
-                                lang::current().main_bottom.png_average_duration,
-                                duration_format(state.files.png_average_duration()),
-                            ));
+                            labeled_value(
+                                ui,
+                                spacing,
+                                Some(&format!("{}: ", lang::current().main_bottom.png_average_duration)),
+                                &duration_format(state.files.png_average_duration()),
+                                optimizing_color(state, status_color),
+                            );
                         }
                     }
                 });
@@ -66,87 +73,173 @@ pub(crate) fn view(
                 ui.separator();
 
                 // 未処理
-                status_value(
+                labeled_value(
                     ui,
                     spacing,
-                    lang::current().optimize_status.standby,
-                    state.files.standby_len(),
+                    Some(&format!("{}: ", lang::current().optimize_status.standby)),
+                    &state.files.standby_len().to_string(),
                     *status_color.standby(),
                 );
                 ui.label(",");
 
                 // 最適化中
-                status_value(
-                    ui,
-                    spacing,
-                    lang::current().optimize_status.optimizing,
-                    state.files.optimizing_len(),
-                    *status_color.optimizing(),
-                );
-                ui.label(",");
+                let optimizing_response = ui.scope(|ui| {
+                    labeled_value(
+                        ui,
+                        spacing,
+                        Some(&format!("{}: ", lang::current().optimize_status.optimizing)),
+                        &state.files.optimizing_len().to_string(),
+                        *status_color.optimizing(),
+                    );
+                    ui.label(",");
+                }).response;
+
+                // 最適化中の JPEG と PNG の数を表示
+                if state.files.has_jpeg() && state.files.has_png() {
+                    optimizing_response.on_hover_ui(|ui| {
+                        if state.files.has_jpeg() {
+                            labeled_value(
+                                ui,
+                                spacing,
+                                Some(&format!("{}: ", lang::current().extensions.jpeg)),
+                                &state.files.jpeg_optimizing_len().to_string(),
+                                *status_color.optimizing(),
+                            );
+                        }
+                        if state.files.has_png() {
+                            labeled_value(
+                                ui,
+                                spacing,
+                                Some(&format!("{}: ", lang::current().extensions.png)),
+                                &state.files.png_optimizing_len().to_string(),
+                                *status_color.optimizing(),
+                            );
+                        }
+                    });
+                }
 
                 // 完了
                 ui.scope(|ui| {
-                    status_value(
+                    labeled_value(
                         ui,
                         spacing,
-                        lang::current().optimize_status.completed,
-                        state.files.completed_len(),
+                        Some(&format!("{}: ", lang::current().optimize_status.completed)),
+                        &state.files.completed_len().to_string(),
                         completed_color,
                     );
                     ui.label(",");
                 }).response.on_hover_ui(|ui| {
                     // 最適化済み
-                    ui.horizontal(|ui| {
-                        status_value(
-                            ui,
-                            spacing,
-                            lang::current().optimize_status.optimized,
-                            state.files.optimized_len(),
-                            *status_color.optimized(),
-                        );
-                    });
+                    labeled_value(
+                        ui,
+                        spacing,
+                        Some(&format!("{}: ", lang::current().optimize_status.optimized)),
+                        &state.files.optimized_len().to_string(),
+                        *status_color.optimized(),
+                    );
                     // 最適化不要
-                    ui.horizontal(|ui| {
-                        status_value(
-                            ui,
-                            spacing,
-                            lang::current().optimize_status.unchanged,
-                            state.files.unchanged_len(),
-                            *status_color.unchanged(),
-                        );
-                    });
+                    labeled_value(
+                        ui,
+                        spacing,
+                        Some(&format!("{}: ", lang::current().optimize_status.unchanged)),
+                        &state.files.unchanged_len().to_string(),
+                        *status_color.unchanged(),
+                    );
                     // スキップ
-                    ui.horizontal(|ui| {
-                        status_value(
-                            ui,
-                            spacing,
-                            lang::current().optimize_status.skipped,
-                            state.files.skipped_len(),
-                            *status_color.skipped(),
-                        );
-                    });
+                    labeled_value(
+                        ui,
+                        spacing,
+                        Some(&format!("{}: ", lang::current().optimize_status.skipped)),
+                        &state.files.skipped_len().to_string(),
+                        *status_color.skipped(),
+                    );
                 });
 
                 // エラー
-                status_value(
+                labeled_value(
                     ui,
                     spacing,
-                    lang::current().optimize_status.error,
-                    state.files.error_len(),
+                    Some(&format!("{}: ", lang::current().optimize_status.error)),
+                    &state.files.error_len().to_string(),
                     *status_color.error(),
                 );
+
+                // 次のセパレータとの間を空ける
+                ui.label("");
 
                 ui.separator();
 
                 // 平均保存率
-                ui.spacing_mut().item_spacing.x = 0.0;
-                ui.label(format!("{}: ", lang::current().main_bottom.average_saved_rate));
-                ui.label(ui::rich_text(
-                    &format!("{:+.2}%", state.files.total_saved_rate()),
-                    *status_color.optimized(),
-                ));
-                ui.spacing_mut().item_spacing.x = spacing;
+                let rate_response = ui.scope(|ui| {
+                    labeled_value(
+                        ui,
+                        spacing,
+                        Some(&format!("{}: ", lang::current().main_bottom.average)),
+                        &format!("{:+.2}%", state.files.total_saved_rate()),
+                        *status_color.optimized(),
+                    );
+                }).response;
+
+                // JPEG と PNG の平均節約率を表示
+                if state.files.has_jpeg() && state.files.has_png() {
+                    rate_response.on_hover_ui(|ui| {
+                        if state.files.has_jpeg() {
+                            labeled_value(
+                                ui,
+                                spacing,
+                                Some(&format!("{}: ", lang::current().main_bottom.jpeg_average_saved_rate)),
+                                &format!("{:+.2}%", state.files.jpeg_average_saved_rate()),
+                                *status_color.optimized(),
+                            );
+                        }
+                        if state.files.has_png() {
+                            labeled_value(
+                                ui,
+                                spacing,
+                                Some(&format!("{}: ", lang::current().main_bottom.png_average_saved_rate)),
+                                &format!("{:+.2}%", state.files.png_average_saved_rate()),
+                                *status_color.optimized(),
+                            );
+                        }
+                    });
+                }
+
+                ui.label("/");
+
+                // 総平均新サイズを表示
+                let new_size_response = ui.scope(|ui| {
+                    labeled_value(
+                        ui,
+                        spacing,
+                        None,
+                        &filesize_format(state.files.total_average_saved()),
+                        *status_color.optimized(),
+                    );
+                }).response;
+
+                // JPEG と PNG の平均新サイズを表示
+                if state.files.has_jpeg() && state.files.has_png() {
+                    new_size_response.on_hover_ui(|ui| {
+                        if state.files.has_jpeg() {
+                            labeled_value(
+                                ui,
+                                spacing,
+                                Some(&format!("{}: ", lang::current().main_bottom.jpeg_average_saved)),
+                                &filesize_format(state.files.jpeg_average_saved()),
+                                *status_color.optimized(),
+                            );
+                        }
+                        if state.files.has_png() {
+                            labeled_value(
+                                ui,
+                                spacing,
+                                Some(&format!("{}: ", lang::current().main_bottom.png_average_saved)),
+                                &filesize_format(state.files.png_average_saved()),
+                                *status_color.optimized(),
+                            );
+                        }
+                    });
+                }
             },
             |ui| {
                 // クリアボタン
@@ -157,6 +250,23 @@ pub(crate) fn view(
             }
         );
     });
+}
+
+/// 最適化中アイコンの色
+/// * `state` - 状態
+/// * `status_color` - ステータスアイコンの色
+/// * `return` - 最適化中アイコンの色
+fn optimizing_color(
+    state: &state::State,
+    status_color: &ui::StatusColor,
+) -> egui::Color32 {
+    if state.files.optimizing_len() > 0 {
+        *status_color.optimizing()
+    } else if state.files.error_len() > 0 {
+        *status_color.error()
+    } else {
+        *status_color.optimized()
+    }
 }
 
 /// 完了アイコンの色
@@ -174,30 +284,35 @@ fn completed_color(
 ) -> egui::Color32 {
     if state.files.optimized_len() > 0 {
         *status_color.optimized()
-   } else if state.files.unchanged_len() > 0 {
-       *status_color.unchanged()
-   } else if state.files.skipped_len() > 0 {
-       *status_color.skipped()
-   } else {
-       *status_color.optimized()
-   }
+    } else if state.files.unchanged_len() > 0 {
+        *status_color.unchanged()
+    } else if state.files.skipped_len() > 0 {
+        *status_color.skipped()
+    } else {
+        *status_color.optimized()
+    }
 }
 
-/// ステータス値を描画
+/// ラベル付き値を描画
 /// * `ui` - UI
 /// * `spacing` - スペース
 /// * `label` - ラベル
 /// * `value` - 値
-/// * `status_color` - ステータスカラー
-fn status_value(
+/// * `color` - カラー
+/// * `return` - ラベル付き値のレスポンス
+fn labeled_value(
     ui: &mut egui::Ui,
     spacing: f32,
-    label: &str,
-    value: u32,
-    status_color: egui::Color32,
-) {
-    ui.spacing_mut().item_spacing.x = 0.0;
-    ui.label(format!("{}: ", label));
-    ui::rich_label(ui, &value.to_string(), status_color);
-    ui.spacing_mut().item_spacing.x = spacing;
+    label: Option<&str>,  // filesize は None
+    value: &str,
+    color: egui::Color32,
+) -> egui::Response {
+    ui.horizontal(|ui| {
+        ui.spacing_mut().item_spacing.x = 0.0;
+        if let Some(label) = label {
+            ui.label(label);
+        }
+        ui::rich_label(ui, value, color);
+        ui.spacing_mut().item_spacing.x = spacing;
+    }).response
 }
