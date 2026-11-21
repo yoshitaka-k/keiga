@@ -10,7 +10,7 @@ pub(crate) fn view(
     config: &mut config::Config,
 ) {
     // 言語選択のヘッダーパネルを表示
-    setting::header_panel(ui, theme_icon(config), lang::current().setting_general.language);
+    setting::header_panel(ui, svg::LANGUAGE, lang::current().setting_general.language);
 
     // 言語選択のフレームを表示
     egui::Frame::group(ui.style()).show(ui, |ui| {
