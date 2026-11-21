@@ -1,12 +1,10 @@
 use std::path::Path;
-use image::{ImageEncoder, DynamicImage};
-use image::codecs::jpeg::JpegEncoder;
 use crate::{error, optimize};
-use crate::optimize::executor;
+use crate::optimize::executor::jpeg::common;
 
 /// JPEG Lossy 最適化
 ///
-/// image crate で最適化
+/// common::encode_with を使用して最適化する準備を行う
 ///
 /// * `path` - 最適化する JPEG のパス
 /// * `options` - 最適化オプション
@@ -15,52 +13,16 @@ pub(crate) fn optimize(
     path: &Path,
     options: optimize::JpegOptions
 ) -> error::Result<(usize, Vec<u8>)> {
-    // メモリ上にバッファを作成して最適化
-    let mut buffer = Vec::new();
-    {
-        // 画像を読み込む
-        let executor::OpenImageResult { image, exif, icc } = executor::open_image(path)?;
+    let configure = |comp: &mut mozjpeg::Compress| {
+        // 品質を設定
+        comp.set_quality(options.quality as f32);
+        // YCbCr の場合はサンプリングを 4:2:0 に設定
+        comp.set_chroma_sampling_pixel_sizes((2, 2), (2, 2));
+        // プログレッシブ JPEG を使用
+        comp.set_progressive_mode();
+        // プログレッシブJPEGの各スキャン構成の自動最適化を有効化
+        comp.set_optimize_scans(true);
+    };
 
-        // JPEG エンコーダーを作成して最適化
-        write(&image, JpegEncoder::new_with_quality(&mut buffer, options.quality), exif, icc, path)?;
-    }
-
-    // ファイルサイズを取得
-    let size = path.metadata().map_err(|e| {
-        error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
-    })?.len() as usize;
-
-    Ok((size, buffer))
-}
-
-/// 画像をエンコード
-/// * `image` - 画像
-/// * `encoder` - エンコーダー
-/// * `exif` - EXIF 情報
-/// * `icc` - ICC プロファイル
-/// * `return` - 画像をエンコードしたかどうか
-fn write<E: ImageEncoder>(
-    image: &DynamicImage,
-    mut encoder: E,
-    exif: Option<Vec<u8>>,
-    icc: Option<Vec<u8>>,
-    path: &Path,
-) -> error::Result<()> {
-    // EXIF メタデータを設定
-    if let Some(exif) = exif {
-        encoder.set_exif_metadata(exif).unwrap_or_else(|e| {
-            log::warn!("Failed to set EXIF metadata: {}", e);
-        });
-    }
-
-    // ICC プロファイルを設定
-    if let Some(icc) = icc {
-        encoder.set_icc_profile(icc).unwrap_or_else(|e| {
-            log::warn!("Failed to set ICC profile: {}", e);
-        });
-    }
-
-    image.write_with_encoder(encoder).map_err(|e| {
-        error::KeigaError::optimized_error(e.to_string(), path.to_path_buf())
-    })
+    common::encode_with(path, configure)
 }
