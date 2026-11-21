@@ -159,8 +159,6 @@ pub(crate) fn calc_saved_rate(size: u64, new_size: u64) -> f32 {
     };
 
     // 節約率を計算
-
-
     if size == 0 {
         0.00f32
     } else {
