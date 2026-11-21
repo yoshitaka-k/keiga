@@ -88,7 +88,7 @@ impl OpenFiles {
 
     /// ファイル情報を更新
     pub fn update_file_info(&mut self) {
-        let mut standby_len = 0;
+        let mut standby_len = file::StandbyLen::new();
         let mut optimizing_len = file::OptimizingLen::new();
         let mut optimized_len = file::OptimizedLen::new();
         let mut unchanged_len = 0;
@@ -103,7 +103,13 @@ impl OpenFiles {
         // 各ファイルの情報を集計
         for file in &self.images {
             match file.status() {
-                file::Status::Standby => standby_len += 1,
+                file::Status::Standby => {
+                    if file.is_jpeg() {
+                        standby_len.jpeg += 1;
+                    } else if file.is_png() {
+                        standby_len.png += 1;
+                    }
+                },
                 file::Status::Optimizing => {
                     if file.is_jpeg() {
                         optimizing_len.jpeg += 1;
@@ -160,7 +166,19 @@ impl OpenFiles {
     /// 未処理のファイルの数を取得
     /// * `return` - 未処理のファイルの数
     pub fn standby_len(&self) -> u32 {
-        self.file_info.standby_len
+        self.file_info.standby_len.total()
+    }
+
+    /// 待機中の JPEG ファイルの数を取得
+    /// * `return` - 待機中の JPEG ファイルの数
+    pub fn jpeg_standby_len(&self) -> u32 {
+        self.file_info.standby_len.jpeg
+    }
+
+    /// 待機中の PNG ファイルの数を取得
+    /// * `return` - 待機中の PNG ファイルの数
+    pub fn png_standby_len(&self) -> u32 {
+        self.file_info.standby_len.png
     }
 
     /// 最適化中のファイルの数を取得

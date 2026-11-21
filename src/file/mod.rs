@@ -7,7 +7,7 @@ mod scan_job;
 mod meta_job;
 
 pub(crate) use open_files::OpenFiles;
-pub(crate) use info::{FileInfo, OptimizingLen, OptimizedLen, DurationInfo, SizeInfo, NewSizeInfo};
+pub(crate) use info::{FileInfo, StandbyLen, OptimizingLen, OptimizedLen, DurationInfo, SizeInfo, NewSizeInfo};
 pub(crate) use image::Image;
 pub(crate) use status::Status;
 pub(crate) use token::ScanToken;

@@ -73,14 +73,40 @@ pub(crate) fn view(
                 ui.separator();
 
                 // 未処理
-                labeled_value(
-                    ui,
-                    spacing,
-                    Some(&format!("{}: ", lang::current().optimize_status.standby)),
-                    &state.files.standby_len().to_string(),
-                    *status_color.standby(),
-                );
-                ui.label(",");
+                let standby_response = ui.scope(|ui| {
+                    labeled_value(
+                        ui,
+                        spacing,
+                        Some(&format!("{}: ", lang::current().optimize_status.standby)),
+                        &state.files.standby_len().to_string(),
+                        *status_color.standby(),
+                    );
+                    ui.label(",");
+                }).response;
+
+                // 待機中の JPEG と PNG の数を表示
+                if state.files.has_jpeg() && state.files.has_png() {
+                    standby_response.on_hover_ui(|ui| {
+                        if state.files.has_jpeg() {
+                            labeled_value(
+                                ui,
+                                spacing,
+                                Some(&format!("{}: ", lang::current().extensions.jpeg)),
+                                &state.files.jpeg_standby_len().to_string(),
+                                *status_color.standby(),
+                            );
+                        }
+                        if state.files.has_png() {
+                            labeled_value(
+                                ui,
+                                spacing,
+                                Some(&format!("{}: ", lang::current().extensions.png)),
+                                &state.files.png_standby_len().to_string(),
+                                *status_color.standby(),
+                            );
+                        }
+                    });
+                }
 
                 // 最適化中
                 let optimizing_response = ui.scope(|ui| {

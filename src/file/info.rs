@@ -1,7 +1,7 @@
 /// ファイル情報を管理する構造体
 #[derive(Clone, Copy)]
 pub(crate) struct FileInfo {
-    pub standby_len: u32,
+    pub standby_len: StandbyLen,
     pub optimizing_len: OptimizingLen,
     pub optimized_len: OptimizedLen,
     pub unchanged_len: u32,
@@ -16,7 +16,7 @@ pub(crate) struct FileInfo {
 impl FileInfo {
     pub fn new() -> Self {
         Self {
-            standby_len: 0,
+            standby_len: StandbyLen::new(),
             optimizing_len: OptimizingLen::new(),
             optimized_len: OptimizedLen::new(),
             unchanged_len: 0,
@@ -27,6 +27,21 @@ impl FileInfo {
             total_new_size: NewSizeInfo::new(),
             total_duration: DurationInfo::new(),
         }
+    }
+}
+
+/// 待機中のファイル数を管理する構造体
+#[derive(Clone, Copy)]
+pub(crate) struct StandbyLen {
+    pub jpeg: u32,
+    pub png: u32,
+}
+impl StandbyLen {
+    pub fn new() -> Self {
+        Self { jpeg: 0, png: 0 }
+    }
+    pub fn total(&self) -> u32 {
+        self.jpeg + self.png
     }
 }
 
