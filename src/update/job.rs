@@ -10,10 +10,10 @@ const UPDATE_CHECK_INTERVAL: Duration = Duration::from_secs(60 * 60);
 pub(crate) struct UpdateJob {
     ctx: egui::Context,
 
-    /// 更新結果を送信するチャネル
-    result_tx: mpsc::Sender<update::UpdateToken>,
-    /// 更新結果を受信するチャネル
-    result_rx: mpsc::Receiver<update::UpdateToken>,
+    /// 更新結果を送信するチャネル（更新モーダルを表示するためのトークンとETag）
+    result_tx: mpsc::Sender<(update::UpdateToken, Option<String>)>,
+    /// 更新結果を受信するチャネル（更新モーダルを表示するためのトークンとETag）
+    result_rx: mpsc::Receiver<(update::UpdateToken, Option<String>)>,
 
     /// ジョブ実行中のカウント
     running_bool: Arc<AtomicBool>,
@@ -23,6 +23,9 @@ pub(crate) struct UpdateJob {
 
     /// 前回の更新結果
     last_result: update::UpdateToken,
+
+    /// 前回のETag
+    last_etag: Option<String>,
 }
 
 impl UpdateJob {
@@ -38,6 +41,7 @@ impl UpdateJob {
             running_bool: Arc::new(AtomicBool::new(false)),
             last_check_at: None,
             last_result: update::UpdateToken::new(),
+            last_etag: None,
         }
     }
 
@@ -49,13 +53,14 @@ impl UpdateJob {
 
         // 前回の更新結果が存在する場合
         if self.can_use_cache() {
-            Self::tx_send(&self.ctx, &self.result_tx, self.last_result.clone());
+            Self::tx_send(&self.ctx, &self.result_tx, self.last_result.clone(), self.last_etag.clone());
             return;
         }
 
         // クローンしておく
         let ctx = self.ctx.clone();
         let tx = self.result_tx.clone();
+        let last_token = self.last_result.clone();
 
         // ジョブ実行中フラグを立てる
         self.running_bool.store(true, Ordering::Relaxed);
@@ -75,48 +80,30 @@ impl UpdateJob {
         // リクエストヘッダを設定
         let user_agent = format!("{}/{}", APP_NAME, env!("CARGO_PKG_VERSION"));
         request.headers.insert("Accept", "application/vnd.github+json");
+        request.headers.insert("Accept-Encoding", "identity");
         request.headers.insert("User-Agent", user_agent);
+
+        // 前回のETagが存在する場合はリクエストヘッダに追加
+        if let Some(ref etag) = self.last_etag {
+            request.headers.insert("If-None-Match", etag.clone());
+        }
+        let mut etag = self.last_etag.clone();
 
         // リクエストを実行
         ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {
             match result {
                 // リクエストが成功した場合
                 Ok(response) => {
-                    // アップデート情報をJSONからパース
-                    let update_info: Result<update::UpdateInfo, _> = response.json();
-                    match update_info {
-                        // アップデート情報が取得できた場合
-                        Ok(update_info) => {
-                            match version_compare(update_info.tag_name(), env!("CARGO_PKG_VERSION")) {
-                                Ok(true) => {
-                                    token.open = true;
-                                    token.check = Some(update::UpdateCheck::Available {
-                                        version: update_info.tag_name().clone(),
-                                        url: update_info.html_url.clone(),
-                                    });
-                                }
-                                Ok(false) => {
-                                    token.open = true;
-                                    token.check = Some(update::UpdateCheck::Latest);
-                                }
-                                Err(error) => {
-                                    println!("error: {:?}", error);
-                                    token.open = true;
-                                    token.check = Some(update::UpdateCheck::Failed);
-                                }
-                            }
-                        }
-                        // アップデート情報が取得できなかった場合
-                        Err(error) => {
-                            println!("error: {:?}", error);
-                            token.open = true;
-                            token.check = Some(update::UpdateCheck::Failed);
-                        }
-                    }
+                    // ETagを取得
+                    etag = response.headers.get("ETag").map(|s| s.to_string());
+                    // 更新モーダルを表示するためのトークンを更新
+                    token.open = true;
+                    // レスポンスを解釈
+                    token.check = Some(Self::interpret_response(response, last_token.check));
                 }
                 // リクエストが失敗した場合
                 Err(error) => {
-                    println!("error: {:?}", error);
+                    log::error!("Failed to fetch update info: {:?}", error);
                     token.open = true;
                     token.check = Some(update::UpdateCheck::Failed);
                 }
@@ -127,7 +114,7 @@ impl UpdateJob {
             token.running = false;
 
             // 更新モーダルを表示するためのトークンを送信
-            Self::tx_send(&ctx, &tx, token.clone());
+            Self::tx_send(&ctx, &tx, token, etag);
         });
     }
 
@@ -136,10 +123,11 @@ impl UpdateJob {
     pub fn result(&mut self, update_token: &mut update::UpdateToken) {
         while let Ok(result) = self.result_rx.try_recv() {
             // 前回の更新結果を更新
-            self.last_result = result.clone();
+            self.last_result = result.0.clone();
+            self.last_etag = result.1;
 
             // 更新モーダルを表示するためのトークンを更新
-            *update_token = result;
+            *update_token = result.0;
         }
     }
 }
@@ -172,14 +160,61 @@ impl UpdateJob {
     /// * `token` - 更新モーダルを表示するためのトークン
     fn tx_send(
         ctx: &egui::Context,
-        tx: &mpsc::Sender<update::UpdateToken>,
-        token: update::UpdateToken
+        tx: &mpsc::Sender<(update::UpdateToken, Option<String>)>,
+        token: update::UpdateToken,
+        etag: Option<String>,
     ) {
-        tx.send(token.clone()).unwrap_or_else(|e| {
+        tx.send((token.clone(), etag.clone())).unwrap_or_else(|e| {
             log::warn!("Failed to send update token: {}", e);
         });
 
         // 再描画を要求
         ctx.request_repaint();
+    }
+
+    /// レスポンスを解釈する
+    /// * `response` - レスポンス
+    /// * `last_check` - 前回の更新結果
+    /// * `return` - 更新結果
+    fn interpret_response(
+        response: ehttp::Response,
+        last_check: Option<update::UpdateCheck>,
+    ) -> update::UpdateCheck {
+        // レスポンスステータスによって処理を分岐
+        if response.status == 304 {
+            let Some(last_check) = last_check else {
+                log::error!("Last check is not found");
+                return update::UpdateCheck::Failed;
+            };
+            return last_check;
+        }
+
+        // アップデート情報をJSONからパース
+        let update_info: Result<update::UpdateInfo, _> = response.json();
+        match update_info {
+            // アップデート情報が取得できた場合
+            Ok(update_info) => {
+                match version_compare(update_info.tag_name(), env!("CARGO_PKG_VERSION")) {
+                    Ok(true) => {
+                        return update::UpdateCheck::Available {
+                            version: update_info.tag_name().clone(),
+                            url: update_info.html_url.clone(),
+                        };
+                    }
+                    Ok(false) => {
+                        return update::UpdateCheck::Latest;
+                    }
+                    Err(error) => {
+                        log::error!("Failed to compare version: {:?}", error);
+                        return update::UpdateCheck::Failed;
+                    }
+                }
+            }
+            // アップデート情報が取得できなかった場合
+            Err(error) => {
+                log::error!("Failed to parse update info: {:?}", error);
+                return update::UpdateCheck::Failed;
+            }
+        }
     }
 }
