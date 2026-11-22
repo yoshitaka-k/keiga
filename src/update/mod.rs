@@ -10,7 +10,7 @@ use crate::error;
 pub(crate) enum UpdateCheck {
     Available { version: String, url: String },
     Latest,
-    Failed,
+    Failed(String),
 }
 
 /// 更新モーダルを表示するためのトークン

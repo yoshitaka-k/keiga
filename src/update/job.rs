@@ -105,7 +105,7 @@ impl UpdateJob {
                 Err(error) => {
                     log::error!("Failed to fetch update info: {:?}", error);
                     token.open = true;
-                    token.check = Some(update::UpdateCheck::Failed);
+                    token.check = Some(update::UpdateCheck::Failed(error.to_string()));
                 }
             }
 
@@ -146,7 +146,7 @@ impl UpdateJob {
         // 前回の更新結果が存在する場合
         let Some(ref check) = self.last_result.check else { return false; };
         // 前回の更新結果が失敗していた場合はキャッシュを使用できない
-        if matches!(*check, update::UpdateCheck::Failed) { return false; }
+        if matches!(*check, update::UpdateCheck::Failed(_)) { return false; }
         // 前回の更新チェック時間が存在する場合
         let Some(last_check_at) = self.last_check_at else { return false; };
         // 前回の更新チェック時間から1時間以内にチェックしていた場合は処理を終了
@@ -184,7 +184,7 @@ impl UpdateJob {
         if response.status == 304 {
             let Some(last_check) = last_check else {
                 log::error!("Last check is not found");
-                return update::UpdateCheck::Failed;
+                return update::UpdateCheck::Failed("Last check is not found".to_string());
             };
             return last_check;
         }
@@ -206,14 +206,14 @@ impl UpdateJob {
                     }
                     Err(error) => {
                         log::error!("Failed to compare version: {:?}", error);
-                        return update::UpdateCheck::Failed;
+                        return update::UpdateCheck::Failed(error.to_string());
                     }
                 }
             }
             // アップデート情報が取得できなかった場合
             Err(error) => {
                 log::error!("Failed to parse update info: {:?}", error);
-                return update::UpdateCheck::Failed;
+                return update::UpdateCheck::Failed(error.to_string());
             }
         }
     }

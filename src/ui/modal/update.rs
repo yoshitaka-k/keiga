@@ -29,7 +29,7 @@ pub(crate) fn updated(ctx: &egui::Context, update_token: &mut UpdateToken) {
                     ui.heading(lang::current().modal_update.latest);
                 }
                 // アップデートが取得できなかった場合
-                UpdateCheck::Failed => {
+                UpdateCheck::Failed(_) => {
                     ui.add(heading_icon(svg::ERROR, size::MODAL_ERROR_ICON_SIZE, egui::Color32::RED));
                     ui.heading(lang::current().modal_update.failed);
                 }
@@ -68,8 +68,9 @@ pub(crate) fn updated(ctx: &egui::Context, update_token: &mut UpdateToken) {
                 });
             }
             // アップデートが取得できなかった場合
-            UpdateCheck::Failed => {
+            UpdateCheck::Failed(e) => {
                 egui::Frame::default().inner_margin(ui::PANEL_INNER_MARGIN).show(ui, |ui| {
+                    ui.label(e);
                     ui.add_space(ui::MODAL_WINDOW_SPACING);
                 });
             }
