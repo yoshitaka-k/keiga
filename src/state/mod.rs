@@ -11,7 +11,7 @@ pub(crate) struct State {
     pub config: config::Config,
     pub files: file::OpenFiles,
     pub setting_token: SettingToken,
-    pub updated_token: update::UpdatedToken,
+    pub update_token: update::UpdateToken,
     pub error_token: ErrorToken,
     pub scroll_token: ScrollToken,
 }

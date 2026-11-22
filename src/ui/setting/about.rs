@@ -7,7 +7,7 @@ use crate::ui::assets::{size, svg};
 /// * `pending_actions` - 未処理のアクション
 pub(crate) fn view(
     ui: &mut egui::Ui,
-    updated_token: &update::UpdatedToken,
+    update_token: &update::UpdateToken,
     pending_actions: &mut Vec<event::EventAction>,
 ) {
     // ヘッダーパネルを表示
@@ -15,7 +15,7 @@ pub(crate) fn view(
         ui,
         svg::INFO,
         lang::current().setting_about.about,
-        updated_token,
+        update_token,
         pending_actions,
     );
 

@@ -45,7 +45,7 @@ pub(crate) fn view(
                 state::SettingTab::Optimize => optimize::view(ui, &mut state.config),
                 state::SettingTab::Output => output::view(ui, &mut state.config),
                 state::SettingTab::Concurrent => concurrent::view(ui, &mut state.config),
-                state::SettingTab::About => about::view(ui, &state.updated_token, pending_actions),
+                state::SettingTab::About => about::view(ui, &state.update_token, pending_actions),
             }
         });
 
@@ -58,8 +58,8 @@ pub(crate) fn view(
         }
 
         // 更新モーダルを表示
-        if state.updated_token.open {
-            modal::updated(ui, &mut state.updated_token);
+        if state.update_token.open {
+            modal::updated(ui, &mut state.update_token);
         }
     });
 }

@@ -55,7 +55,7 @@ impl Render {
             files: file::OpenFiles::new(),
             setting_token: state::SettingToken::new(),
             error_token: state::ErrorToken::new(),
-            updated_token: update::UpdatedToken::new(),
+            update_token: update::UpdateToken::new(),
             scroll_token: state::ScrollToken::new(),
         };
 
@@ -165,7 +165,7 @@ impl Render {
         self.jobs.optimize_job.result(&mut self.state.files);
 
         // 更新結果を取得
-        self.jobs.update_job.result(&mut self.state.updated_token);
+        self.jobs.update_job.result(&mut self.state.update_token);
     }
 
     /// 効果音を再生

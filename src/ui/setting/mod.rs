@@ -46,7 +46,7 @@ fn about_header_panel(
     ui: &mut egui::Ui,
     icon: egui::ImageSource<'static>,
     label: &str,
-    updated_token: &update::UpdatedToken,
+    update_token: &update::UpdateToken,
     pending_actions: &mut Vec<event::EventAction>,
 ) {
     ui.horizontal(|ui| {
@@ -54,7 +54,7 @@ fn about_header_panel(
 
         // アップデート確認ボタン
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            ui.add_enabled_ui(!updated_token.running, |ui| {
+            ui.add_enabled_ui(!update_token.running, |ui| {
                 if ui.button(lang::current().setting_about.check_for_updates).clicked() {
                     pending_actions.push(event::EventAction::CheckForUpdate);
                 }

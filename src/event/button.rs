@@ -64,11 +64,11 @@ pub(crate) fn cancel_and_clear(
 
 /// アップデートを確認する
 /// * `update_job` - 更新ジョブ
-/// * `updated_token` - 更新モーダルを表示するためのトークン
+/// * `update_token` - 更新モーダルを表示するためのトークン
 pub(crate) fn check_for_update(
     update_job: &mut update::UpdateJob,
-    updated_token: &mut update::UpdatedToken,
+    update_token: &mut update::UpdateToken,
 ) {
     // 更新ジョブを実行
-    update_job.run(updated_token);
+    update_job.run(update_token);
 }

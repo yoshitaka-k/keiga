@@ -1,13 +1,13 @@
 use crate::{ui, lang};
 use crate::ui::assets::{size, svg};
 use crate::ui::modal::heading_icon;
-use crate::update::{UpdateCheck, UpdatedToken};
+use crate::update::{UpdateCheck, UpdateToken};
 
 /// 更新モーダルを表示
 /// * `ctx` - コンテキスト
-/// * `updated_token` - 更新モーダルを表示するためのトークン
-pub(crate) fn updated(ctx: &egui::Context, updated_token: &mut UpdatedToken) {
-    let Some(check) = updated_token.check.clone() else {
+/// * `update_token` - 更新モーダルを表示するためのトークン
+pub(crate) fn updated(ctx: &egui::Context, update_token: &mut UpdateToken) {
+    let Some(check) = update_token.check.clone() else {
         return;
     };
 
@@ -78,7 +78,7 @@ pub(crate) fn updated(ctx: &egui::Context, updated_token: &mut UpdatedToken) {
 
     // モーダルを閉じたらモーダルを非表示にする
     if modal.should_close() {
-        updated_token.open = false;
-        updated_token.check = None;
+        update_token.open = false;
+        update_token.check = None;
     }
 }

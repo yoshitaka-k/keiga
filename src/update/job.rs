@@ -7,9 +7,9 @@ pub(crate) struct UpdateJob {
     ctx: egui::Context,
 
     /// 更新結果を送信するチャネル
-    result_tx: mpsc::Sender<update::UpdatedToken>,
+    result_tx: mpsc::Sender<update::UpdateToken>,
     /// 更新結果を受信するチャネル
-    result_rx: mpsc::Receiver<update::UpdatedToken>,
+    result_rx: mpsc::Receiver<update::UpdateToken>,
 
     /// ジョブ実行中のカウント
     running_bool: Arc<AtomicBool>,
@@ -30,8 +30,8 @@ impl UpdateJob {
     }
 
     /// 更新を実行する
-    /// * `updated_token` - 更新モーダルを表示するためのトークン
-    pub fn run(&mut self, updated_token: &mut update::UpdatedToken) {
+    /// * `update_token` - 更新モーダルを表示するためのトークン
+    pub fn run(&mut self, update_token: &mut update::UpdateToken) {
         // クローンしておく
         let tx = self.result_tx.clone();
         let ctx = self.ctx.clone();
@@ -48,8 +48,8 @@ impl UpdateJob {
         let running_bool = Arc::clone(&self.running_bool);
 
         // UI 用にジョブ実行中フラグを立てておく
-        updated_token.running = true;
-        let mut token = updated_token.clone();
+        update_token.running = true;
+        let mut token = update_token.clone();
 
         ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {
             match result {
@@ -116,10 +116,10 @@ impl UpdateJob {
     }
 
     /// 更新結果を受信する
-    /// * `updated_token` - 更新モーダルを表示するためのトークン
-    pub fn result(&self, updated_token: &mut update::UpdatedToken) {
+    /// * `update_token` - 更新モーダルを表示するためのトークン
+    pub fn result(&self, update_token: &mut update::UpdateToken) {
         while let Ok(result) = self.result_rx.try_recv() {
-            *updated_token = result;
+            *update_token = result;
         }
     }
 }
