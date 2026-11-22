@@ -200,6 +200,43 @@ pub(crate) fn view(
 
                 ui.separator();
 
+                // 平均保存率
+                let rate_response = ui.scope(|ui| {
+                    labeled_value(
+                        ui,
+                        spacing,
+                        Some(&format!("{}: ", lang::current().main_bottom.average)),
+                        &format!("{:+.2}%", state.files.total_saved_rate()),
+                        *status_color.optimized(),
+                    );
+                }).response;
+
+                // JPEG と PNG の平均節約率を表示
+                if state.files.has_jpeg() && state.files.has_png() {
+                    rate_response.on_hover_ui(|ui| {
+                        if state.files.has_jpeg() {
+                            labeled_value(
+                                ui,
+                                spacing,
+                                Some(&format!("{}: ", lang::current().main_bottom.jpeg_average_saved_rate)),
+                                &format!("{:+.2}%", state.files.jpeg_average_saved_rate()),
+                                *status_color.optimized(),
+                            );
+                        }
+                        if state.files.has_png() {
+                            labeled_value(
+                                ui,
+                                spacing,
+                                Some(&format!("{}: ", lang::current().main_bottom.png_average_saved_rate)),
+                                &format!("{:+.2}%", state.files.png_average_saved_rate()),
+                                *status_color.optimized(),
+                            );
+                        }
+                    });
+                }
+
+                ui.label("/");
+
                 // 総平均新サイズを表示
                 let new_size_response = ui.scope(|ui| {
                     labeled_value(
@@ -229,43 +266,6 @@ pub(crate) fn view(
                                 spacing,
                                 Some(&format!("{}: ", lang::current().main_bottom.png_average_saved)),
                                 &filesize_format(state.files.png_average_saved()),
-                                *status_color.optimized(),
-                            );
-                        }
-                    });
-                }
-
-                // 平均保存率
-                let rate_response = ui.scope(|ui| {
-                    labeled_value(
-                        ui,
-                        spacing,
-                        Some(&format!("{}: ", lang::current().main_bottom.average)),
-                        &format!("{:+.2}%", state.files.total_saved_rate()),
-                        *status_color.optimized(),
-                    );
-                }).response;
-
-                ui.label("/");
-
-                // JPEG と PNG の平均節約率を表示
-                if state.files.has_jpeg() && state.files.has_png() {
-                    rate_response.on_hover_ui(|ui| {
-                        if state.files.has_jpeg() {
-                            labeled_value(
-                                ui,
-                                spacing,
-                                Some(&format!("{}: ", lang::current().main_bottom.jpeg_average_saved_rate)),
-                                &format!("{:+.2}%", state.files.jpeg_average_saved_rate()),
-                                *status_color.optimized(),
-                            );
-                        }
-                        if state.files.has_png() {
-                            labeled_value(
-                                ui,
-                                spacing,
-                                Some(&format!("{}: ", lang::current().main_bottom.png_average_saved_rate)),
-                                &format!("{:+.2}%", state.files.png_average_saved_rate()),
                                 *status_color.optimized(),
                             );
                         }

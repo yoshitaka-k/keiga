@@ -143,11 +143,11 @@ pub(crate) fn view(
                             ui.separator();
                         }
 
-                        // 節約率を表示
+                        // 節約率と新しいサイズを表示
                         if matches!(image.status(), file::Status::Optimized) {
-                            ui.label(format!("{} ({:+.2}%)",
+                            ui.label(format!("{:+.2}% ({})",
+                                *image.saved_rate(),
                                 &filesize_format(*image.new_size()),
-                                *image.saved_rate()
                             ));
                             ui.separator();
                         }
