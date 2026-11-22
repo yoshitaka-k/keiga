@@ -1,7 +1,7 @@
 use std::time::{Duration, Instant};
 use std::sync::{mpsc, Arc};
 use std::sync::atomic::{AtomicBool, Ordering};
-use crate::{APP_NAME, REQUEST_URL, version_compare, update};
+use crate::{APP_NAME, REQUEST_URL, update};
 
 /// 更新チェック間隔（1時間）
 const UPDATE_CHECK_INTERVAL: Duration = Duration::from_secs(60 * 60);
@@ -194,7 +194,7 @@ impl UpdateJob {
         match update_info {
             // アップデート情報が取得できた場合
             Ok(update_info) => {
-                match version_compare(update_info.tag_name(), env!("CARGO_PKG_VERSION")) {
+                match update::version_compare(update_info.tag_name(), env!("CARGO_PKG_VERSION")) {
                     Ok(true) => {
                         return update::UpdateCheck::Available {
                             version: update_info.tag_name().clone(),

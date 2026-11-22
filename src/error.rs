@@ -138,21 +138,6 @@ impl KeigaError {
         Self::Io(error, file, line)
     }
 
-    /// 発生箇所のファイル名と行番号
-    /// * `return` - ファイル名と行番号
-    pub fn location(&self) -> (&str, u32) {
-        match self {
-            Self::FileNotFound(_, file, line)
-            | Self::FileError(_, _, file, line)
-            | Self::UnsupportedExtension(_, file, line)
-            | Self::OptimizedError(_, _, file, line)
-            | Self::IndexError(_, file, line)
-            | Self::LockPoisoned(file, line)
-            | Self::InvalidVersion(file, line)
-            | Self::Io(_, file, line) => (file, *line),
-        }
-    }
-
     /// エラーコード
     /// エラー項目・ファイル名・行番号を組み合わせて作る
     /// * `return` - エラーコード
@@ -166,6 +151,22 @@ impl KeigaError {
             Self::LockPoisoned(f, l) => format!("LP_{}_{}", Self::file_to_code(f), l),
             Self::InvalidVersion(f, l) => format!("IVE_{}_{}", Self::file_to_code(f), l),
             Self::Io(_, f, l) => format!("IO_{}_{}", Self::file_to_code(f), l),
+        }
+    }
+
+    /// 発生箇所のファイル名と行番号
+    /// * `return` - ファイル名と行番号
+    #[cfg(test)]
+    pub fn location(&self) -> (&str, u32) {
+        match self {
+            Self::FileNotFound(_, file, line)
+            | Self::FileError(_, _, file, line)
+            | Self::UnsupportedExtension(_, file, line)
+            | Self::OptimizedError(_, _, file, line)
+            | Self::IndexError(_, file, line)
+            | Self::LockPoisoned(file, line)
+            | Self::InvalidVersion(file, line)
+            | Self::Io(_, file, line) => (file, *line),
         }
     }
 

@@ -1,4 +1,4 @@
-use keiga::version_compare;
+use super::version_compare;
 
 #[test]
 fn newer_major_is_update() {
