@@ -15,12 +15,14 @@ pub(crate) enum UpdateCheck {
 /// 更新モーダルを表示するためのトークン
 #[derive(Clone)]
 pub(crate) struct UpdatedToken {
+    pub running: bool,
     pub open: bool,
     pub check: Option<UpdateCheck>,
 }
 impl UpdatedToken {
     pub fn new() -> Self {
         Self {
+            running: false,
             open: false,
             check: None,
         }

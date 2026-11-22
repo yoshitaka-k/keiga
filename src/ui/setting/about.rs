@@ -1,4 +1,4 @@
-use crate::{GITHUB_URL, ui, lang, event};
+use crate::{GITHUB_URL, ui, lang, event, update};
 use crate::ui::{assets, setting};
 use crate::ui::assets::{size, svg};
 
@@ -7,6 +7,7 @@ use crate::ui::assets::{size, svg};
 /// * `pending_actions` - 未処理のアクション
 pub(crate) fn view(
     ui: &mut egui::Ui,
+    updated_token: &update::UpdatedToken,
     pending_actions: &mut Vec<event::EventAction>,
 ) {
     // ヘッダーパネルを表示
@@ -14,6 +15,7 @@ pub(crate) fn view(
         ui,
         svg::INFO,
         lang::current().setting_about.about,
+        updated_token,
         pending_actions,
     );
 
