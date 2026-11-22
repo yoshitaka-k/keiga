@@ -1,7 +1,7 @@
 use std::time::{Duration, Instant};
 use std::sync::{mpsc, Arc};
 use std::sync::atomic::{AtomicBool, Ordering};
-use crate::{REQUEST_URL, version_compare, update};
+use crate::{APP_NAME, REQUEST_URL, version_compare, update};
 
 /// 更新チェック間隔（1時間）
 const UPDATE_CHECK_INTERVAL: Duration = Duration::from_secs(60 * 60);
@@ -70,7 +70,12 @@ impl UpdateJob {
 
         // リクエストURLを作成
         let request_url = REQUEST_URL.replace("{repository}", env!("CARGO_PKG_REPOSITORY"));
-        let request = ehttp::Request::get(request_url);
+        let mut request = ehttp::Request::get(request_url);
+
+        // リクエストヘッダを設定
+        let user_agent = format!("{}/{}", APP_NAME, env!("CARGO_PKG_VERSION"));
+        request.headers.insert("Accept", "application/vnd.github+json");
+        request.headers.insert("User-Agent", user_agent);
 
         // リクエストを実行
         ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {
