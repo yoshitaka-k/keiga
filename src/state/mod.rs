@@ -17,7 +17,7 @@ pub(crate) struct State {
 }
 
 /// ジョブ
-pub(crate) struct Jobs {
+pub(crate) struct Job {
     pub scan_job: file::ScanJob,
     pub meta_job: file::MetaJob,
     pub optimize_job: optimize::OptimizeJob,

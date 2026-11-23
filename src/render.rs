@@ -7,7 +7,7 @@ pub struct Render {
     state: state::State,
 
     /// ジョブ
-    jobs: state::Jobs,
+    job: state::Job,
 
     // 処理予約されたアクション
     pending_actions: Vec<event::EventAction>,
@@ -60,7 +60,7 @@ impl Render {
         };
 
         // ジョブを作成
-        let jobs = state::Jobs {
+        let job = state::Job {
             scan_job: file::ScanJob::new(cc.egui_ctx.clone()),
             meta_job: file::MetaJob::new(cc.egui_ctx.clone()),
             optimize_job: optimize::OptimizeJob::new(cc.egui_ctx.clone()),
@@ -70,7 +70,7 @@ impl Render {
         // Render のインスタンスを作成
         Self {
             state,
-            jobs,
+            job,
             pending_actions: Vec::new(),
             sound: sounds::SoundPlayer::new(),
             was_busy: false,
@@ -94,16 +94,16 @@ impl eframe::App for Render {
         self.state.scroll_token.selected = false;
 
         // ジョブの結果を反映
-        self.jobs_result();
+        self.job_results();
 
         // 入力イベントを処理
         self.input_events(ui);
 
         // ファイル追加時にメタデータを取得
-        self.jobs.meta_job.run(&mut self.state.files);
+        self.job.meta_job.run(&mut self.state.files);
 
         // ファイル追加時に最適化を実行
-        self.jobs.optimize_job.run(&self.state.config, &mut self.state.files);
+        self.job.optimize_job.run(&self.state.config, &mut self.state.files);
 
         // ファイル一覧のアクションを処理
         self.process_pending_actions(ui);
@@ -154,18 +154,18 @@ impl Render {
     }
 
     /// ジョブの結果を反映
-    fn jobs_result(&mut self) {
+    fn job_results(&mut self) {
         // スキャン結果を反映
-        self.jobs.scan_job.result(&self.state.config, &mut self.state.files);
+        self.job.scan_job.result(&self.state.config, &mut self.state.files);
 
         // メタデータ結果を反映
-        self.jobs.meta_job.result(&mut self.state.files);
+        self.job.meta_job.result(&mut self.state.files);
 
         // 最適化結果を反映
-        self.jobs.optimize_job.result(&mut self.state.files);
+        self.job.optimize_job.result(&mut self.state.files);
 
         // 更新結果を取得
-        self.jobs.update_job.result(&mut self.state.update_token);
+        self.job.update_job.result(&mut self.state.update_token);
     }
 
     /// 効果音を再生
@@ -198,7 +198,7 @@ impl Render {
 
         // 取り出されたアクションを処理
         for action in pending_actions.drain(..) {
-            if let Err(e) = event::handle(ui.ctx(), &mut self.state, &mut self.jobs, action) {
+            if let Err(e) = event::handle(ui.ctx(), &mut self.state, &mut self.job, action) {
                 log::error!("Error processing action: {}", e);
                 self.state.error_token.open = true;
                 self.state.error_token.value = Some(e);
@@ -212,7 +212,7 @@ impl Render {
     /// 最適化中か待機中かどうかをチェック
     /// * `return` - 最適化中か待機中かどうか
     fn is_busy(&self) -> bool {
-        self.jobs.scan_job.is_running()
+        self.job.scan_job.is_running()
             || self.state.files.has_standby()
             || self.state.files.has_optimizing()
     }

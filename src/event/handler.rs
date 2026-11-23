@@ -10,26 +10,26 @@ use crate::event::{open, button, key, click};
 pub(crate) fn handle(
     ctx: &egui::Context,
     state: &mut state::State,
-    jobs: &mut state::Jobs,
+    job: &mut state::Job,
     action: event::EventAction,
 ) -> error::Result<()> {
     match action {
         event::EventAction::FileOpen => {
             let label = lang::current().file_dialog.image_files;
-            open::file(&jobs.scan_job, label);
+            open::file(&job.scan_job, label);
             Ok(())
         }
         event::EventAction::FolderOpen => {
             let label = lang::current().file_dialog.image_files;
-            open::folder(&jobs.scan_job, label);
+            open::folder(&job.scan_job, label);
             Ok(())
         }
         event::EventAction::DropOpen(files) => {
-            open::drop(ctx, &jobs.scan_job, files);
+            open::drop(ctx, &job.scan_job, files);
             Ok(())
         }
         event::EventAction::Clear => {
-            button::cancel_and_clear(&mut state.files, &mut jobs.scan_job, &mut jobs.optimize_job)
+            button::cancel_and_clear(&mut state.files, &mut job.scan_job, &mut job.optimize_job)
         }
         event::EventAction::SettingOpen(pos) => {
             button::setting_open(&mut state.setting_token, pos);
@@ -61,10 +61,10 @@ pub(crate) fn handle(
             key::space(&path)
         }
         event::EventAction::Backspace => {
-            key::backspace(&mut state.files, &mut jobs.optimize_job)
+            key::backspace(&mut state.files, &mut job.optimize_job)
         }
         event::EventAction::CheckForUpdate => {
-            button::check_for_update(&mut jobs.update_job, &mut state.update_token);
+            button::check_for_update(&mut job.update_job, &mut state.update_token);
             Ok(())
         }
     }
