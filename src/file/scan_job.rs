@@ -75,7 +75,12 @@ impl ScanJob {
     }
 
     /// ジョブ結果を受信
-    pub fn result(&self, config: &config::Config, files: &mut file::OpenFiles) {
+    /// * `config` - 設定
+    /// * `files` - 開いているファイル
+    pub fn result(&self,
+        config: &config::Config,
+        files: &mut file::OpenFiles
+    ) {
         // ジョブ結果を受信
         while let Ok((generation, result)) = self.result_rx.try_recv() {
             if generation != self.generation.load(Ordering::Relaxed) { continue; }
