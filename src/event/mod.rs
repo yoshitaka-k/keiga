@@ -1,4 +1,4 @@
-pub(crate) mod handler;
+mod handler;
 pub(crate) mod button;
 pub(crate) mod click;
 pub(crate) mod input;
